@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
 import "./styles/global.css";
 import ReactDOM from "react-dom/client";
 import { App, ConfigProvider } from "antd";
@@ -6,7 +6,7 @@ import "@ant-design/v5-patch-for-react-19";
 import enUS from "antd/es/locale/en_US";
 import { AppProvider } from "./components/context/app.context";
 import ProtectedRoute from "./components/ProtectedRoute";
-import Layout from "./layout";
+import { Layout } from "./layout";
 import LoginPage from "./pages/login";
 import AdminPage from "./pages/admin";
 import ClientPage from "./pages/client";
@@ -17,6 +17,7 @@ const router = createBrowserRouter([
     path: "/",
     element: <Layout />,
     children: [
+  { index: true, element: <Navigate to="login" replace /> },
       { path: "login", element: <LoginPage /> },
       {
         element: <ProtectedRoute roles={["admin"]} />,
@@ -30,6 +31,7 @@ const router = createBrowserRouter([
         element: <ProtectedRoute roles={["vendor"]} />,
         children: [{ path: "vendor", element: <VendorPage /> }],
       },
+  { path: "*", element: <Navigate to="login" replace /> },
     ],
   },
 ]);
