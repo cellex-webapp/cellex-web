@@ -7,10 +7,12 @@ import enUS from "antd/es/locale/en_US";
 import { AppProvider } from "./components/context/app.context";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { Layout } from "./layout";
-import LoginPage from "./pages/login";
+import LoginPage from "./pages/auth/login";
 import AdminPage from "./pages/admin";
 import ClientPage from "./pages/client";
 import VendorPage from "./pages/vendor";
+import SignupPage from "./pages/auth/signup";
+import OtpPage from "./pages/auth/otp";
 
 const router = createBrowserRouter([
   {
@@ -19,6 +21,8 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Navigate to="/" replace /> },
           { path: "login", element: <LoginPage /> },
+          { path: "signup", element: <SignupPage /> },
+          { path: "otp", element: <OtpPage /> },
           {
             element: <ProtectedRoute roles={["admin"]} />,
             children: [{ path: "admin", element: <AdminPage /> }],

@@ -15,6 +15,17 @@ export async function fetchAccountAPI(): Promise<IFetchUser | null> {
   }
 }
 
+export async function signUp(role: UserRole, username?: string): Promise<IFetchUser> {
+  await new Promise((r) => setTimeout(r, 200));
+  const user: IFetchUser = {
+    userId: crypto.randomUUID(),
+    username: username || role,
+    role,
+  };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+  return user;
+}
+
 export async function loginAPI(role: UserRole, username?: string): Promise<IFetchUser> {
   await new Promise((r) => setTimeout(r, 200));
   const user: IFetchUser = {
