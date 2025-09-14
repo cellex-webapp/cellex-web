@@ -1,4 +1,4 @@
-export type UserRole = "admin" | "client" | "vendor";
+export type UserRole = "admin" | "client" | "vendor" | "guest";
 
 export interface IFetchUser {
   userId: string;

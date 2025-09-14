@@ -10,17 +10,21 @@ type Props = {
 const ProtectedRoute = ({ roles, redirectTo = "/login" }: Props) => {
   const { isAuthenticated, user, isLoading } = useCurrentApp();
 
-  if (isLoading) return null; // or a spinner
+  if (isLoading) return null; 
+
+  if (roles && roles.includes('guest')) {
+    if (isAuthenticated && user) {
+      return <Navigate to={`/${user.role}`} replace />;
+    }
+    return <Outlet />;
+  }
 
   if (!isAuthenticated || !user) {
     return <Navigate to={redirectTo} replace />;
   }
-
   if (roles && !roles.includes(user.role)) {
-    // redirect to a basic landing page based on role
     return <Navigate to={`/${user.role}`} replace />;
   }
-
   return <Outlet />;
 };
 
