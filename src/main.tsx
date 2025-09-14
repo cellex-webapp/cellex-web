@@ -21,22 +21,27 @@ const router = createBrowserRouter([
     element: <Layout />,
     children: [
       { index: true, element: <Navigate to="/" replace /> },
+      {
+        element: <ProtectedRoute roles={["guest"]} />,
+        children: [
           { path: "login", element: <LoginPage /> },
           { path: "signup", element: <SignupPage /> },
           { path: "otp", element: <OtpPage /> },
           { path: "forgot-password", element: <ForgotPasswordPage /> },
-          {
-            element: <ProtectedRoute roles={["admin"]} />,
-            children: [{ path: "admin", element: <AdminPage /> }],
-          },
-          {
-            element: <ProtectedRoute roles={["client"]} />,
-            children: [{ path: "client", element: <ClientPage /> }],
-          },
-          {
-            element: <ProtectedRoute roles={["vendor"]} />,
-            children: [{ path: "vendor", element: <VendorPage /> }],
-          },
+        ],
+      },
+      {
+        element: <ProtectedRoute roles={["admin"]} />,
+        children: [{ path: "admin", element: <AdminPage /> }],
+      },
+      {
+        element: <ProtectedRoute roles={["client"]} />,
+        children: [{ path: "client", element: <ClientPage /> }],
+      },
+      {
+        element: <ProtectedRoute roles={["vendor"]} />,
+        children: [{ path: "vendor", element: <VendorPage /> }],
+      },
       { path: "*", element: <Navigate to="/" replace /> },
     ],
   },
