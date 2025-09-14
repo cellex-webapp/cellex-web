@@ -1,4 +1,4 @@
-import logo from "../../assets/logo/cellex.png";
+import logo from "../../../assets/logo/cellex.png";
 import { SearchOutlined, MenuOutlined, MessageFilled, BellFilled } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 
