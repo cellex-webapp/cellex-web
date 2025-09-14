@@ -4,7 +4,7 @@ import { signUp } from "../../services/api";
 import { useNavigate } from "react-router-dom";
 import { useCurrentApp } from "../../components/context/app.context";
 import bg from "../../assets/logo/bg.jpg";
-import { EyeInvisibleOutlined, EyeTwoTone, GoogleCircleFilled } from "@ant-design/icons";
+import { EyeInvisibleOutlined, EyeTwoTone } from "@ant-design/icons";
 
 const SignupPage = () => {
     const [phone, setPhone] = useState("");
@@ -19,7 +19,6 @@ const SignupPage = () => {
         if (e) e.preventDefault();
         setLoading(true);
         try {
-            // Giả lập role dựa vào phone
             let role: "admin" | "client" | "vendor" = "client";
             if (phone === "admin") role = "admin";
             else if (phone === "vendor") role = "vendor";
@@ -43,14 +42,12 @@ const SignupPage = () => {
         >
             <div className="absolute inset-0 bg-primary-300/80 z-0" />
             <div className="w-full max-w-4xl bg-white rounded-xl flex flex-col md:flex-row overflow-hidden relative z-10">
-                {/* Cột trái: mô tả */}
                 <div className="md:w-1/2 flex flex-col justify-center items-center bg-primary-300 p-8 md:p-12">
                     <h2 className="text-2xl md:text-3xl font-bold text-white mb-4 w-full text-left">Đăng ký</h2>
                     <p className="text-white/90 text-base md:text-lg w-full text-left">
                         Vui lòng nhập đầy đủ thông tin số điện thoại, email và mật khẩu!
                     </p>
                 </div>
-                {/* Cột phải: form đăng ký */}
                 <div className="md:w-1/2 w-full flex flex-col justify-center items-center p-8 md:p-12">
                     <form className="w-full max-w-sm space-y-5" onSubmit={onSignup}>
                         <div>
@@ -88,7 +85,7 @@ const SignupPage = () => {
                                 />
                                 <button
                                     type="button"
-                                    className="absolute right-2 top-1/2 -translate-y-1/2 text-primary-400"
+                                    className="absolute right-2 top-1/2 -translate-y-1/2 text-primary-400 cursor-pointer"
                                     tabIndex={-1}
                                     onClick={() => setShowPassword(v => !v)}
                                 >
@@ -122,7 +119,7 @@ const SignupPage = () => {
                                 Bạn đã có tài khoản?{' '}
                                 <button
                                     type="button"
-                                    className="text-primary-400 hover:underline bg-transparent border-none p-0"
+                                    className="text-primary-400 hover:underline bg-transparent border-none p-0 cursor-pointer"
                                     onClick={() => navigate('/login')}
                                 >
                                     Đăng nhập

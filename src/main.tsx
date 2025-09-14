@@ -13,6 +13,7 @@ import ClientPage from "./pages/client";
 import VendorPage from "./pages/vendor";
 import SignupPage from "./pages/auth/signup";
 import OtpPage from "./pages/auth/otp";
+import ForgotPasswordPage from "./pages/auth/forgot-password";
 
 const router = createBrowserRouter([
   {
@@ -23,6 +24,7 @@ const router = createBrowserRouter([
           { path: "login", element: <LoginPage /> },
           { path: "signup", element: <SignupPage /> },
           { path: "otp", element: <OtpPage /> },
+          { path: "forgot-password", element: <ForgotPasswordPage /> },
           {
             element: <ProtectedRoute roles={["admin"]} />,
             children: [{ path: "admin", element: <AdminPage /> }],

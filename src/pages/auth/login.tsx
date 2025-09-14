@@ -93,8 +93,8 @@ const LoginPage = () => {
             <div className="flex justify-between items-center text-sm mt-2">
               <button
                 type="button"
-                className="text-primary-400 hover:underline bg-transparent border-none p-0"
-                onClick={() => alert('Chức năng quên mật khẩu chưa khả dụng')}
+                className="text-primary-400 hover:underline bg-transparent border-none p-0 cursor-pointer"
+                onClick={() => navigate('/forgot-password')}
               >
                 Quên mật khẩu?
               </button>
@@ -102,7 +102,7 @@ const LoginPage = () => {
                 Bạn chưa có tài khoản?{' '}
                 <button
                   type="button"
-                  className="text-primary-400 hover:underline bg-transparent border-none p-0"
+                  className="text-primary-400 hover:underline bg-transparent border-none p-0 cursor-pointer"
                   onClick={() => navigate('/signup')}
                 >
                   Đăng ký
