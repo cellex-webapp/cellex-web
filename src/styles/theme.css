@@ -47,3 +47,29 @@
 .button-icon-round:hover {
   background: #034799;
 }
+.ant-menu .ant-menu-submenu-arrow {
+  color: #fff !important;
+}
+.ant-menu .ant-menu-submenu .ant-menu-submenu-arrow::before,
+.ant-menu .ant-menu-submenu .ant-menu-submenu-arrow::after {
+  background: #fff !important;
+}
+.ant-menu .ant-menu-item-selected {
+  background: transparent !important;
+  color: #fff !important;
+  text-decoration: underline;
+}
+.ant-menu .ant-menu-submenu-selected > .ant-menu-submenu-title {
+  background: transparent !important;
+  color: #fff !important;
+}
+.ant-menu .ant-menu-item-selected .ant-menu-item-icon,
+.ant-menu .ant-menu-submenu-selected > .ant-menu-submenu-title .ant-menu-item-icon {
+  color: #fff !important;
+}
+.ant-menu .ant-menu-item-selected::after {
+  border: none !important;
+}
+
+
+
