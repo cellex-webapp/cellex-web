@@ -1,8 +1,7 @@
 
 import { useState } from "react";
-import { signUp } from "../../services/api";
 import { useNavigate } from "react-router-dom";
-import { useCurrentApp } from "../../components/context/app.context";
+import { useAuth } from "../../hooks/useAuth";
 import bg from "../../assets/logo/bg.jpg";
 import { EyeInvisibleOutlined, EyeTwoTone } from "@ant-design/icons";
 
@@ -13,22 +12,9 @@ const SignupPage = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
-    const { setIsAuthenticated, setUser } = useCurrentApp();
 
     const onSignup = async (e?: React.FormEvent) => {
-        if (e) e.preventDefault();
-        setLoading(true);
-        try {
-            let role: "admin" | "client" | "vendor" = "client";
-            if (phone === "admin") role = "admin";
-            else if (phone === "vendor") role = "vendor";
-            const user = await signUp(role, phone);
-            setUser(user);
-            setIsAuthenticated(true);
-            navigate('/otp');
-        } finally {
-            setLoading(false);
-        }
+        console.log('Signup form submitted');
     };
 
     return (

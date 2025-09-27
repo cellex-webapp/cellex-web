@@ -1,60 +1,55 @@
-import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
-import "./styles/global.css";
+import React from "react";
 import ReactDOM from "react-dom/client";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { App, ConfigProvider } from "antd";
-import "@ant-design/v5-patch-for-react-19";
 import enUS from "antd/es/locale/en_US";
-import { AppProvider } from "./components/context/app.context";
-import ProtectedRoute from "./components/ProtectedRoute";
-import { Layout } from "./layout";
+
+import "./styles/global.css";
+import "@ant-design/v5-patch-for-react-19";
+import { AuthProvider } from "./context/auth.context";
+import Layout from "./layout"; 
+import PublicRoute from "./components/PublicRoute";
+
 import LoginPage from "./pages/auth/login";
-import AdminPage from "./pages/admin";
-import ClientPage from "./pages/client";
-import VendorPage from "./pages/vendor";
 import SignupPage from "./pages/auth/signup";
-import OtpPage from "./pages/auth/otp";
+import DashboardPage from "./pages/dashboard";
 import ForgotPasswordPage from "./pages/auth/forgot-password";
+import OtpPage from "./pages/auth/otp";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <Layout />,
     children: [
-      { index: true, element: <Navigate to="/" replace /> },
+      { 
+        index: true, 
+        element: <DashboardPage /> 
+      },
       {
-        element: <ProtectedRoute roles={["guest"]} />,
+        element: <PublicRoute />,
         children: [
           { path: "login", element: <LoginPage /> },
           { path: "signup", element: <SignupPage /> },
-          { path: "otp", element: <OtpPage /> },
           { path: "forgot-password", element: <ForgotPasswordPage /> },
+          { path: "otp", element: <OtpPage /> }
         ],
       },
-      {
-        element: <ProtectedRoute roles={["admin"]} />,
-        children: [{ path: "admin", element: <AdminPage /> }],
-      },
-      {
-        element: <ProtectedRoute roles={["client"]} />,
-        children: [{ path: "client", element: <ClientPage /> }],
-      },
-      {
-        element: <ProtectedRoute roles={["vendor"]} />,
-        children: [{ path: "vendor", element: <VendorPage /> }],
-      },
-      { path: "*", element: <Navigate to="/" replace /> },
+      { path: "*", element: <div>Not Found</div> },
     ],
   },
 ]);
 
-const root = document.getElementById("root");
+const rootElement = document.getElementById("root")!;
+const root = ReactDOM.createRoot(rootElement);
 
-ReactDOM.createRoot(root!).render(
-  <App>
-    <AppProvider>
-      <ConfigProvider locale={enUS}>
-        <RouterProvider router={router} />
-      </ConfigProvider>
-    </AppProvider>
-  </App>
+root.render(
+  <React.StrictMode>
+    <App>
+      <AuthProvider>
+        <ConfigProvider locale={enUS}>
+          <RouterProvider router={router} />
+        </ConfigProvider>
+      </AuthProvider>
+    </App>
+  </React.StrictMode>
 );
