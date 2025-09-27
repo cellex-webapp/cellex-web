@@ -1,28 +1,22 @@
 import { useState } from "react";
-import { loginAPI } from "../../services/api";
 import { useNavigate } from "react-router-dom";
-import { useCurrentApp } from "../../components/context/app.context";
+import { useAuth } from "../../hooks/useAuth";
 import bg from "../../assets/logo/bg.jpg";
 
 const LoginPage = () => {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { setIsAuthenticated, setUser } = useCurrentApp();
+  const { login } = useAuth();
 
   const onLogin = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     setLoading(true);
     try {
-      // Giả lập role dựa vào username
-      let role: "admin" | "client" | "vendor" = "client";
-      if (username === "admin") role = "admin";
-      else if (username === "vendor") role = "vendor";
-      const user = await loginAPI(role, username);
-      setUser(user);
-      setIsAuthenticated(true);
-      navigate(`/${user.role}`);
+      await login({ email, password });
+    } catch (error) {
+      console.error("Login failed:", error);
     } finally {
       setLoading(false);
     }
@@ -52,8 +46,8 @@ const LoginPage = () => {
               <input
                 type="text"
                 className="w-full px-4 py-2 border border-primary-300 rounded focus:outline-none focus:ring-2 focus:ring-primary-400"
-                value={username}
-                onChange={e => setUsername(e.target.value)}
+                value={email}
+                onChange={e => setEmail(e.target.value)}
                 placeholder="Nhập email hoặc số điện thoại"
                 required
               />

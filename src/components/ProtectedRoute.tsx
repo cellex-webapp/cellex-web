@@ -1,30 +1,26 @@
-import { Navigate, Outlet } from "react-router-dom";
-import { useCurrentApp } from "./context/app.context";
-import type { UserRole } from "../types/user";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
 
-type Props = {
-  roles?: UserRole[];
-  redirectTo?: string;
-};
+interface IProps {
+  roles?: UserRole[]; 
+}
 
-const ProtectedRoute = ({ roles, redirectTo = "/login" }: Props) => {
-  const { isAuthenticated, user, isLoading } = useCurrentApp();
+const ProtectedRoute = ({ roles }: IProps) => {
+  const { isAuthenticated, role, loading } = useAuth();
+  const location = useLocation();
 
-  if (isLoading) return null; 
-
-  if (roles && roles.includes('guest')) {
-    if (isAuthenticated && user) {
-      return <Navigate to={`/${user.role}`} replace />;
-    }
-    return <Outlet />;
+  if (loading) {
+    return <div>Loading...</div>; 
   }
 
-  if (!isAuthenticated || !user) {
-    return <Navigate to={redirectTo} replace />;
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
-  if (roles && !roles.includes(user.role)) {
-    return <Navigate to={`/${user.role}`} replace />;
+
+  if (roles && role && !roles.includes(role)) {
+    return <Navigate to="/" replace />;
   }
+
   return <Outlet />;
 };
 

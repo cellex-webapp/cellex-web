@@ -1,16 +1,17 @@
 import { Button, Flex, Layout, Space, Typography } from "antd";
-import { logoutAPI } from "../../services/api";
-import { useCurrentApp } from "../../components/context/app.context";
+import { useAuth } from "../../hooks/useAuth";
 import VendorSider from "../../components/layout/sider/vendor.sider";
 
 const { Content } = Layout;
 
 const VendorPage = () => {
-  const { user, setIsAuthenticated, setUser } = useCurrentApp();
+  const { logout } = useAuth();
   const onLogout = async () => {
-    await logoutAPI();
-    setIsAuthenticated(false);
-    setUser(null);
+    try {
+      await logout();
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
   };
   return (
     <Layout style={{ minHeight: "60vh", background: "#fff" }}>
@@ -19,7 +20,7 @@ const VendorPage = () => {
         <Flex vertical align="center" justify="center" style={{ minHeight: "60vh" }}>
           <Space direction="vertical" align="center">
             <Typography.Title level={2}>Vendor Dashboard</Typography.Title>
-            <Typography.Text>Welcome, {user?.username}</Typography.Text>
+            <Typography.Text>Welcome, Vendor</Typography.Text>
             <Button onClick={onLogout}>Log out</Button>
           </Space>
         </Flex>
