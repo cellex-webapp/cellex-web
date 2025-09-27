@@ -1,4 +1,5 @@
-import { Button, Flex, Space, Typography, Layout } from "antd";
+import { Button, Layout } from "antd";
+import { Outlet } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import AdminSider from "../../components/layout/sider/admin.sider";
 
@@ -17,14 +18,11 @@ const AdminPage = () => {
   return (
     <Layout style={{ minHeight: "60vh", background: "#fff" }}>
       <AdminSider />
-      <Content style={{ padding: 32 }}>
-        <Flex vertical align="center" justify="center" style={{ minHeight: "60vh" }}>
-          <Space direction="vertical" align="center">
-            <Typography.Title level={2}>Admin Dashboard</Typography.Title>
-            <Typography.Text>Welcome, Admin</Typography.Text>
-            <Button onClick={onLogout}>Log out</Button>
-          </Space>
-        </Flex>
+      <Content style={{ padding: 24 }}>
+        <div className="flex justify-end mb-3">
+          <Button onClick={onLogout}>Đăng xuất</Button>
+        </div>
+        <Outlet />
       </Content>
     </Layout>
   );

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Layout, Menu } from 'antd';
 import {
   AppstoreOutlined,
@@ -9,6 +9,7 @@ import {
   TagsOutlined,
   DatabaseOutlined,
 } from '@ant-design/icons';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const { Sider } = Layout;
 
@@ -21,6 +22,15 @@ const menuItems = [
       { key: 'overview-customer', label: <span className="text-white">Số liệu Khách hàng</span> },
       { key: 'overview-store', label: <span className="text-white">Số liệu Cửa hàng</span> },
       { key: 'overview-product', label: <span className="text-white">Số liệu Sản phẩm</span> },
+    ],
+  },
+  {
+    key: 'category',
+    label: <span className="text-white font-semibold">Quản lý Danh mục</span>,
+    icon: <AppstoreOutlined style={{ color: 'white' }} />,  
+    children: [
+      { key: 'category-all', label: <span className="text-white">Tất cả danh mục</span>},
+      { key: 'category-create', label: <span className="text-white">Tạo danh mục</span> },
     ],
   },
   {
@@ -99,6 +109,22 @@ const menuItems = [
 ];
 
 const AdminSider: React.FC = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const selectedKeys = useMemo(() => {
+    if (location.pathname.startsWith('/admin/categories')) return ['category-all'];
+    return [] as string[];
+  }, [location.pathname]);
+
+  const openKeys = useMemo(() => {
+    const keys: string[] = [];
+    if (selectedKeys.includes('category-all')) keys.push('category');
+    if (selectedKeys.includes('category-create')) keys.push('category');
+    else keys.push('overview');
+    return keys;
+  }, [selectedKeys]);
+
   return (
     <Sider
       width={260}
@@ -110,9 +136,23 @@ const AdminSider: React.FC = () => {
       <div className="text-white font-bold text-base px-5 pt-4 pb-2">Trung tâm điều khiển</div>
       <Menu
         mode="inline"
-        defaultOpenKeys={[menuItems[0].key]}
+        selectedKeys={selectedKeys}
+        defaultOpenKeys={openKeys}
         className="!bg-primary-200 !border-r-0"
         items={menuItems}
+        onClick={(info) => {
+          switch (info.key) {
+            case 'category-all':
+              navigate('/admin/categories');
+              break;
+            case 'category-create':
+              navigate('/admin/categories');
+              // open create modal could be handled via state/route later
+              break;
+            default:
+              break;
+          }
+        }}
       />
     </Sider>
   );
