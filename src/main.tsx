@@ -9,6 +9,9 @@ import "@ant-design/v5-patch-for-react-19";
 import { AuthProvider } from "./context/auth.context";
 import Layout from "./layout"; 
 import PublicRoute from "./components/PublicRoute";
+import ProtectedRoute from "./components/ProtectedRoute";
+import AdminPage from "./pages/admin";
+import CategoryPage from "./pages/admin/category/CategoryPage";
 
 import LoginPage from "./pages/auth/login";
 import SignupPage from "./pages/auth/signup";
@@ -24,6 +27,18 @@ const router = createBrowserRouter([
       { 
         index: true, 
         element: <DashboardPage /> 
+      },
+      {
+        element: <ProtectedRoute roles={["ADMIN"]} />,
+        children: [
+          {
+            path: "admin",
+            element: <AdminPage />,
+            children: [
+              { path: "categories", element: <CategoryPage /> },
+            ],
+          },
+        ],
       },
       {
         element: <PublicRoute />,
