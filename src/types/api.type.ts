@@ -1,11 +1,4 @@
-// Standard API response shape
-// {
-//   "code": 200,
-//   "message": "string",
-//   "result": T
-// }
-
-export type ApiCode = number; // 200 = success
+export type ApiCode = number; 
 
 export interface ApiResponse<T = unknown> {
 	code: ApiCode;

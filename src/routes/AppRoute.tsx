@@ -13,6 +13,9 @@ import { VendorDashboard } from '@/features/vendors/pages/Dashboard';
 import AdminLayout from '@/features/admin/components/AdminLayout';
 import VendorLayout from '@/features/vendors/components/VendorLayout';
 import CategoriesPage from '@/features/admin/pages/CategoriesPage';
+import CategoryCreatePage from '@/features/admin/pages/CategoryCreatePage';
+import UsersListPage from '@/features/admin/pages/UsersListPage';
+import UserCreatePage from '@/features/admin/pages/UserCreatePage';
 
 const router = createBrowserRouter([
   // role specific routes
@@ -25,6 +28,9 @@ const router = createBrowserRouter([
         children: [
           { index: true, element: <AdminDashboard /> },
           { path: 'categories', element: <CategoriesPage /> },
+          { path: 'categories/create', element: <CategoryCreatePage /> },
+          { path: 'users', element: <UsersListPage /> },
+          { path: 'users/create', element: <UserCreatePage /> },
         ],
       },
     ],

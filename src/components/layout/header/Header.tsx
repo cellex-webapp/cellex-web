@@ -33,7 +33,7 @@ const Header: React.FC = () => {
         {/* Left: Logo + Brand */}
         <div className="flex items-center min-w-fit">
           <Link to="/" className="flex items-center">
-            <img src={logo} alt="Logo" className="h-8 md:h-10 lg:h-8 w-auto object-contain" />
+            <img src={logo} className="h-8 md:h-10 lg:h-8 w-auto object-contain" />
           </Link>
           <span className="ml-2 hidden sm:inline text-lg md:text-xl font-bold tracking-wide text-indigo-600">
             CELLEX
