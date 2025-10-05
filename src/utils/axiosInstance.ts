@@ -12,15 +12,18 @@ const axiosInstance = axios.create({
 
 export default axiosInstance;
 
-// Attach Authorization header from localStorage token
 axiosInstance.interceptors.request.use((config) => {
     try {
-        const token = getItem('access_token');
-        if (token) {
-            config.headers = {
-                ...(config.headers || {}),
-                Authorization: `Bearer ${token}`,
-            } as any;
+        const url = String(config.url || '');
+        const isAuthPublicEndpoint = /(^|\/)auth\/(login|send-signup-code|verify-signup-code)(\/?|$)/.test(url);
+        if (!isAuthPublicEndpoint) {
+            const token = getItem('access_token');
+            if (token) {
+                config.headers = {
+                    ...(config.headers || {}),
+                    Authorization: `Bearer ${token}`,
+                } as any;
+            }
         }
     } catch {
         // ignore
@@ -28,18 +31,27 @@ axiosInstance.interceptors.request.use((config) => {
     return config;
 });
 
-// Generic typed request that unwraps ApiResponse<T>
 export async function apiRequest<T = unknown>(config: AxiosRequestConfig): Promise<T> {
-    const resp: AxiosResponse<ApiResponse<T>> = await axiosInstance.request<ApiResponse<T>>(config);
-    const data = resp.data;
-    if (data && typeof data.code === 'number') {
-        if (data.code === 200) return data.result as T;
-        const err = new Error(data.message || 'Request failed');
-        (err as any).code = data.code;
-        throw err;
+    try {
+        const resp: AxiosResponse<ApiResponse<T>> = await axiosInstance.request<ApiResponse<T>>(config);
+        const data = resp.data as any;
+        if (data && typeof data.code === 'number') {
+            if (data.code === 200) return data.result as T;
+            const err = new Error(data.message || 'Request failed');
+            (err as any).code = data.code;
+            throw err;
+        }
+        return (data as unknown) as T;
+    } catch (error: any) {
+        if (axios.isAxiosError(error)) {
+            const status = error.response?.status;
+            const data: any = error.response?.data;
+            const err = new Error(data?.message || error.message || 'Request failed');
+            (err as any).code = data?.code ?? status ?? 'UNKNOWN_ERROR';
+            throw err;
+        }
+        throw error;
     }
-    // Fallback when backend doesn't follow the contract strictly
-    return (data as unknown) as T;
 }
 
 // Shorthand helpers
