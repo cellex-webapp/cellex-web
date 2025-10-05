@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import OTPForm from '../components/OTPForm';
-import { useAuth } from '@/hooks/useAuth';
+import { useDispatch } from 'react-redux';
+import type { AppDispatch } from '@/stores/store';
+import { verifySignupCodeThunk, sendSignupCodeThunk } from '@/stores/slices/authSlice';
 
 const OTPPage: React.FC = () => {
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { login } = useAuth();
+  // ensure any auth-related side effects are handled elsewhere; OTP page is stand-alone
+  const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
     const pending = localStorage.getItem('pendingSignup');
@@ -18,22 +21,21 @@ const OTPPage: React.FC = () => {
 
   const onSubmit = async (e?: React.FormEvent<HTMLFormElement>) => {
     if (e) e.preventDefault();
+    if (!/^\d{6}$/.test(otp)) {
+      alert('Vui lòng nhập đúng 6 chữ số OTP');
+      return;
+    }
     setLoading(true);
     try {
-      // TODO: verify OTP with backend
-      await new Promise((res) => setTimeout(res, 800));
       const pending = localStorage.getItem('pendingSignup');
-      if (pending) {
-        const { email } = JSON.parse(pending) as { email: string };
-        // Auto-login after verification (fake password, server would issue token)
-        await login({ email, _password: 'verified-by-otp' });
-        localStorage.removeItem('pendingSignup');
-        navigate('/');
-      } else {
-        navigate('/login');
-      }
-    } catch (err) {
+      if (!pending) return navigate('/signup');
+      const { email } = JSON.parse(pending) as { email: string };
+      await dispatch(verifySignupCodeThunk({ email, otp })).unwrap();
+      localStorage.removeItem('pendingSignup');
+      navigate('/login');
+    } catch (err: any) {
       console.error('OTP verify failed', err);
+      alert(err?.message || 'Xác thực OTP thất bại');
     } finally {
       setLoading(false);
     }
@@ -41,11 +43,16 @@ const OTPPage: React.FC = () => {
 
   const onResend = async () => {
     try {
-      // TODO: call resend API
-      await new Promise((res) => setTimeout(res, 500));
+      const pending = localStorage.getItem('pendingSignup');
+      if (!pending) return navigate('/signup');
+      const { email, fullName, phoneNumber, password } = JSON.parse(pending) as any;
+      await dispatch(
+        sendSignupCodeThunk({ email, fullName, phoneNumber, password, confirmPassword: password })
+      ).unwrap();
       alert('Đã gửi lại mã OTP');
     } catch (err) {
       console.error('Resend OTP failed', err);
+      alert('Gửi lại OTP thất bại');
     }
   };
 

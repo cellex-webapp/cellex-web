@@ -14,7 +14,11 @@ const LoginPage: React.FC = () => {
     if (e) e.preventDefault();
     setLoading(true);
     try {
-  await login({ email, _password: password });
+  const { user } = await login({ email, password });
+  const role = (user?.role || '').toLowerCase();
+  if (role === 'admin') navigate('/admin');
+  else if (role === 'vendor') navigate('/vendor');
+  else navigate('/client');
     } catch (error) {
       console.error('Login failed:', error);
     } finally {

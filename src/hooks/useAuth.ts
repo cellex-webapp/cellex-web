@@ -1,8 +1,9 @@
 import { useCallback, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '@/stores/RootReducer';
-import { getItem, removeItem, setItem } from '../utils/localStorage';
-import { login as loginAction } from '../stores/slices/authSlice';
+import { getItem, removeItem } from '../utils/localStorage';
+import { loginThunk, logout as logoutAction, logoutThunk } from '../stores/slices/authSlice';
+import type { LoginRequest } from '@/types/auth.type';
 
 export const useAuth = () => {
   const dispatch = useDispatch();
@@ -24,34 +25,32 @@ export const useAuth = () => {
 
   const hasToken = Boolean(accessToken);
   const hasUser = Boolean(user || storedUser);
-  const isAuthenticated = isAuthFromStore || (hasToken && hasUser);
+  const isAuthenticated = isAuthFromStore || hasToken;
 
   if (!isAuthenticated) {
     removeItem('user');
   }
 
-  const login = useCallback(async ({
-    email,
-    _password,
-  }: {
-    email: string;
-    _password: string;
-  }) => {
-    void _password; // placeholder until real API is wired
-    // TODO: replace with real API call
-    const role = email.toLowerCase().includes('admin')
-      ? 'admin'
-      : email.toLowerCase().includes('vendor')
-        ? 'vendor'
-        : 'client';
-    const fakeToken = 'demo-token-' + Date.now();
-    const newUser = { id: 'u1', email, role } as const;
-    setItem('access_token', fakeToken);
-    setItem('user', JSON.stringify(newUser));
-    dispatch(
-      loginAction({ token: fakeToken, user: { ...newUser } as any }),
-    );
-    return { token: fakeToken, user: newUser };
+  const login = useCallback(async ({ email, password }: LoginRequest) => {
+    const action = await dispatch(loginThunk({ email, password }) as any);
+    if (action.meta.requestStatus === 'fulfilled') {
+      const payload = action.payload as any;
+      // return token and mapped user as stored in slice/localStorage
+      const token = payload?.access_token ?? payload?.token ?? null;
+      const stored = getItem('user');
+      let userObj: any = null;
+      try { userObj = stored ? JSON.parse(stored) : null; } catch {}
+      return { token, user: userObj };
+    }
+    throw new Error((action.payload as string) || 'Login failed');
+  }, [dispatch]);
+
+  const logout = useCallback(async () => {
+    try {
+      await dispatch(logoutThunk() as any);
+    } finally {
+      dispatch(logoutAction());
+    }
   }, [dispatch]);
 
   return {
@@ -61,5 +60,6 @@ export const useAuth = () => {
     hasToken,
     hasUser,
     login,
+    logout,
   } as const;
 };

@@ -7,8 +7,16 @@ const PublicRoute: React.FC = () => {
   const location = useLocation();
   const { isAuthenticated, user } = useSelector((s: RootState) => s.auth);
 
+  const roleToHome = (raw?: string) => {
+    const r = (raw || '').toLowerCase();
+    if (r === 'admin') return '/admin';
+    if (r === 'vendor') return '/vendor';
+    if (r === 'client' || r === 'user') return '/client';
+    return '/client';
+  };
+
   if (isAuthenticated) {
-    const target = user?.role ? `/${user.role}` : '/';
+    const target = roleToHome(user?.role);
     return <Navigate to={target} state={{ from: location }} replace />;
   }
 
