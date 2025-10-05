@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SignupForm from '../components/SignupForm';
+import { useDispatch } from 'react-redux';
+import type { AppDispatch } from '@/stores/store';
+import { sendSignupCodeThunk } from '@/stores/slices/authSlice';
 
 const SignupPage: React.FC = () => {
   const [fullName, setFullName] = useState('');
@@ -9,6 +12,7 @@ const SignupPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
 
   const onSignup = async (e?: React.FormEvent<HTMLFormElement>) => {
@@ -19,12 +23,16 @@ const SignupPage: React.FC = () => {
     }
     setLoading(true);
     try {
-      // TODO: call signup API then send OTP to phone/email
-      await new Promise((res) => setTimeout(res, 800));
-      // Persist the pending signup info for OTP page
-      const pending = { fullName, email, phoneNumber, password };
-      localStorage.setItem('pendingSignup', JSON.stringify(pending));
-      navigate('/otp');
+      const action = await (dispatch(
+        sendSignupCodeThunk({ fullName, email, phoneNumber, password, confirmPassword })
+      ) as any);
+      if (action.meta.requestStatus === 'fulfilled') {
+        const pending = { fullName, email, phoneNumber, password };
+        localStorage.setItem('pendingSignup', JSON.stringify(pending));
+        navigate('/otp');
+      } else {
+        throw new Error(action.payload as string);
+      }
     } catch (error) {
       console.error('Signup failed:', error);
     } finally {

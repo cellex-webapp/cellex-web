@@ -14,11 +14,11 @@ const OTPForm: React.FC<Props> = ({ otp, loading = false, onChange, onResend, on
         <input
           type="text"
           inputMode="numeric"
-          pattern="\\d*"
+          pattern="^\d{6}$"
           maxLength={6}
           className="w-full px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 shadow-sm focus:outline-none focus:ring-4 focus:ring-indigo-300/40 focus:border-indigo-500 transition tracking-widest text-center"
           value={otp}
-          onChange={(e) => onChange(e.target.value.replace(/[^0-9]/g, ''))}
+          onChange={(e) => onChange(e.target.value.replace(/\D/g, '').slice(0, 6))}
           placeholder="Nhập 6 số"
           required
         />
