@@ -1,6 +1,7 @@
 import axios from 'axios';
 import type { AxiosRequestConfig, AxiosResponse } from 'axios';
 import type { ApiResponse } from '@/types/api.type';
+import { getItem } from '@/utils/localStorage';
 
 const axiosInstance = axios.create({
     baseURL: import.meta.env.VITE_API_URL,
@@ -10,6 +11,22 @@ const axiosInstance = axios.create({
 });
 
 export default axiosInstance;
+
+// Attach Authorization header from localStorage token
+axiosInstance.interceptors.request.use((config) => {
+    try {
+        const token = getItem('access_token');
+        if (token) {
+            config.headers = {
+                ...(config.headers || {}),
+                Authorization: `Bearer ${token}`,
+            } as any;
+        }
+    } catch {
+        // ignore
+    }
+    return config;
+});
 
 // Generic typed request that unwraps ApiResponse<T>
 export async function apiRequest<T = unknown>(config: AxiosRequestConfig): Promise<T> {

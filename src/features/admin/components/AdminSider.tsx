@@ -1,9 +1,9 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Layout, Menu } from 'antd';
 import type { MenuProps } from 'antd';
 import {
   AppstoreOutlined, ShopOutlined, TeamOutlined, DollarOutlined,
-  CustomerServiceOutlined, TagsOutlined, DatabaseOutlined,
+  CustomerServiceOutlined, TagsOutlined, DatabaseOutlined, PartitionOutlined,
 } from '@ant-design/icons';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -19,7 +19,7 @@ const MENU_CONFIG = [
     ],
   },
   {
-    key: 'category', label: 'Quản lý Danh mục', icon: AppstoreOutlined,
+    key: 'category', label: 'Quản lý Danh mục', icon: PartitionOutlined,
     children: [
       { key: 'category-all', label: 'Tất cả danh mục', path: '/admin/categories' },
       { key: 'category-create', label: 'Tạo danh mục', path: '/admin/categories/create' },
@@ -89,6 +89,7 @@ MENU_CONFIG.forEach(parent => {
 const AdminSider: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [openKeys, setOpenKeys] = useState<string[]>([]);
 
   const activeKeys = useMemo(() => {
     const match = pathKeyMap.get(location.pathname);
@@ -100,6 +101,10 @@ const AdminSider: React.FC = () => {
     }
     return { selected: ['overview-customer'], open: ['overview'] };
   }, [location.pathname]);
+
+  useEffect(() => {
+    setOpenKeys(activeKeys.open);
+  }, [activeKeys.open]);
 
   const menuItems = useMemo(() => {
     return MENU_CONFIG.map(item => ({
@@ -137,7 +142,8 @@ const AdminSider: React.FC = () => {
         mode="inline"
         theme="dark"
         selectedKeys={activeKeys.selected}
-        defaultOpenKeys={activeKeys.open}
+        openKeys={openKeys}
+        onOpenChange={(keys) => setOpenKeys(keys as string[])}
         items={menuItems}
         onClick={handleMenuClick}
         className="!border-r-0 !bg-transparent px-2 text-white
