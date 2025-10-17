@@ -1,5 +1,6 @@
 import React from 'react';
-import { Table, Space, Button } from 'antd';
+import { Table, Space, Button, Tag } from 'antd';
+import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 
 interface CategoryTableProps {
@@ -12,6 +13,13 @@ interface CategoryTableProps {
 const CategoryTable: React.FC<CategoryTableProps> = ({ data, loading, onEdit, onDelete }) => {
   const columns: ColumnsType<ICategory> = [
     {
+      title: 'Ảnh',
+      dataIndex: 'imageUrl',
+      key: 'imageUrl',
+      render: (url: string) => url ? <img src={url} alt="thumb" style={{ width: 48, height: 48, borderRadius: 6, objectFit: 'cover' }} /> : null,
+      width: 80,
+    },
+    {
       title: 'Tên danh mục',
       dataIndex: 'name',
       key: 'name',
@@ -22,12 +30,22 @@ const CategoryTable: React.FC<CategoryTableProps> = ({ data, loading, onEdit, on
       key: 'description',
     },
     {
+      title: 'Trạng thái',
+      dataIndex: 'active',
+      key: 'active',
+      render: (active: boolean) => (
+        <Tag color={active ? 'green' : 'red'}>{active ? 'Hoạt động' : 'Ngừng'}</Tag>
+      ),
+      width: 140,
+    },
+    {
       title: 'Hành động',
       key: 'action',
+      align: 'center',
       render: (_, record) => (
         <Space size="middle">
-          <Button type="link" onClick={() => onEdit(record)}>Chỉnh sửa</Button>
-          <Button type="link" danger onClick={() => onDelete(record.id)}>Xóa</Button>
+          <Button type="text" icon={<EditOutlined />} onClick={() => onEdit(record)} />
+          <Button type="text" danger icon={<DeleteOutlined />} onClick={() => onDelete(record.id)} />
         </Space>
       ),
     },

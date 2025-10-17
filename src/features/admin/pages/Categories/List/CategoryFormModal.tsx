@@ -52,7 +52,13 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
   };
 
   return (
-    <Modal /* ... */ >
+    <Modal
+      open={open}
+      onCancel={onClose}
+      footer={null}
+      title={editingCategory ? 'Chỉnh sửa danh mục' : 'Tạo danh mục'}
+      style={{ top: 40 }}
+    >
       <Form form={form} layout="vertical" onFinish={handleFinish} className="mt-6">
         <Form.Item
           name="name"
@@ -89,7 +95,7 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
         
         <Form.Item className="text-right">
           <Button onClick={onClose} style={{ marginRight: 8 }}>Hủy</Button>
-          <Button type="primary" htmlType="submit" loading={loading} className="bg-indigo-600">
+          <Button type="primary" htmlType="submit" loading={loading} className="!bg-indigo-600">
             Lưu
           </Button>
         </Form.Item>
