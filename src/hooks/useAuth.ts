@@ -1,65 +1,47 @@
-import { useCallback, useMemo } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import type { RootState } from '@/stores/RootReducer';
-import { getItem, removeItem } from '../utils/localStorage';
-import { loginThunk, logout as logoutAction, logoutThunk } from '../stores/slices/authSlice';
-import type { LoginRequest } from '@/types/auth.type';
+import { useAppSelector, useAppDispatch } from '@/hooks/redux';
+import { login, logout, sendSignupCode, verifySignupCode } from '@/stores/slices/auth.slice';
+import {
+  selectIsAuthenticated,
+  selectCurrentUser,
+  selectUserRole,
+  selectAuthIsLoading,
+  selectAuthError,
+} from '@/stores/selectors/auth.selector';
 
 export const useAuth = () => {
-  const dispatch = useDispatch();
-  const {
-    user,
-    token,
-    isAuthenticated: isAuthFromStore,
-  } = useSelector((state: RootState) => state.auth);
+  const dispatch = useAppDispatch();
 
-  const accessToken = token ?? getItem('access_token');
-  const storedUser = useMemo(() => {
-    const str = getItem('user');
-    try {
-      return str ? JSON.parse(str) : null;
-    } catch {
-      return null;
-    }
-  }, []);
+  const isAuthenticated = useAppSelector(selectIsAuthenticated);
+  const currentUser = useAppSelector(selectCurrentUser);
+  const userRole = useAppSelector(selectUserRole);
+  const isLoading = useAppSelector(selectAuthIsLoading);
+  const error = useAppSelector(selectAuthError);
 
-  const hasToken = Boolean(accessToken);
-  const hasUser = Boolean(user || storedUser);
-  const isAuthenticated = isAuthFromStore || hasToken;
+  const handleLogin = (credentials: ILoginPayload) => {
+    return dispatch(login(credentials));
+  };
 
-  if (!isAuthenticated) {
-    removeItem('user');
-  }
+  const handleLogout = () => {
+    return dispatch(logout());
+  };
 
-  const login = useCallback(async ({ email, password }: LoginRequest) => {
-    const action = await dispatch(loginThunk({ email, password }) as any);
-    if (action.meta.requestStatus === 'fulfilled') {
-      const payload = action.payload as any;
-      // return token and mapped user as stored in slice/localStorage
-      const token = payload?.access_token ?? payload?.token ?? null;
-      const stored = getItem('user');
-      let userObj: any = null;
-      try { userObj = stored ? JSON.parse(stored) : null; } catch {}
-      return { token, user: userObj };
-    }
-    throw new Error((action.payload as string) || 'Login failed');
-  }, [dispatch]);
+  const handleSendSignupCode = (data: ISendSignupCodePayload) => {
+    return dispatch(sendSignupCode(data));
+  };
 
-  const logout = useCallback(async () => {
-    try {
-      await dispatch(logoutThunk() as any);
-    } finally {
-      dispatch(logoutAction());
-    }
-  }, [dispatch]);
+  const handleVerifySignupCode = (data: IVerifySignupCodePayload) => {
+    return dispatch(verifySignupCode(data));
+  };
 
   return {
     isAuthenticated,
-    user: user ?? storedUser,
-    token: accessToken as string | null,
-    hasToken,
-    hasUser,
-    login,
-    logout,
-  } as const;
+    currentUser,
+    userRole,
+    isLoading,
+    error,
+    login: handleLogin,
+    logout: handleLogout,
+    sendSignupCode: handleSendSignupCode,
+    verifySignupCode: handleVerifySignupCode,
+  };
 };

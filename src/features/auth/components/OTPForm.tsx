@@ -1,41 +1,60 @@
-type Props = {
-  otp: string;
-  loading?: boolean;
-  onChange: (v: string) => void;
-  onResend?: () => void;
-  onSubmit: (e?: React.FormEvent<HTMLFormElement>) => void;
-};
+import React from 'react';
+import OtpInput from 'react-otp-input';
 
-const OTPForm: React.FC<Props> = ({ otp, loading = false, onChange, onResend, onSubmit }) => {
+interface OTPFormProps {
+  otp: string;
+  onChange: (otp: string) => void;
+  onSubmit: (e?: React.FormEvent<HTMLFormElement>) => void;
+  onResend: () => void;
+  loading: boolean;
+}
+
+const OTPForm: React.FC<OTPFormProps> = ({ otp, onChange, onSubmit, onResend, loading }) => {
   return (
-    <form className="w-full max-w-sm space-y-5" onSubmit={onSubmit}>
-      <div>
-        <label className="block text-gray-800 font-semibold mb-1">Mã xác thực (OTP)</label>
-        <input
-          type="text"
-          inputMode="numeric"
-          pattern="^\d{6}$"
-          maxLength={6}
-          className="w-full px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 shadow-sm focus:outline-none focus:ring-4 focus:ring-indigo-300/40 focus:border-indigo-500 transition tracking-widest text-center"
-          value={otp}
-          onChange={(e) => onChange(e.target.value.replace(/\D/g, '').slice(0, 6))}
-          placeholder="Nhập 6 số"
-          required
-        />
-        <div className="text-sm text-gray-600 mt-2">
+    <form onSubmit={onSubmit} className="w-full max-w-sm mx-auto">
+      <div className="mb-4">
+        <label htmlFor="otp-input" className="block text-center text-sm font-medium text-gray-700 mb-2">
+          Mã xác thực (OTP)
+        </label>
+        <p className="text-center text-sm text-gray-500 mb-4">
           Chúng tôi đã gửi mã đến email hoặc số điện thoại của bạn.
-        </div>
+        </p>
+
+        <OtpInput
+          value={otp}
+          onChange={onChange}
+          numInputs={6}
+          renderSeparator={<span className="mx-1.5">-</span>}
+          renderInput={(props) => <input {...props} />}
+          containerStyle="flex justify-center"
+          inputStyle={{
+            width: '2.75rem',
+            height: '3.25rem',
+            fontSize: '1.25rem',
+            borderRadius: '0.5rem',
+            border: '1px solid #d1d5db',
+            textAlign: 'center',
+            margin: '0 0.2rem',
+          }}
+        />
       </div>
+
       <button
         type="submit"
-        className="w-full inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-semibold py-2.5 rounded-lg transition-colors duration-150 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-indigo-300/40 shadow"
         disabled={loading}
+        className="w-full px-4 py-2.5 text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:bg-indigo-300 transition-colors"
       >
-        {loading ? 'Đang xác thực...' : 'Xác nhận'}
+        {loading ? 'Đang xác thực...' : 'Xác thực'}
       </button>
-      <div className="text-sm text-gray-600">
-        Không nhận được mã?{' '}
-        <button type="button" className="text-indigo-600 hover:underline" onClick={onResend}>
+
+      <div className="mt-4 text-center text-sm">
+        <span className="text-gray-600">Không nhận được mã? </span>
+        <button
+          type="button"
+          onClick={onResend}
+          disabled={loading}
+          className="font-medium text-indigo-600 hover:text-indigo-500 disabled:text-indigo-300"
+        >
           Gửi lại
         </button>
       </div>
