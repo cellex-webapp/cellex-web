@@ -23,9 +23,11 @@ const UserCreatePage: React.FC = () => {
   };
 
   return (
-    <div className="p-4">
-      <h1 className="mb-4 text-xl font-semibold">Tạo người dùng</h1>
-      <UserForm loading={isLoading} onSubmit={handleSubmit} />
+    <div className="p-4 flex justify-center">
+      <div style={{ width: '100%', maxWidth: 900 }}>
+        <h1 className="mb-4 text-xl font-semibold">Tạo người dùng</h1>
+        <UserForm loading={isLoading} onSubmit={handleSubmit} />
+      </div>
     </div>
   );
 };

@@ -55,21 +55,21 @@ declare global {
     interface ICategory {
         id: string;
         name: string;
-        imageUrl: string;
+        image: string;
         parent: string;
         active: boolean;
     }
 
     interface ICreateCategoryPayload {
         name: string;
-        imageUrl: string;
-        parent: string;
-        active: boolean;
+        image?: string;
+        parent?: string;
+        active?: boolean;
     }
     interface IUpdateCategoryPayload {
         id: string;
         name?: string;
-        imageUrl?: string;
+        image?: string;
         parent?: string;
         active?: boolean;
     }

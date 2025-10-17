@@ -90,7 +90,7 @@ const CategoriesPage: React.FC = () => {
         />
         <Button
           type="primary"
-          className="bg-indigo-600"
+          className="!bg-indigo-600"
           onClick={() => navigate('/admin/categories/create')}
         >
           Thêm danh mục
