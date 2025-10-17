@@ -1,23 +1,20 @@
 import React from 'react';
-import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import type { RootState } from '@/stores/RootReducer';
+import { Navigate, Outlet } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth'; 
 
 const PublicRoute: React.FC = () => {
-  const location = useLocation();
-  const { isAuthenticated, user } = useSelector((s: RootState) => s.auth);
+  const { isAuthenticated, currentUser } = useAuth();
 
-  const roleToHome = (raw?: string) => {
-    const r = (raw || '').toLowerCase();
+  const roleToHome = (role?: UserRole) => {
+    const r = (role || '').toLowerCase();
     if (r === 'admin') return '/admin';
     if (r === 'vendor') return '/vendor';
-    if (r === 'client' || r === 'user') return '/client';
     return '/client';
   };
 
   if (isAuthenticated) {
-    const target = roleToHome(user?.role);
-    return <Navigate to={target} state={{ from: location }} replace />;
+    const target = roleToHome(currentUser?.role);
+    return <Navigate to={target} replace />;
   }
 
   return <Outlet />;

@@ -1,22 +1,17 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import type { RootState } from '@/stores/RootReducer';
-import { logout } from '@/stores/slices/authSlice';
-import { removeItem } from '@/utils/localStorage';
+import { useAuth } from '@/hooks/useAuth';
 import logo from '@/assets/logo/cellex.png';
 import { SearchOutlined, MenuOutlined, UserOutlined } from '@ant-design/icons';
 
 const Header: React.FC = () => {
   const [q, setQ] = useState('');
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const user = useSelector((s: RootState) => s.auth.user);
 
-  const onLogout = () => {
-    removeItem('access_token');
-    removeItem('user');
-    dispatch(logout());
+  const { isAuthenticated, currentUser, logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout(); 
     navigate('/login', { replace: true });
   };
 
@@ -30,7 +25,6 @@ const Header: React.FC = () => {
   return (
     <header className="w-full fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-20">
       <div className="h-14 flex items-center px-4 md:px-8 gap-4 md:gap-6 lg:gap-10">
-        {/* Left: Logo + Brand */}
         <div className="flex items-center min-w-fit">
           <Link to="/" className="flex items-center">
             <img src={logo} className="h-8 md:h-10 lg:h-8 w-auto object-contain" />
@@ -40,7 +34,6 @@ const Header: React.FC = () => {
           </span>
         </div>
 
-        {/* Categories button */}
         <Link
           to="/categories"
           className="flex items-center gap-2 px-4 md:px-6 h-9 md:h-10 text-sm md:text-base font-semibold rounded-full bg-indigo-600 text-white hover:bg-indigo-700 no-underline min-w-fit"
@@ -49,7 +42,6 @@ const Header: React.FC = () => {
           <span className="hidden sm:inline">Danh mục</span>
         </Link>
 
-        {/* Search */}
         <div className="hidden sm:flex items-center flex-1 max-w-[520px] md:max-w-[600px] ml-4 md:ml-8 rounded-lg border border-gray-300 bg-white">
           <form onSubmit={onSearch} className="flex items-center w-full px-3 md:px-4 h-9 md:h-10">
             <input
@@ -65,15 +57,19 @@ const Header: React.FC = () => {
           </form>
         </div>
 
-        {/* Right: Auth controls */}
         <div className="flex items-center gap-3 text-sm ml-auto">
-          {user ? (
+          {isAuthenticated ? (
             <>
               <div className="hidden md:flex items-center gap-2 text-gray-700">
                 <UserOutlined />
-                <span className="truncate max-w-[160px]" title={user.email}>{user.email}</span>
+                <span className="truncate max-w-[160px]" title={currentUser?.email}>
+                  {currentUser?.email}
+                </span>
               </div>
-              <button onClick={onLogout} className="px-4 md:px-6 h-9 md:h-10 text-sm md:text-base font-semibold rounded bg-indigo-600 text-white hover:bg-indigo-700 flex items-center justify-center no-underline min-w-[40px]">
+              <button
+                onClick={handleLogout} 
+                className="px-4 md:px-6 h-9 md:h-10 text-sm md:text-base font-semibold rounded bg-indigo-600 text-white hover:bg-indigo-700 flex items-center justify-center no-underline min-w-[40px]"
+              >
                 <span className="hidden sm:inline">Đăng xuất</span>
               </button>
             </>

@@ -1,30 +1,42 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/useAuth'; 
 import LoginForm from '../components/LoginForm';
+import { unwrapResult } from '@reduxjs/toolkit';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, isLoading, error } = useAuth();
 
   const onLogin = async (e?: React.FormEvent<HTMLFormElement>) => {
     if (e) e.preventDefault();
-    setLoading(true);
+
     try {
-  const { user } = await login({ email, password });
-  const role = (user?.role || '').toLowerCase();
-  if (role === 'admin') navigate('/admin');
-  else if (role === 'vendor') navigate('/vendor');
-  else navigate('/client');
-    } catch (error) {
-      console.error('Login failed:', error);
-    } finally {
-      setLoading(false);
+      const actionResult = await login({ email, password });
+      const authResult = unwrapResult(actionResult);
+
+      const role = (authResult.user?.role || '').toLowerCase();
+      if (role === 'admin') {
+        navigate('/admin');
+      } else if (role === 'vendor') {
+        navigate('/vendor');
+      } else {
+        navigate('/'); 
+      }
+    } catch (rejectedValue) {
+      console.error('Failed to login:', rejectedValue);
     }
   };
+
+  useEffect(() => {
+    if (error) {
+      alert(`Lỗi đăng nhập: ${error}`);
+    }
+  }, [error]);
+
 
   return (
     <div className="min-h-screen pt-14 flex items-center justify-center relative bg-gradient-to-br from-sky-500 via-indigo-600 to-violet-600">
@@ -39,7 +51,7 @@ const LoginPage: React.FC = () => {
           <LoginForm
             email={email}
             password={password}
-            loading={loading}
+            loading={isLoading}
             onEmailChange={setEmail}
             onPasswordChange={setPassword}
             onSubmit={onLogin}
@@ -47,6 +59,7 @@ const LoginPage: React.FC = () => {
             onSignup={() => navigate('/signup')}
             onGoogleSignIn={() => alert('Tính năng Google chưa khả dụng')}
           />
+          {error && <p className="text-red-500 text-sm mt-4 text-center">{error}</p>}
         </div>
       </div>
     </div>
@@ -54,4 +67,3 @@ const LoginPage: React.FC = () => {
 };
 
 export default LoginPage;
-

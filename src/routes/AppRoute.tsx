@@ -12,15 +12,15 @@ import { ClientDashboard } from '@/features/clients/pages/Dashboard';
 import { VendorDashboard } from '@/features/vendors/pages/Dashboard';
 import AdminLayout from '@/features/admin/components/AdminLayout';
 import VendorLayout from '@/features/vendors/components/VendorLayout';
-import CategoriesPage from '@/features/admin/pages/CategoriesPage';
-import CategoryCreatePage from '@/features/admin/pages/CategoryCreatePage';
-import UsersListPage from '@/features/admin/pages/UsersListPage';
-import UserCreatePage from '@/features/admin/pages/UserCreatePage';
+import CategoriesPage from '@/features/admin/pages/Categories/List/CategoriesPage';
+import CategoryCreatePage from '@/features/admin/pages/Categories/Create/CategoryCreatePage';
+import UsersListPage from '@/features/admin/pages/Users/List/UsersListPage';
+import UserCreatePage from '@/features/admin/pages/Users/Create/UserCreatePage';
 
 const router = createBrowserRouter([
   // role specific routes
   {
-    element: <ProtectedRoute roles={['admin']} />,
+    element: <ProtectedRoute roles={['ADMIN']} />,
     children: [
       {
         path: '/admin',
@@ -36,7 +36,7 @@ const router = createBrowserRouter([
     ],
   },
   {
-    element: <ProtectedRoute roles={['client']} />,
+    element: <ProtectedRoute roles={['USER']} />,
     children: [
       {
         path: '/client',
@@ -49,7 +49,7 @@ const router = createBrowserRouter([
     ],
   },
   {
-    element: <ProtectedRoute roles={['vendor']} />,
+    element: <ProtectedRoute roles={['VENDOR']} />,
     children: [
       {
         path: '/vendor',
