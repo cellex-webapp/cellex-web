@@ -52,10 +52,15 @@ const UsersListPage: React.FC = () => {
       </div>
       <UserTable
         data={filteredUsers}
-        loading={isLoading} 
-        onRowClick={(id: React.SetStateAction<string | null>) => {
+        loading={isLoading}
+        onRowClick={(id: string) => {
           setDetailId(id);
           setDetailOpen(true);
+        }}
+        onLock={(id: string) => {
+          // eslint-disable-next-line no-console
+          console.log('Lock clicked for', id);
+          // TODO: call lock/unlock API
         }}
       />
       <UserDetailModal

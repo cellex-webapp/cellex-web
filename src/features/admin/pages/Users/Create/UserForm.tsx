@@ -15,8 +15,8 @@ const UserForm: React.FC<UserFormProps> = ({ loading, onSubmit, initialValues })
   const handleFinish = (values: IAddAccountPayload) => {
     onSubmit(values);
   };
-  
-  const userRoles: UserRole[] = ['admin', 'client', 'vendor'];
+
+  const userRoles: UserRole[] = ['ADMIN', 'USER', 'VENDOR'];
 
   return (
     <Card>
