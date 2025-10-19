@@ -16,9 +16,10 @@ import CategoriesPage from '@/features/admin/pages/Categories/List/CategoriesPag
 import CategoryCreatePage from '@/features/admin/pages/Categories/Create/CategoryCreatePage';
 import UsersListPage from '@/features/admin/pages/Users/List/UsersListPage';
 import UserCreatePage from '@/features/admin/pages/Users/Create/UserCreatePage';
+import AccountManagementPage from '@/features/clients/pages/AccountManagement/AccountManagementPage';
+import ClientLayout from '@/features/clients/components/ClientLayout';
 
 const router = createBrowserRouter([
-  // role specific routes
   {
     element: <ProtectedRoute roles={['ADMIN']} />,
     children: [
@@ -39,12 +40,16 @@ const router = createBrowserRouter([
     element: <ProtectedRoute roles={['USER']} />,
     children: [
       {
-        path: '/client',
+        path: '/',
         element: (
           <MainLayout>
-            <ClientDashboard />
+            <ClientLayout />
           </MainLayout>
         ),
+        children: [
+            { index: true, element: <ClientDashboard /> },
+            { path: 'account', element: <AccountManagementPage /> },
+        ],
       },
     ],
   },

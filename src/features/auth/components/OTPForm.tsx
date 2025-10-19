@@ -10,6 +10,8 @@ interface OTPFormProps {
 }
 
 const OTPForm: React.FC<OTPFormProps> = ({ otp, onChange, onSubmit, onResend, loading }) => {
+  const isOtpValid = typeof otp === 'string' && /^\d{6}$/.test(otp);
+
   return (
     <form onSubmit={onSubmit} className="w-full max-w-sm mx-auto">
       <div className="mb-4">
@@ -41,7 +43,7 @@ const OTPForm: React.FC<OTPFormProps> = ({ otp, onChange, onSubmit, onResend, lo
 
       <button
         type="submit"
-        disabled={loading}
+        disabled={loading || !isOtpValid}
         className="w-full px-4 py-2.5 text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:bg-indigo-300 transition-colors"
       >
         {loading ? 'Đang xác thực...' : 'Xác thực'}

@@ -1,5 +1,15 @@
 declare global {
     type UserRole = 'ADMIN' | 'USER' | 'VENDOR';
+    type StatusVerification = 'PENDING' | 'APPROVE' | 'REJECTED';
+
+    interface IAddress {
+        provinceCode?: string;
+        provinceName?: string;
+        communeCode?: string;
+        communeName?: string;
+        detailAddress?: string;
+        fullAddress?: string;
+    }
 
     interface IUser {
         id: string;
@@ -10,6 +20,7 @@ declare global {
         role: UserRole;
         createdAt: string;
         active: boolean;
+        address?: IAddress;
     }
 
     interface IApiResponse<T> {
@@ -43,7 +54,8 @@ declare global {
 
     interface IUpdateProfilePayload {
         fullName?: string;
-        avatar?: string;
+        avatar?: File | string;
+        phoneNumber?: string;
         provinceCode?: string;
         communeCode?: string;
         detailAddress?: string;
@@ -54,7 +66,9 @@ declare global {
         email: string;
         password: string;
         phoneNumber: string;
-        addresses: string;
+        provinceCode?: string;
+        communeCode?: string;
+        detailAddress?: string;
     }
 
     interface ICategory {
@@ -70,16 +84,44 @@ declare global {
 
     interface ICreateCategoryPayload {
         name: string;
-        image?: string;
-        parent?: string;
-        active?: boolean;
+        image?: File | string;
+        parentId?: string;
+        description?: string;
     }
     interface IUpdateCategoryPayload {
         id: string;
         name?: string;
-        image?: string;
-        parent?: string;
-        active?: boolean;
+        image?: File | string;
+        parentId?: string;
+        description?: string;
+    }
+    interface IShop {
+        id: string;
+        description: string;
+        address: string;
+        email: string;
+        rating: number;
+        vendor_id: string;
+        shop_name: string;
+        logo_url: string;
+        phone_number: string;
+        is_verified: boolean;
+        rejection_reason?: string;
+        created_at: string;
+        updated_at: string;
+    }
+    interface ICreateUpdateShopPayload {
+        shopName: string;
+        description: string;
+        address: string;
+        phoneNumber: string;
+        email: string;
+        logo?: File | string;
+    }
+    interface IVerifyShopPayload {
+        shopId: string;
+        status: boolean;
+        rejectionReason?: string;
     }
 }
 
