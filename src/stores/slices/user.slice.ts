@@ -17,13 +17,8 @@ const initialState: UserState = {
 
 export const fetchAllUsers = createAsyncThunk('user/fetchAll', async (_, { rejectWithValue }) => {
   try {
-  const resp: any = await userService.getAllUsers();
-  // debug: log raw response so runtime issues can be seen in browser console / terminal
-  // handle both shapes: { result: [...] } or direct array
-  // eslint-disable-next-line no-console
-  console.debug('[user.slice] fetchAllUsers response:', resp);
-  const result = Array.isArray(resp) ? resp : resp.result ?? resp;
-  return result as IUser[];
+  const resp = await userService.getAllUsers();
+  return resp.result as IUser[];
   } catch (error: any) {
     const message =
       error?.response?.data?.message ?? error?.message ?? error?.data?.message ?? JSON.stringify(error);
@@ -35,7 +30,7 @@ export const fetchUserById = createAsyncThunk(
   'user/fetchById',
   async (userId: string, { rejectWithValue }) => {
     try {
-      const resp: any = await userService.getUserById(userId);
+      const resp = await userService.getUserById(userId);
       return resp.result as IUser;
     } catch (error: any) {
       const message =
@@ -49,7 +44,7 @@ export const updateUserProfile = createAsyncThunk(
   'auth/updateProfile', 
   async (payload: IUpdateProfilePayload, { rejectWithValue }) => {
     try {
-        const resp: any = await userService.updateUserProfile(payload);
+        const resp = await userService.updateUserProfile(payload);
         return resp.result as IUser;
     } catch (error: any) {
         const message =
@@ -63,7 +58,7 @@ export const addUserAccount = createAsyncThunk(
   'user/addUser',
   async (payload: IAddAccountPayload, { rejectWithValue }) => {
     try {
-        const resp: any = await userService.addUserAccount(payload);
+        const resp = await userService.addUserAccount(payload);
         return resp.result as IUser;
     } catch (error: any) {
         const message =

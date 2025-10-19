@@ -1,18 +1,30 @@
 import axiosInstance from "@/utils/axiosInstance";
 
 export const categoryService = {
-  getAllCategories: () => axiosInstance.get('/categories'),
-  getCategoryById: (id: string) => axiosInstance.get(`/categories/${id}`),
-  createCategory: (data: ICreateCategoryPayload | FormData | any) => {
+  getAllCategories: async (): Promise<IApiResponse<ICategory[]>> => {
+    const resp = await axiosInstance.get<IApiResponse<ICategory[]>>('/categories');
+    return (resp as unknown) as IApiResponse<ICategory[]>;
+  },
+  getCategoryById: async (id: string): Promise<IApiResponse<ICategory>> => {
+    const resp = await axiosInstance.get<IApiResponse<ICategory>>(`/categories/${id}`);
+    return (resp as unknown) as IApiResponse<ICategory>;
+  },
+  createCategory: async (data: ICreateCategoryPayload | FormData | any): Promise<IApiResponse<ICategory>> => {
     if (typeof FormData !== 'undefined' && data instanceof FormData) {
-      return axiosInstance.post('/categories', data, { headers: { 'Content-Type': 'multipart/form-data' } });
+      const resp = await axiosInstance.post<IApiResponse<ICategory>>('/categories', data, { headers: { 'Content-Type': 'multipart/form-data' } });
+      return (resp as unknown) as IApiResponse<ICategory>;
     }
 
-    return axiosInstance.post('/categories', data);
+    const resp = await axiosInstance.post<IApiResponse<ICategory>>('/categories', data);
+    return (resp as unknown) as IApiResponse<ICategory>;
   },
-  updateCategory: (payload: IUpdateCategoryPayload) => {
-    const { id, ...data } = payload; 
-    return axiosInstance.put(`/categories/${id}`, data);
+  updateCategory: async (payload: IUpdateCategoryPayload): Promise<IApiResponse<ICategory>> => {
+    const { id, ...data } = payload;
+    const resp = await axiosInstance.put<IApiResponse<ICategory>>(`/categories/${id}`, data);
+    return (resp as unknown) as IApiResponse<ICategory>;
   },
-  deleteCategory: (id: string) => axiosInstance.delete(`/categories/${id}`),
-}
+  deleteCategory: async (id: string): Promise<IApiResponse<null>> => {
+    const resp = await axiosInstance.delete<IApiResponse<null>>(`/categories/${id}`);
+    return (resp as unknown) as IApiResponse<null>;
+  },
+};

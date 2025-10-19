@@ -22,6 +22,11 @@ declare global {
         email: string;
         password: string; 
     }
+    interface ILoginResponse {
+        user: IUser;
+        accessToken: string;
+        refreshToken: string;
+    }
 
     interface ISendSignupCodePayload {
         email: string;
@@ -55,9 +60,12 @@ declare global {
     interface ICategory {
         id: string;
         name: string;
-        image: string;
+        slug: string;
+        parentId?: string;
+        imageUrl: string;
+        description?: string;
+        isActive: boolean;
         parent: string;
-        active: boolean;
     }
 
     interface ICreateCategoryPayload {
