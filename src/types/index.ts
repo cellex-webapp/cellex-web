@@ -1,6 +1,7 @@
 declare global {
     type UserRole = 'ADMIN' | 'USER' | 'VENDOR';
     type StatusVerification = 'PENDING' | 'APPROVE' | 'REJECT';
+    type DataType = 'TEXT' | 'NUMBER' | 'BOOLEAN' | 'SELECT' | 'MULTI_SELECT';
 
     interface IAddress {
         provinceCode?: string;
@@ -122,6 +123,33 @@ declare global {
         shopId: string;
         status: StatusVerification; 
         rejectionReason?: string;
+    }
+    interface IAttribute {
+        id: string;
+        attributeName: string;
+        attributeKey: string;
+        dataType: string;
+        unit: string;
+        isRequired: boolean;
+        isHighlight: boolean;
+        selectOptions?: DataType[];
+        sortOrder?: number;
+        description?: string;
+        isActive?: boolean;
+        createdAt?: string;
+        updatedAt?: string;
+    }
+    interface ICreateUpdateAttributePayload {
+        attributeName: string;
+        attributeKey: string;
+        dataType: string;
+        unit: string;
+        isRequired: boolean;
+        isHighlight: boolean;
+        selectOptions?: DataType[];
+        sortOrder?: number;
+        description?: string;
+        isActive?: boolean;
     }
 }
 
