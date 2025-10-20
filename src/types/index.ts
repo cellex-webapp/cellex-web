@@ -1,6 +1,6 @@
 declare global {
     type UserRole = 'ADMIN' | 'USER' | 'VENDOR';
-    type StatusVerification = 'PENDING' | 'APPROVE' | 'REJECTED';
+    type StatusVerification = 'PENDING' | 'APPROVE' | 'REJECT';
 
     interface IAddress {
         provinceCode?: string;
@@ -120,7 +120,7 @@ declare global {
     }
     interface IVerifyShopPayload {
         shopId: string;
-        status: boolean;
+        status: StatusVerification; 
         rejectionReason?: string;
     }
 }
