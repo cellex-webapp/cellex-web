@@ -1,3 +1,4 @@
+import React from 'react';
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute';
 import PublicRoute from './PublicRoute';
@@ -18,6 +19,7 @@ import UsersListPage from '@/features/admin/pages/Users/List/UsersListPage';
 import UserCreatePage from '@/features/admin/pages/Users/Create/UserCreatePage';
 import AccountManagementPage from '@/features/clients/pages/AccountManagement/AccountManagementPage';
 import ClientLayout from '@/features/clients/components/ClientLayout';
+import PendingShopsPage from '@/features/admin/pages/Shops/RequestShops/PendingShopsPage';
 
 const router = createBrowserRouter([
   {
@@ -32,6 +34,7 @@ const router = createBrowserRouter([
           { path: 'categories/create', element: <CategoryCreatePage /> },
           { path: 'users', element: <UsersListPage /> },
           { path: 'users/create', element: <UserCreatePage /> },
+          { path: 'shops/pending', element: <PendingShopsPage /> },
         ],
       },
     ],
