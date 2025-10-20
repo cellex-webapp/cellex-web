@@ -15,22 +15,25 @@ const initialState: CategoryState = {
   error: null,
 };
 
-export const fetchAllCategories = createAsyncThunk('category/fetchAll', async (_, { rejectWithValue }) => {
-  try {
-    const resp: any = await categoryService.getAllCategories();
-    return resp.result as ICategory[];
-  } catch (error: any) {
-    const message =
-      error?.response?.data?.message ?? error?.message ?? error?.data?.message ?? JSON.stringify(error);
-    return rejectWithValue(message);
-  }
+export const fetchAllCategories = createAsyncThunk(
+  'category/fetchAll', 
+  async (_, { rejectWithValue }) => {
+    try {
+      const resp = await categoryService.getAllCategories();
+      return resp.result as ICategory[];
+
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message ?? error?.message ?? JSON.stringify(error);
+      return rejectWithValue(message);
+    }
 });
 
 export const createCategory = createAsyncThunk(
   'category/create',
   async (payload: ICreateCategoryPayload, { rejectWithValue }) => {
     try {
-      const resp: any = await categoryService.createCategory(payload);
+      const resp = await categoryService.createCategory(payload);
       return resp.result as ICategory;
     } catch (error: any) {
       const message =
@@ -44,7 +47,7 @@ export const updateCategory = createAsyncThunk(
   'category/update',
   async (payload: IUpdateCategoryPayload, { rejectWithValue }) => {
     try {
-      const resp: any = await categoryService.updateCategory(payload);
+      const resp = await categoryService.updateCategory(payload);
       return resp.result as ICategory;
     } catch (error: any) {
       const message =

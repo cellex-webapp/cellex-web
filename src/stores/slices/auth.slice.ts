@@ -4,8 +4,8 @@ import { updateUserProfile } from './user.slice';
 
 interface AuthResult {
   user: IUser;
-  access_token: string;
-  refresh_token: string;
+  accessToken: string;
+  refreshToken: string;
 }
 
 interface AuthState {
@@ -16,7 +16,7 @@ interface AuthState {
 }
 
 const savedUser = localStorage.getItem('user');
-const savedToken = localStorage.getItem('access_token');
+const savedToken = localStorage.getItem('accessToken');
 const initialState: AuthState = {
   user: savedUser ? JSON.parse(savedUser) : null,
   isAuthenticated: !!savedToken,
@@ -90,8 +90,8 @@ const authSlice = createSlice({
         state.isLoading = false;
         state.isAuthenticated = false;
         state.user = null;
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
         localStorage.removeItem('user');
         localStorage.removeItem('role');
       })
@@ -110,8 +110,8 @@ const authSlice = createSlice({
         state.isAuthenticated = true;
         state.user = userFromApi;
         
-        localStorage.setItem('access_token', action.payload.access_token);
-        localStorage.setItem('refresh_token', action.payload.refresh_token);
+        localStorage.setItem('accessToken', action.payload.accessToken);
+        localStorage.setItem('refreshToken', action.payload.refreshToken);
         localStorage.setItem('role', userFromApi.role);
         localStorage.setItem('user', JSON.stringify(userFromApi));
       })

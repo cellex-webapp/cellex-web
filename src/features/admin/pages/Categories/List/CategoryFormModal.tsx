@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
-import { Modal, Form, Input, Button, Select, Switch } from 'antd';
+import { Modal, Form, Input, Button, Select, Upload } from 'antd';
+import { UploadOutlined } from '@ant-design/icons';
 
 interface CategoryFormModalProps {
   open: boolean;
@@ -24,12 +25,12 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
     if (open) {
       if (editingCategory) {
         form.setFieldsValue({
-          ...editingCategory,
-          parent: editingCategory.parent || null, 
+          name: editingCategory.name,
+          description: editingCategory.description,
+          parentId: editingCategory.parentId || null,
         });
       } else {
         form.resetFields();
-        form.setFieldsValue({ active: true });
       }
     }
   }, [editingCategory, open, form]);
@@ -38,14 +39,18 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
     if (editingCategory) {
       const payload: IUpdateCategoryPayload = {
         id: editingCategory.id,
-        ...values,
-        parent: values.parent || null, 
+        name: values.name,
+        description: values.description,
+        parentId: values.parentId || null,
+        image: values.image && values.image.file ? values.image.file : undefined,
       };
       onSubmit(payload);
     } else {
       const payload: ICreateCategoryPayload = {
-        ...values,
-        parent: values.parent || null,
+        name: values.name,
+        description: values.description,
+        parentId: values.parentId || null,
+        image: values.image && values.image.file ? values.image.file : undefined,
       };
       onSubmit(payload);
     }
@@ -68,15 +73,17 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
           <Input />
         </Form.Item>
 
-        <Form.Item
-          name="imageUrl"
-          label="URL Hình ảnh"
-          rules={[{ required: true, message: 'Vui lòng nhập URL hình ảnh!' }]}
-        >
-          <Input placeholder="https://example.com/image.png" />
+        <Form.Item name="description" label="Mô tả">
+          <Input.TextArea rows={4} />
         </Form.Item>
 
-        <Form.Item name="parent" label="Danh mục cha">
+        <Form.Item name="image" label="Hình ảnh">
+          <Upload beforeUpload={() => false} maxCount={1} accept="image/*">
+            <Button icon={<UploadOutlined />}>Chọn ảnh</Button>
+          </Upload>
+        </Form.Item>
+
+        <Form.Item name="parentId" label="Danh mục cha">
           <Select allowClear placeholder="Chọn danh mục cha (nếu có)">
             {/* Lọc ra danh mục đang chỉnh sửa khỏi danh sách cha */}
             {allCategories
@@ -89,9 +96,7 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
           </Select>
         </Form.Item>
 
-        <Form.Item name="active" label="Trạng thái" valuePropName="checked">
-          <Switch checkedChildren="Hoạt động" unCheckedChildren="Ngừng" />
-        </Form.Item>
+        {/* only name, description, parentId and image are submitted */}
         
         <Form.Item className="text-right">
           <Button onClick={onClose} style={{ marginRight: 8 }}>Hủy</Button>

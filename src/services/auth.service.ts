@@ -1,9 +1,24 @@
 import axiosInstance from "@/utils/axiosInstance";
 
 export const authService = {
-    login: (payload: ILoginPayload) => axiosInstance.post('/auth/login', payload),
-    logout: () => axiosInstance.post('/auth/logout'),
-    sendSignupCode: (payload: ISendSignupCodePayload) => axiosInstance.post('/auth/send-signup-code', payload),
-    verifySignupCode: (payload: IVerifySignupCodePayload) => axiosInstance.post('/auth/verify-signup-code', payload),
-    refreshToken: () => axiosInstance.post('/auth/refresh-token'),
+    login: async (payload: ILoginPayload): Promise<IApiResponse<ILoginResponse>> => {
+        const resp = await axiosInstance.post<IApiResponse<ILoginResponse>>('/auth/login', payload);
+        return (resp as unknown) as IApiResponse<ILoginResponse>;
+    },
+    logout: async (): Promise<IApiResponse<void>> => {
+        const resp = await axiosInstance.post<IApiResponse<void>>('/auth/logout');
+        return (resp as unknown) as IApiResponse<void>;
+    },
+    sendSignupCode: async (payload: ISendSignupCodePayload): Promise<IApiResponse<void>> => {
+        const resp = await axiosInstance.post<IApiResponse<void>>('/auth/send-signup-code', payload);
+        return (resp as unknown) as IApiResponse<void>;
+    },
+    verifySignupCode: async (payload: IVerifySignupCodePayload): Promise<IApiResponse<void>> => {
+        const resp = await axiosInstance.post<IApiResponse<void>>('/auth/verify-signup-code', payload);
+        return (resp as unknown) as IApiResponse<void>;
+    },
+    refreshToken: async (): Promise<IApiResponse<ILoginResponse>> => {
+        const resp = await axiosInstance.post<IApiResponse<ILoginResponse>>('/auth/refresh-token');
+        return (resp as unknown) as IApiResponse<ILoginResponse>;
+    },
 };

@@ -14,8 +14,6 @@ const CategoryCreatePage: React.FC = () => {
 
   useEffect(() => {
     fetchAllCategories();
-  // default to active
-  form.setFieldsValue({ active: true });
   }, [fetchAllCategories, form]);
 
   const onFinish = async (values: FormValues) => {
@@ -24,13 +22,15 @@ const CategoryCreatePage: React.FC = () => {
         name: values.name,
         description: (values as any).description || null,
         parentId: (values as any).parentId || null,
-        isActive: typeof (values as any).isActive === 'undefined' ? true : (values as any).isActive,
+        isActive: (values as any).isActive,
       };
 
-      const form = new FormData();
-      form.append('data', JSON.stringify(payload));
+      const fd = new FormData();
+      fd.append('name', payload.name);
+      if (payload.description !== null && typeof payload.description !== 'undefined') fd.append('description', String(payload.description));
+      if (payload.parentId) fd.append('parentId', payload.parentId);
 
-      const actionResult = await createCategory(form as any);
+      const actionResult = await createCategory(fd as any);
       unwrapResult(actionResult);
 
       message.success('Tạo danh mục thành công');

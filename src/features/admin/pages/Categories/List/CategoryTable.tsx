@@ -8,9 +8,10 @@ interface CategoryTableProps {
   loading: boolean;
   onEdit: (category: ICategory) => void;
   onDelete: (id: string) => void;
+  onRowClick?: (id: string) => void;
 }
 
-const CategoryTable: React.FC<CategoryTableProps> = ({ data, loading, onEdit, onDelete }) => {
+const CategoryTable: React.FC<CategoryTableProps> = ({ data, loading, onEdit, onDelete, onRowClick }) => {
   const columns: ColumnsType<ICategory> = [
     {
       title: 'Ảnh',
@@ -31,12 +32,18 @@ const CategoryTable: React.FC<CategoryTableProps> = ({ data, loading, onEdit, on
     },
     {
       title: 'Trạng thái',
-      dataIndex: 'active',
-      key: 'active',
-      render: (active: boolean) => (
-        <Tag color={active ? 'green' : 'red'}>{active ? 'Hoạt động' : 'Ngừng'}</Tag>
+      dataIndex: 'isActive',
+      key: 'isActive',
+      render: (isActive: boolean) => (
+        <Tag color={isActive ? 'green' : 'red'}>{isActive ? 'Hoạt động' : 'Ngừng'}</Tag>
       ),
       width: 140,
+    },
+    {
+      title: 'Danh mục cha',
+      dataIndex: 'parent',
+      key: 'parent',
+      width: 200,
     },
     {
       title: 'Hành động',
@@ -44,8 +51,23 @@ const CategoryTable: React.FC<CategoryTableProps> = ({ data, loading, onEdit, on
       align: 'center',
       render: (_, record) => (
         <Space size="middle">
-          <Button type="text" icon={<EditOutlined />} onClick={() => onEdit(record)} />
-          <Button type="text" danger icon={<DeleteOutlined />} onClick={() => onDelete(record.id)} />
+          <Button
+            type="text"
+            icon={<EditOutlined />}
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit(record);
+            }}
+          />
+          <Button
+            type="text"
+            danger
+            icon={<DeleteOutlined />}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(record.id);
+            }}
+          />
         </Space>
       ),
     },
@@ -57,6 +79,9 @@ const CategoryTable: React.FC<CategoryTableProps> = ({ data, loading, onEdit, on
       dataSource={data}
       loading={loading}
       rowKey="id"
+      onRow={(record) => ({
+        onClick: () => onRowClick && onRowClick(record.id),
+      })}
     />
   );
 };
