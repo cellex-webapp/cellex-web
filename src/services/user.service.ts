@@ -1,4 +1,5 @@
 import axiosInstance from '@/utils/axiosInstance';
+import toFormData, { isFormData } from '@/utils/formData';
 
 export const userService = {
   getAllUsers: async (): Promise<IApiResponse<IUser[]>> => {
@@ -14,54 +15,26 @@ export const userService = {
     return (resp as unknown) as IApiResponse<IUser>;
   },
   updateUserProfile: async (data: IUpdateProfilePayload): Promise<IApiResponse<IUser>> => {
-    const form = new FormData();
-
-    if (data.fullName) {
-      form.append('fullName', data.fullName);
-    }
-    if (data.phoneNumber) {
-      form.append('phoneNumber', data.phoneNumber);
-    }
-    if (data.provinceCode) {
-      form.append('provinceCode', data.provinceCode);
-    }
-    if (data.communeCode) {
-      form.append('communeCode', data.communeCode);
-    }
-    if (data.detailAddress) {
-      form.append('detailAddress', data.detailAddress);
-    }
-
     const avatarVal = (data as any).avatar;
+    const payload: Record<string, any> = {
+      fullName: data.fullName,
+      phoneNumber: data.phoneNumber,
+      provinceCode: data.provinceCode,
+      communeCode: data.communeCode,
+      detailAddress: data.detailAddress,
+    };
+
     if (avatarVal && typeof avatarVal !== 'string') {
-      const file = avatarVal as File;
-      try {
-        form.append('avatar', file, file.name || 'avatar');
-      } catch (e) {
-        form.append('avatar', file as any);
-      }
+      payload.avatar = avatarVal as File;
     }
+
+    const form = toFormData(payload);
 
     const resp = await axiosInstance.put<IApiResponse<IUser>>('/users/me', form);
     return (resp as unknown) as IApiResponse<IUser>;
   },
   addUserAccount: async (data: IAddAccountPayload): Promise<IApiResponse<IUser>> => {
-    const form = new FormData();
-    form.append('fullName', data.fullName);
-    form.append('email', data.email);
-    form.append('password', data.password);
-    form.append('phoneNumber', data.phoneNumber);
-    form.append('role', data.role);
-    if (data.provinceCode) {
-      form.append('provinceCode', data.provinceCode);
-    }
-    if (data.communeCode) {
-      form.append('communeCode', data.communeCode);
-    }
-    if (data.detailAddress) {
-      form.append('detailAddress', data.detailAddress);
-    }
-
+    const form = isFormData(data) ? data : toFormData(data as Record<string, any>);
     const resp = await axiosInstance.post<IApiResponse<IUser>>('/users/add-account', form);
     return (resp as unknown) as IApiResponse<IUser>;
   },

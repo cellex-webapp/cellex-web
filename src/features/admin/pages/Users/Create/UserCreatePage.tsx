@@ -10,7 +10,27 @@ const UserCreatePage: React.FC = () => {
 
   const handleSubmit = async (payload: IAddAccountPayload) => {
     try {
-      await addUserAccount(payload).unwrap();
+      // If an image file is included, send as FormData
+      if (payload && (payload as any).image && typeof File !== 'undefined' && (payload as any).image instanceof File) {
+        const fd = new FormData();
+        fd.append('fullName', String(payload.fullName));
+        fd.append('email', String(payload.email));
+        fd.append('password', String(payload.password));
+        fd.append('phoneNumber', String(payload.phoneNumber));
+        if (payload.provinceCode !== undefined && payload.provinceCode !== null) fd.append('provinceCode', String(payload.provinceCode));
+        if (payload.communeCode !== undefined && payload.communeCode !== null) fd.append('communeCode', String(payload.communeCode));
+        if (payload.detailAddress) fd.append('detailAddress', String(payload.detailAddress));
+        fd.append('role', String(payload.role ?? 'USER'));
+        try {
+          fd.append('image', (payload as any).image as File, ((payload as any).image as File).name || 'avatar');
+        } catch (e) {
+          fd.append('image', (payload as any).image as any);
+        }
+
+        await addUserAccount(fd as any).unwrap();
+      } else {
+        await addUserAccount(payload).unwrap();
+      }
 
       message.success('Tạo tài khoản thành công');
       navigate('/admin/users');
