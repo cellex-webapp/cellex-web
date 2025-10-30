@@ -4,12 +4,12 @@ declare global {
     type DataType = 'TEXT' | 'NUMBER' | 'BOOLEAN' | 'SELECT' | 'MULTI_SELECT';
 
     interface IAddress {
-        provinceCode?: string;
-        provinceName?: string;
-        communeCode?: string;
-        communeName?: string;
-        detailAddress?: string;
+        street?: string;
+        commune?: string;
+        province?: string;
+        country?: string;
         fullAddress?: string;
+        default?: boolean;
     }
 
     interface IUser {
@@ -20,8 +20,14 @@ declare global {
         avatarUrl?: string;
         role: UserRole;
         createdAt: string;
+        updatedAt: string;
         active: boolean;
         address?: IAddress;
+        banned?: boolean;
+        customerSegmentId?: string;
+        banReason?: string;
+        bannedAt?: string;
+        bannedBy?: string;
     }
 
     interface IApiResponse<T> {

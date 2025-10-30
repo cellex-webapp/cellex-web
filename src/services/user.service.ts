@@ -49,6 +49,17 @@ export const userService = {
     const resp = await axiosInstance.post<IApiResponse<IUser>>('/users/add-account', data);
     return (resp as unknown) as IApiResponse<IUser>;
   },
+  banUser: async (
+    userId: string,
+    payload?: { banReason?: string }
+  ): Promise<IApiResponse<IUser>> => {
+    const resp = await axiosInstance.post<IApiResponse<IUser>>(`/users/${userId}/ban`, payload ?? {});
+    return (resp as unknown) as IApiResponse<IUser>;
+  },
+  unbanUser: async (userId: string): Promise<IApiResponse<IUser>> => {
+    const resp = await axiosInstance.post<IApiResponse<IUser>>(`/users/${userId}/unban`);
+    return (resp as unknown) as IApiResponse<IUser>;
+  },
   getMyProfile: async (): Promise<IApiResponse<IUser>> => {
     const resp = await axiosInstance.get<IApiResponse<IUser>>('/users/me');
     return (resp as unknown) as IApiResponse<IUser>;

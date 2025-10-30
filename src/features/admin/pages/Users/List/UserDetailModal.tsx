@@ -55,7 +55,11 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ userId, open, onClose
           <Descriptions.Item label="Vai trò" >
             <span style={{textTransform: 'capitalize'}}>{selectedUser.role}</span>
           </Descriptions.Item>
-          <Descriptions.Item label="Trạng thái">{selectedUser.active ? 'Hoạt động' : 'Ngừng'}</Descriptions.Item>
+          <Descriptions.Item label="Trạng thái">{
+            (typeof selectedUser.banned === 'boolean')
+              ? (selectedUser.banned ? 'Bị khóa' : 'Hoạt động')
+              : (selectedUser.active ? 'Hoạt động' : 'Ngừng')
+          }</Descriptions.Item>
           <Descriptions.Item label="Tạo lúc">{new Date(selectedUser.createdAt).toLocaleString()}</Descriptions.Item>
         </Descriptions>
       ) : (

@@ -1,6 +1,12 @@
 import { useAppSelector, useAppDispatch } from '@/hooks/redux';
 import { useCallback } from 'react';
-import { addUserAccount, fetchAllUsers, fetchUserById } from '@/stores/slices/user.slice';
+import {
+  addUserAccount,
+  fetchAllUsers,
+  fetchUserById,
+  banUser,
+  unbanUser,
+} from '@/stores/slices/user.slice';
 import {
   selectAllUsers,
   selectSelectedUser,
@@ -28,6 +34,14 @@ export const useUser = () => {
     return dispatch(fetchUserById(userId));
   }, [dispatch]);
 
+  const handleBanUser = useCallback((payload: { userId: string; banReason?: string }) => {
+    return dispatch(banUser(payload));
+  }, [dispatch]);
+
+  const handleUnbanUser = useCallback((userId: string) => {
+    return dispatch(unbanUser(userId));
+  }, [dispatch]);
+
   return {
     users,
     selectedUser,
@@ -36,5 +50,7 @@ export const useUser = () => {
     addUserAccount: handleAddUser,
     fetchAllUsers: handleFetchAllUsers,
     fetchUserById: handleFetchUserById,
+    banUser: handleBanUser,
+    unbanUser: handleUnbanUser,
   };
 };
