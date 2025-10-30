@@ -87,7 +87,7 @@ declare global {
         imageUrl: string;
         description?: string;
         isActive: boolean;
-        parent: string;
+        parent?: string;
     }
 
     interface ICreateCategoryPayload {

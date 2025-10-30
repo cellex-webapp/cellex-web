@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Form, Input, Button, Select, Card, Row, Col, message, Spin } from 'antd';
+import { Form, Input, Button, Select, Card, Row, Col, message, Spin, Upload } from 'antd';
 import { addressService } from '@/services/address.service';
 
 const { Option } = Select;
@@ -53,6 +53,18 @@ const UserForm: React.FC<UserFormProps> = ({ loading, onSubmit, initialValues })
     }
   };
 
+  const handleUploadChange = (info: any) => {
+    if (info && Array.isArray(info.fileList) && info.fileList.length === 0) {
+      form.setFieldsValue({ image: null });
+      return;
+    }
+
+    const file = info?.file?.originFileObj || info?.file;
+    if (file) {
+      form.setFieldsValue({ image: file });
+    }
+  };
+
   const handleFinish = (values: any) => {
     const payload: IAddAccountPayload = {
       fullName: values.fullName,
@@ -72,6 +84,18 @@ const UserForm: React.FC<UserFormProps> = ({ loading, onSubmit, initialValues })
     <>
       <Card>
       <Form form={form} layout="vertical" onFinish={handleFinish} initialValues={initialValues}>
+        <Row gutter={16}>
+          <Col span={24}>
+            <Form.Item label="Ảnh đại diện">
+              <Form.Item name="image" valuePropName="file" noStyle>
+                <Upload beforeUpload={() => false} onChange={handleUploadChange} maxCount={1} accept="image/*" listType="picture">
+                  <Button>Chọn ảnh</Button>
+                </Upload>
+              </Form.Item>
+            </Form.Item>
+          </Col>
+        </Row>
+        
         <Row gutter={16}>
           <Col xs={24} sm={24} md={12}>
             <Form.Item

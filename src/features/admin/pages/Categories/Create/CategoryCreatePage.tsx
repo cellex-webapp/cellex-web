@@ -1,10 +1,13 @@
 import React, { useEffect } from 'react';
-import { Button, Form, Input, Select, Switch, message, Card, Row, Col } from 'antd';
+import { Button, Form, Input, Select, Switch, message, Card, Row, Col, Upload } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { unwrapResult } from '@reduxjs/toolkit';
 import { useCategory } from '@/hooks/useCategory';
 
-type FormValues = Omit<ICreateCategoryPayload, 'image'>;
+type FormValues = Omit<ICreateCategoryPayload, 'image' | 'isActive'> & {
+  image?: File | null;
+  isActive?: boolean;
+};
 
 const CategoryCreatePage: React.FC = () => {
   const [form] = Form.useForm<FormValues>();
@@ -14,21 +17,39 @@ const CategoryCreatePage: React.FC = () => {
 
   useEffect(() => {
     fetchAllCategories();
-  }, [fetchAllCategories, form]);
+  }, [fetchAllCategories]);
+
+  const handleUploadChange = (info: any) => {
+    if (info && Array.isArray(info.fileList) && info.fileList.length === 0) {
+      form.setFieldsValue({ image: null });
+      return;
+    }
+
+    const file = info?.file?.originFileObj || info?.file;
+    if (file) {
+      form.setFieldsValue({ image: file });
+    }
+  };
 
   const onFinish = async (values: FormValues) => {
     try {
-      const payload: any = {
-        name: values.name,
-        description: (values as any).description || null,
-        parentId: (values as any).parentId || null,
-        isActive: (values as any).isActive,
-      };
-
       const fd = new FormData();
-      fd.append('name', payload.name);
-      if (payload.description !== null && typeof payload.description !== 'undefined') fd.append('description', String(payload.description));
-      if (payload.parentId) fd.append('parentId', payload.parentId);
+
+      fd.append('name', values.name);
+
+      if (values.description) {
+        fd.append('description', values.description);
+      }
+      if (values.parentId) {
+        fd.append('parentId', values.parentId);
+      }
+
+      fd.append('isActive', String(values.isActive ?? true));
+
+      const imageFile = values.image;
+      if (imageFile && imageFile instanceof File) {
+        fd.append('image', imageFile, imageFile.name || 'image');
+      }
 
       const actionResult = await createCategory(fd as any);
       unwrapResult(actionResult);
@@ -36,7 +57,7 @@ const CategoryCreatePage: React.FC = () => {
       message.success('Tạo danh mục thành công');
       navigate('/admin/categories');
     } catch (rejectedValue: any) {
-      message.error(rejectedValue || 'Không thể tạo danh mục');
+      message.error(rejectedValue?.message || rejectedValue || 'Không thể tạo danh mục');
     }
   };
 
@@ -46,7 +67,7 @@ const CategoryCreatePage: React.FC = () => {
         <h1 className="mb-4 text-xl font-semibold">Tạo danh mục</h1>
         <Card bodyStyle={{ padding: 18 }}>
           <Form form={form} layout="vertical" onFinish={onFinish} disabled={isLoading}>
-            <Row gutter={16}>
+            <Row gutter={16} align="bottom">
               <Col span={24}>
                 <Form.Item
                   name="name"
@@ -63,6 +84,22 @@ const CategoryCreatePage: React.FC = () => {
                 </Form.Item>
               </Col>
 
+              <Col span={24}>
+                <Form.Item label="Ảnh đại diện">
+                  <Form.Item name="image" valuePropName="file" noStyle>
+                    <Upload
+                      beforeUpload={() => false}
+                      onChange={handleUploadChange}
+                      maxCount={1}
+                      accept="image/*"
+                      listType="picture"
+                    >
+                      <Button>Chọn ảnh</Button>
+                    </Upload>
+                  </Form.Item>
+                </Form.Item>
+              </Col>
+
               <Col xs={24} md={16}>
                 <Form.Item name="parentId" label="Danh mục cha (nếu có)">
                   <Select allowClear placeholder="Chọn danh mục cha">
@@ -75,15 +112,20 @@ const CategoryCreatePage: React.FC = () => {
                 </Form.Item>
               </Col>
 
-              <Col xs={24} md={8} style={{ display: 'flex', alignItems: 'center' }}>
-                <Form.Item name="isActive" label="" valuePropName="checked" style={{ marginBottom: 0 }}>
+              <Col xs={24} md={8}>
+                <Form.Item
+                  name="isActive"
+                  label="Trạng thái"
+                  valuePropName="checked"
+                  initialValue={true}
+                >
                   <Switch checkedChildren="Hoạt động" unCheckedChildren="Ngừng" />
                 </Form.Item>
               </Col>
             </Row>
-
           </Form>
         </Card>
+
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 12 }}>
           <Button onClick={() => navigate('/admin/categories')} style={{ marginRight: 8 }}>
             Huỷ
