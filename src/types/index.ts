@@ -76,6 +76,7 @@ declare global {
         provinceCode?: string;
         communeCode?: string;
         detailAddress?: string;
+        role: UserRole;
     }
 
     interface ICategory {

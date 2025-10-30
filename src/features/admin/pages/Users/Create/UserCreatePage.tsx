@@ -1,7 +1,6 @@
 import React from 'react';
 import { message } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import { unwrapResult } from '@reduxjs/toolkit';
 import UserForm from './UserForm';
 import { useUser } from '@/hooks/useUser'; 
 
@@ -11,14 +10,12 @@ const UserCreatePage: React.FC = () => {
 
   const handleSubmit = async (payload: IAddAccountPayload) => {
     try {
-      const actionResult = await addUserAccount(payload);
-      
-      unwrapResult(actionResult);
+      await addUserAccount(payload).unwrap();
 
       message.success('Tạo tài khoản thành công');
       navigate('/admin/users');
     } catch (rejectedValue: any) {
-      message.error(rejectedValue || 'Không thể tạo tài khoản');
+      message.error(String(rejectedValue) || 'Không thể tạo tài khoản');
     }
   };
 

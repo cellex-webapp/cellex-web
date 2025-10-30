@@ -46,7 +46,23 @@ export const userService = {
     return (resp as unknown) as IApiResponse<IUser>;
   },
   addUserAccount: async (data: IAddAccountPayload): Promise<IApiResponse<IUser>> => {
-    const resp = await axiosInstance.post<IApiResponse<IUser>>('/users/add-account', data);
+    const form = new FormData();
+    form.append('fullName', data.fullName);
+    form.append('email', data.email);
+    form.append('password', data.password);
+    form.append('phoneNumber', data.phoneNumber);
+    form.append('role', data.role);
+    if (data.provinceCode) {
+      form.append('provinceCode', data.provinceCode);
+    }
+    if (data.communeCode) {
+      form.append('communeCode', data.communeCode);
+    }
+    if (data.detailAddress) {
+      form.append('detailAddress', data.detailAddress);
+    }
+
+    const resp = await axiosInstance.post<IApiResponse<IUser>>('/users/add-account', form);
     return (resp as unknown) as IApiResponse<IUser>;
   },
   banUser: async (
