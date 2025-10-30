@@ -12,19 +12,13 @@ const UsersListPage: React.FC = () => {
   const [detailOpen, setDetailOpen] = useState(false);
   const navigate = useNavigate();
 
-  const { users, isLoading, error, fetchAllUsers, banUser, unbanUser } = useUser();
+  const { users, isLoading, fetchAllUsers, banUser, unbanUser } = useUser();
   const [banModalOpen, setBanModalOpen] = useState(false);
   const [banTargetId, setBanTargetId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchAllUsers();
   }, [fetchAllUsers]);
-
-  useEffect(() => {
-    if (error) {
-      message.error(error);
-    }
-  }, [error]);
 
   const filteredUsers = useMemo(() => {
     const kw = q.trim().toLowerCase();
@@ -36,8 +30,42 @@ const UsersListPage: React.FC = () => {
     );
   }, [q, users]);
 
-  const handleReload = () => {
-    fetchAllUsers();
+  const handleLock = async (id: string) => {
+    const user = users.find((u) => u.id === id);
+    if (!user) {
+      message.error('Không tìm thấy người dùng');
+      return;
+    }
+
+    const isBanned = typeof user.banned === 'boolean' ? user.banned : !user.active;
+
+    if (!isBanned) {
+      setBanTargetId(id);
+      setBanModalOpen(true);
+      return;
+    }
+
+    try {
+      await unbanUser(id).unwrap();
+      message.success('Mở khóa tài khoản thành công');
+      fetchAllUsers(); 
+    } catch (err: any) {
+      message.error(String(err) || 'Lỗi khi mở khóa tài khoản');
+    }
+  };
+
+  const handleSubmitBanReason = async (banReason: string) => {
+    if (!banTargetId) return;
+
+    try {
+      await banUser({ userId: banTargetId, banReason }).unwrap();
+      message.success('Khóa tài khoản thành công');
+      setBanModalOpen(false);
+      setBanTargetId(null);
+      fetchAllUsers(); 
+    } catch (err: any) {
+      message.error(String(err) || 'Lỗi khi khóa tài khoản');
+    }
   };
 
   return (
@@ -60,48 +88,7 @@ const UsersListPage: React.FC = () => {
           setDetailId(id);
           setDetailOpen(true);
         }}
-        onLock={(id: string) => {
-          const user = users.find((u) => u.id === id);
-          if (!user) {
-            message.error('Không tìm thấy người dùng');
-            return;
-          }
-  
-          const isBanned = typeof user.banned === 'boolean' ? user.banned : !user.active;
-  
-          if (!isBanned) {
-            // Open ban modal to collect reason
-            setBanTargetId(id);
-            setBanModalOpen(true);
-            return;
-          }
-  
-          // if banned -> unban immediately
-          (async () => {
-            try {
-              // prefer unwrap when available
-              // @ts-ignore
-              const result = await unbanUser(id).unwrap?.();
-              console.log('unban result', result);
-              message.success('Mở khóa tài khoản thành công');
-              fetchAllUsers();
-            } catch (e: any) {
-              // fallback: try to inspect returned action if unwrap not available
-              try {
-                const res: any = await unbanUser(id);
-                if (res?.meta?.requestStatus === 'fulfilled') {
-                  message.success('Mở khóa tài khoản thành công');
-                  fetchAllUsers();
-                } else {
-                  const err = res?.payload ?? res?.error?.message ?? 'Lỗi khi mở khóa tài khoản';
-                  message.error(err as string);
-                }
-              } catch (err2: any) {
-                message.error(e?.message ?? 'Lỗi');
-              }
-            }
-          })();
-        }}
+        onLock={handleLock} 
       />
       <UserBanReasonModal
         open={banModalOpen}
@@ -109,29 +96,12 @@ const UsersListPage: React.FC = () => {
           setBanModalOpen(false);
           setBanTargetId(null);
         }}
-        onSubmit={async (banReason: string) => {
-          if (!banTargetId) return;
-          try {
-            const res: any = await banUser({ userId: banTargetId, banReason });
-            if (res?.meta?.requestStatus === 'fulfilled') {
-              message.success('Khóa tài khoản thành công');
-              setBanModalOpen(false);
-              setBanTargetId(null);
-              fetchAllUsers();
-            } else {
-              const err = res?.payload ?? res?.error?.message ?? 'Lỗi khi khóa tài khoản';
-              message.error(err as string);
-            }
-          } catch (e: any) {
-            message.error(e?.message ?? 'Lỗi');
-          }
-        }}
+        onSubmit={handleSubmitBanReason} 
       />
       <UserDetailModal
         userId={detailId}
         open={detailOpen}
         onClose={() => setDetailOpen(false)}
-        onUpdated={handleReload} 
       />
     </div>
   );

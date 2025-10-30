@@ -6,7 +6,6 @@ interface UserDetailModalProps {
   userId: string | null;
   open: boolean;
   onClose: () => void;
-  onUpdated: () => void;
 }
 
 const UserDetailModal: React.FC<UserDetailModalProps> = ({ userId, open, onClose }) => {
@@ -20,7 +19,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ userId, open, onClose
   
   useEffect(() => {
     if (error && open) {
-        message.error(`Lỗi: ${error}`);
+        message.error(`Lỗi tải chi tiết: ${error}`);
     }
   }, [error, open])
 
@@ -28,7 +27,6 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ userId, open, onClose
     <Modal
       title="Chi tiết người dùng"
       open={open}
-      // nudge modal slightly up
       style={{ top: 40 }}
       onCancel={onClose}
       footer={null} 

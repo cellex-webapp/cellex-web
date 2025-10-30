@@ -25,7 +25,6 @@ const UserForm: React.FC<UserFormProps> = ({ loading, onSubmit, initialValues })
         const list = Array.isArray(resp) ? resp : resp.result ?? resp;
         setProvinces(list || []);
       } catch (err: any) {
-        // eslint-disable-next-line no-console
         console.error('Failed to load provinces', err);
         message.error('Không tải được danh sách tỉnh/thành');
       } finally {
@@ -55,24 +54,19 @@ const UserForm: React.FC<UserFormProps> = ({ loading, onSubmit, initialValues })
   };
 
   const handleFinish = (values: any) => {
-    // combine province/commune/detail into addresses string to match IAddAccountPayload
-    const provinceName = provinces.find((p) => String(p.code ?? p.provinceCode ?? p.id) === String(values.provinceCode))?.name ?? '';
-    const communeName = communes.find((c) => String(c.code ?? c.id) === String(values.communeCode))?.name ?? '';
-    const detail = values.detailAddress ?? '';
-    const addresses = [provinceName, communeName, detail].filter(Boolean).join(' - ');
-
     const payload: IAddAccountPayload = {
       fullName: values.fullName,
       email: values.email,
       password: values.password,
       phoneNumber: values.phoneNumber,
-      addresses,
+      provinceCode: values.provinceCode,     
+      communeCode: values.communeCode,       
+      detailAddress: values.detailAddress,   
+      role: 'USER',
     };
 
     onSubmit(payload);
   };
-
-  const userRoles: UserRole[] = ['ADMIN', 'USER', 'VENDOR'];
 
   return (
     <>
@@ -155,19 +149,6 @@ const UserForm: React.FC<UserFormProps> = ({ loading, onSubmit, initialValues })
           <Input.TextArea rows={3} />
         </Form.Item>
 
-        <Row gutter={16}>
-          <Col xs={24} sm={24} md={12}>
-            <Form.Item
-              name="role"
-              label="Vai trò"
-              rules={[{ required: true, message: 'Vui lòng chọn vai trò!' }]}
-            >
-              <Select placeholder="Chọn vai trò">
-                {userRoles.map(role => <Option key={role} value={role} style={{textTransform: 'capitalize'}}>{role}</Option>)}
-              </Select>
-            </Form.Item>
-          </Col>
-        </Row>
       </Form>
       </Card>
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 12 }}>
