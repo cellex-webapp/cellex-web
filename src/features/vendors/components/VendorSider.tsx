@@ -1,5 +1,6 @@
 import React from 'react';
-import { Layout, Menu, ConfigProvider } from 'antd';
+import { Layout, Menu } from 'antd';
+import { useNavigate } from 'react-router-dom';
 import {
   AppstoreOutlined,
   ShopOutlined,
@@ -11,22 +12,6 @@ import {
 } from '@ant-design/icons';
 
 const { Sider } = Layout;
-
-// Local theme tokens for the Vendor sider (no external file)
-const siderTheme = {
-  background: 'linear-gradient(180deg, #111827 0%, #1f2937 100%)',
-  borderColor: 'rgba(255,255,255,0.08)',
-  menu: {
-    primary: '#4f46e5', // indigo-600
-    text: 'rgba(255,255,255,0.85)',
-    hoverBg: 'rgba(255,255,255,0.06)',
-    selectedBg: 'rgba(255,255,255,0.10)',
-    hoverColor: '#ffffff',
-    selectedColor: '#ffffff',
-    subMenuBg: 'transparent',
-    popupBg: 'transparent',
-  },
-} as const;
 
 const menuItems = [
   {
@@ -95,49 +80,36 @@ const menuItems = [
 ];
 
 const VendorSider: React.FC = () => {
+  const navigate = useNavigate();
+
+  const handleMenuClick = ({ key }: { key: string }) => {
+    // map specific keys to routes
+    if (key === 'product-all') return navigate('/vendor/products');
+    if (key === 'product-add') return navigate('/vendor/products/create');
+    // add more mappings if needed
+  };
   return (
     <Sider
       width={260}
       breakpoint="lg"
       collapsedWidth={0}
-      className="!overflow-auto !h-screen !sticky !top-0 !left-0 text-white bg-gradient-to-b from-gray-900 to-gray-800 border-r border-white/10 min-w-[200px]"
+      className="!sticky !top-0 !left-0 !h-screen !overflow-auto border-r border-white/10 !bg-gradient-to-b !from-indigo-700 !to-indigo-500 text-white"
     >
       <div className="text-white font-bold text-base px-5 pt-4 pb-2">Trung tâm điều khiển</div>
-      <ConfigProvider
-        theme={{
-          token: {
-            colorPrimary: siderTheme.menu.primary, // indigo-600
-            colorText: '#ffffff',
-          },
-          components: {
-            Menu: {
-              darkItemBg: 'transparent',
-              darkItemColor: siderTheme.menu.text,
-              darkItemHoverBg: siderTheme.menu.hoverBg,
-              darkItemSelectedBg: siderTheme.menu.selectedBg,
-              darkItemHoverColor: siderTheme.menu.hoverColor,
-              darkItemSelectedColor: siderTheme.menu.selectedColor,
-              itemBorderRadius: 8,
-              itemHeight: 40,
-              itemMarginBlock: 4,
-              itemPaddingInline: 12,
-              subMenuItemBg: siderTheme.menu.subMenuBg,
-              popupBg: siderTheme.menu.popupBg,
-            },
-            Layout: {
-              siderBg: 'transparent',
-            },
-          },
-        }}
-      >
-        <Menu
-          mode="inline"
-          theme="dark"
-          defaultOpenKeys={[menuItems[0].key]}
-          className="!bg-transparent !border-r-0"
-          items={menuItems as any}
-        />
-      </ConfigProvider>
+      <Menu
+        mode="inline"
+        theme="dark"
+        defaultOpenKeys={[menuItems[0].key]}
+        onClick={handleMenuClick}
+        className="!border-r-0 !bg-transparent px-2 text-white
+          [&_.ant-menu-sub]:!bg-transparent
+          [&_.ant-menu-item]:m-0 [&_.ant-menu-item]:w-full [&_.ant-menu-item]:rounded-md
+          [&_.ant-menu-item-selected]:!bg-white/20
+          [&_.ant-menu-item:hover]:!bg-white/10
+          [&_.ant-menu-item-selected_span]:!text-white
+          [&_.ant-menu-item_span]:text-white/80"
+        items={menuItems as any}
+      />
     </Sider>
   );
 };
