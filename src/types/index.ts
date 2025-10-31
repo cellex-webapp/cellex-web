@@ -38,7 +38,7 @@ declare global {
 
     interface ILoginPayload {
         email: string;
-        password: string; 
+        password: string;
     }
     interface ILoginResponse {
         user: IUser;
@@ -51,7 +51,7 @@ declare global {
         fullName: string;
         phoneNumber: string;
         password: string;
-        confirmPassword: string; 
+        confirmPassword: string;
     }
 
     interface IVerifySignupCodePayload {
@@ -128,7 +128,7 @@ declare global {
     }
     interface IVerifyShopPayload {
         shopId: string;
-        status: StatusVerification; 
+        status: StatusVerification;
         rejectionReason?: string;
     }
     interface IAttribute {
@@ -157,6 +157,85 @@ declare global {
         sortOrder?: number;
         description?: string;
         isActive?: boolean;
+    }
+
+    interface IAttributeValue {
+        attributeId: string;
+        attributeName?: string;
+        value: string;
+        unit?: string;
+        attributeKey?: string;
+        dataType?: string;
+    }
+
+    interface ISortInfo {
+        empty: boolean;
+        unsorted: boolean;
+        sorted: boolean;
+    }
+
+    interface IPageableInfo {
+        pageNumber?: number;
+        pageSize?: number;
+        sort?: ISortInfo;
+        offset?: number;
+        unpaged?: boolean;
+        paged?: boolean;
+    }
+
+    interface IPage<T> {
+        totalPages: number;
+        totalElements: number;
+        size: number;
+        content: T[];
+        number: number;
+        sort?: ISortInfo;
+        first?: boolean;
+        last?: boolean;
+        numberOfElements?: number;
+        pageable?: IPageableInfo;
+        empty?: boolean;
+    }
+
+    interface IPageable {
+        page?: number;
+        size?: number;
+        sort?: string;
+    }
+    interface IShopInfo {
+        id: string;
+        shopName: string;
+        logoUrl?: string;
+        isVerified: boolean;
+        rating?: number;
+    }
+
+    interface ICategoryInfo {
+        id: string;
+        name: string;
+        imageUrl?: string;
+    }
+
+    interface IProduct {
+        id: string;
+        name: string;
+        description?: string;
+        categoryId?: string;
+        price: number;
+        saleOff?: number;
+        finalPrice: number;
+        stockQuantity: number;
+        attributeValues?: IAttributeValue[];
+        images?: string[];
+        isPublished?: boolean;
+        createdAt?: string;
+        updatedAt?: string;
+        shopId: string;
+        averageRating: number;
+        reviewCount: number;
+        purchaseCount: number;
+        shopInfo?: IShopInfo;
+        categoryInfo?: ICategoryInfo;
     }
 }
 

@@ -13,6 +13,8 @@ import { ClientDashboard } from '@/features/clients/pages/Dashboard';
 import { VendorDashboard } from '@/features/vendors/pages/Dashboard';
 import AdminLayout from '@/features/admin/components/AdminLayout';
 import VendorLayout from '@/features/vendors/components/VendorLayout';
+import ProductsPage from '@/features/vendors/pages/Product/ProductsPage';
+import ProductCreatePage from '@/features/vendors/pages/Product/ProductCreatePage';
 import CategoriesPage from '@/features/admin/pages/Categories/List/CategoriesPage';
 import CategoryCreatePage from '@/features/admin/pages/Categories/Create/CategoryCreatePage';
 import UsersListPage from '@/features/admin/pages/Users/List/UsersListPage';
@@ -50,8 +52,8 @@ const router = createBrowserRouter([
           </MainLayout>
         ),
         children: [
-            { index: true, element: <ClientDashboard /> },
-            { path: 'account', element: <AccountManagementPage /> },
+          { index: true, element: <ClientDashboard /> },
+          { path: 'account', element: <AccountManagementPage /> },
         ],
       },
     ],
@@ -64,6 +66,8 @@ const router = createBrowserRouter([
         element: <VendorLayout />,
         children: [
           { index: true, element: <VendorDashboard /> },
+          { path: 'products', element: <ProductsPage /> },
+          { path: 'products/create', element: <ProductCreatePage /> },
         ],
       },
     ],

@@ -4,6 +4,7 @@ import userReducer from '@/stores/slices/user.slice';
 import categoryReducer from '@/stores/slices/category.slice';
 import shopReducer from '@/stores/slices/shop.slice';
 import attributeReducer from '@/stores/slices/attribute.slice';
+import productReducer from '@/stores/slices/product.slice';
 
 const rootReducer = combineReducers({
   auth: authReducer,
@@ -11,6 +12,7 @@ const rootReducer = combineReducers({
   category: categoryReducer,
   shop: shopReducer,
   attribute: attributeReducer,
+  product: productReducer,
 });
 
 export default rootReducer;
