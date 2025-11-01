@@ -17,6 +17,7 @@ import ProductsPage from '@/features/vendors/pages/Product/ProductsPage';
 import ProductCreatePage from '@/features/vendors/pages/Product/ProductCreatePage';
 import CategoriesPage from '@/features/admin/pages/Categories/List/CategoriesPage';
 import CategoryCreatePage from '@/features/admin/pages/Categories/Create/CategoryCreatePage';
+import AttributesPage from '@/features/admin/pages/Categories/Attributes/AttributesPage';
 import UsersListPage from '@/features/admin/pages/Users/List/UsersListPage';
 import UserCreatePage from '@/features/admin/pages/Users/Create/UserCreatePage';
 import AccountManagementPage from '@/features/clients/pages/AccountManagement/AccountManagementPage';
@@ -34,6 +35,7 @@ const router = createBrowserRouter([
           { index: true, element: <AdminDashboard /> },
           { path: 'categories', element: <CategoriesPage /> },
           { path: 'categories/create', element: <CategoryCreatePage /> },
+          { path: 'categories/:categoryId/attributes', element: <AttributesPage /> },
           { path: 'users', element: <UsersListPage /> },
           { path: 'users/create', element: <UserCreatePage /> },
           { path: 'shops/pending', element: <PendingShopsPage /> },
