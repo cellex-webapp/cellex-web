@@ -1,6 +1,6 @@
 import React from 'react';
 import { Table, Space, Button, Tag } from 'antd';
-import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined, SettingOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 
 interface CategoryTableProps {
@@ -9,9 +9,11 @@ interface CategoryTableProps {
   onEdit: (category: ICategory) => void;
   onDelete: (id: string) => void;
   onRowClick?: (id: string) => void;
+  // Pass slug instead of id for attribute management navigation
+  onManageAttributes?: (categorySlug: string) => void;
 }
 
-const CategoryTable: React.FC<CategoryTableProps> = ({ data, loading, onEdit, onDelete, onRowClick }) => {
+const CategoryTable: React.FC<CategoryTableProps> = ({ data, loading, onEdit, onDelete, onRowClick, onManageAttributes }) => {
   const columns: ColumnsType<ICategory> = [
     {
       title: 'Ảnh',
@@ -53,11 +55,21 @@ const CategoryTable: React.FC<CategoryTableProps> = ({ data, loading, onEdit, on
         <Space size="middle">
           <Button
             type="text"
+            icon={<SettingOutlined />}
+            onClick={(e) => {
+              e.stopPropagation();
+              onManageAttributes && onManageAttributes((record as any).slug);
+            }}
+            title="Quản lý thuộc tính"
+          />
+          <Button
+            type="text"
             icon={<EditOutlined />}
             onClick={(e) => {
               e.stopPropagation();
               onEdit(record);
             }}
+            title="Chỉnh sửa"
           />
           <Button
             type="text"
@@ -67,6 +79,7 @@ const CategoryTable: React.FC<CategoryTableProps> = ({ data, loading, onEdit, on
               e.stopPropagation();
               onDelete(record.id);
             }}
+            title="Xóa"
           />
         </Space>
       ),

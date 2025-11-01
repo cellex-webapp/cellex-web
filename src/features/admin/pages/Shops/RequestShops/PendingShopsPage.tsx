@@ -77,53 +77,29 @@ const PendingShopsPage: React.FC = () => {
   ];
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h3 className="text-2xl font-bold text-gray-800">Danh sách cửa hàng chờ duyệt</h3>
-            <p className="text-gray-500 mt-1">Quản lý và duyệt các đơn đăng ký cửa hàng</p>
-          </div>
-          <Tag color="orange" className="text-lg px-4 py-1">
-            {filteredShops.length} cửa hàng
-          </Tag>
-        </div>
-
-        <div className="mb-4">
-          <Input
-            placeholder="Tìm kiếm theo tên, email, SĐT..."
-            prefix={<SearchOutlined />}
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            style={{ maxWidth: 400 }}
-            allowClear
-          />
-        </div>
-
-        <Table
-          rowKey="id"
-          loading={isLoading}
-          dataSource={filteredShops}
-          columns={columns}
-          onRow={(record) => ({
-            onClick: () => openModal(record.id, null),
-            className: 'cursor-pointer hover:bg-gray-50',
-          })}
-          pagination={{
-            pageSize: 10,
-            showSizeChanger: true,
-            showTotal: (total) => `Tổng ${total} cửa hàng`,
-          }}
+    <div className="p-4">
+      <div className="mb-4 flex items-center gap-3">
+        <Input
+          placeholder="Tìm kiếm theo tên, email, SĐT..."
+          prefix={<SearchOutlined />}
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          style={{ maxWidth: 400 }}
+          allowClear
         />
+        <div className="ml-auto text-sm text-gray-500">{filteredShops.length} cửa hàng</div>
       </div>
 
-      <VerifyShopModal
-        visible={visible}
-        shopId={selectedShopId}
-        defaultAction={defaultAction}
-        onClose={() => setVisible(false)}
-        onSuccess={() => fetchPendingShops()}
+      <Table
+        rowKey="id"
+        loading={isLoading}
+        dataSource={filteredShops}
+        columns={columns}
+        onRow={(record) => ({ onClick: () => openModal(record.id, null), className: 'cursor-pointer hover:bg-gray-50' })}
+        pagination={{ pageSize: 10, showSizeChanger: true, showTotal: (total) => `Tổng ${total} cửa hàng` }}
       />
+
+      <VerifyShopModal visible={visible} shopId={selectedShopId} defaultAction={defaultAction} onClose={() => setVisible(false)} onSuccess={() => fetchPendingShops()} />
     </div>
   );
 };

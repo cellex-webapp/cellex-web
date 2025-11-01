@@ -24,6 +24,8 @@ import AccountManagementPage from '@/features/clients/pages/AccountManagement/Ac
 import ClientLayout from '@/features/clients/components/ClientLayout';
 import PendingShopsPage from '@/features/admin/pages/Shops/RequestShops/PendingShopsPage';
 import ShopsPage from '@/features/admin/pages/Shops/List/ShopsPage';
+import VendorCategoriesPage from '@/features/vendors/pages/Categories/CategoriesPage';
+import VendorAttributesPage from '@/features/vendors/pages/Categories/AttributesPage';
 
 const router = createBrowserRouter([
   {
@@ -36,7 +38,7 @@ const router = createBrowserRouter([
           { index: true, element: <AdminDashboard /> },
           { path: 'categories', element: <CategoriesPage /> },
           { path: 'categories/create', element: <CategoryCreatePage /> },
-          { path: 'categories/:categoryId/attributes', element: <AttributesPage /> },
+          { path: 'categories/:slug/attributes', element: <AttributesPage /> },
           { path: 'users', element: <UsersListPage /> },
           { path: 'users/create', element: <UserCreatePage /> },
           { path: 'shops', element: <ShopsPage /> },
@@ -72,6 +74,8 @@ const router = createBrowserRouter([
           { index: true, element: <VendorDashboard /> },
           { path: 'products', element: <ProductsPage /> },
           { path: 'products/create', element: <ProductCreatePage /> },
+          { path: 'categories', element: <VendorCategoriesPage /> },
+          { path: 'categories/:slug/attributes', element: <VendorAttributesPage /> },
         ],
       },
     ],

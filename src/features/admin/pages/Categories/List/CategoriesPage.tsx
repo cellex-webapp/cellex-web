@@ -1,7 +1,8 @@
   import React, { useEffect, useMemo, useState } from 'react';
   import { Button, Input, message, Modal } from 'antd';
-  import { useNavigate } from 'react-router-dom';
+  import { PlusOutlined, SearchOutlined } from '@ant-design/icons';
   import { unwrapResult } from '@reduxjs/toolkit';
+  import { useNavigate } from 'react-router-dom';
   import { useCategory } from '@/hooks/useCategory';
   import CategoryTable from './CategoryTable';
   import CategoryFormModal from './CategoryFormModal';
@@ -10,12 +11,12 @@
   const { confirm } = Modal;
 
   const CategoriesPage: React.FC = () => {
+    const navigate = useNavigate();
     const [modalOpen, setModalOpen] = useState(false);
     const [editingCategory, setEditingCategory] = useState<ICategory | null>(null);
     const [detailId, setDetailId] = useState<string | null>(null);
     const [detailOpen, setDetailOpen] = useState(false);
     const [q, setQ] = useState('');
-    const navigate = useNavigate();
 
     const { categories, isLoading, error, fetchAllCategories, createCategory, updateCategory, deleteCategory } =
       useCategory();
@@ -92,45 +93,37 @@
       });
     };
 
+    const handleManageAttributes = (categorySlug: string) => {
+      navigate(`/admin/categories/${categorySlug}/attributes`);
+    };
+
     return (
-      <div className="p-4 space-y-4">
-        <div className="flex items-center justify-between gap-3">
+      <div className="p-4">
+        <div className="mb-4 flex items-center justify-between gap-3">
           <Input
-            placeholder="Tìm theo tên danh mục"
+            placeholder="Tìm theo tên danh mục..."
+            prefix={<SearchOutlined />}
             value={q}
             onChange={(e) => setQ(e.target.value)}
             className="max-w-sm"
+            allowClear
           />
-          <Button
-            type="primary"
-            className="!bg-indigo-600"
-            onClick={() => navigate('/admin/categories/create')}
-          >
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalOpen(true)}>
             Thêm danh mục
           </Button>
         </div>
 
         <CategoryTable
           data={filteredCategories}
-          loading={isLoading} 
+          loading={isLoading}
           onEdit={handleOpenModalForEdit}
           onDelete={handleDelete}
           onRowClick={handleOpenDetail}
+          onManageAttributes={handleManageAttributes}
         />
 
-        <CategoryFormModal
-          open={modalOpen}
-          onClose={handleCloseModal}
-          onSubmit={handleSubmit}
-          editingCategory={editingCategory}
-          loading={isLoading} 
-          allCategories={categories} 
-        />
-        <CategoryDetailModal
-          categoryId={detailId}
-          open={detailOpen}
-          onClose={handleCloseDetail}
-        />
+        <CategoryFormModal open={modalOpen} onClose={handleCloseModal} onSubmit={handleSubmit} editingCategory={editingCategory} loading={isLoading} allCategories={categories} />
+        <CategoryDetailModal categoryId={detailId} open={detailOpen} onClose={handleCloseDetail} />
       </div>
     );
   };

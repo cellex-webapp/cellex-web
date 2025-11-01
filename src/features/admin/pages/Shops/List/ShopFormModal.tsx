@@ -3,7 +3,6 @@ import { Modal, Form, Input, Upload, Button, message, Select, Spin, Row, Col, Ca
 import { 
   UploadOutlined, 
   ShopOutlined, 
-  FileTextOutlined,
   EnvironmentOutlined,
   PhoneOutlined,
   MailOutlined,
@@ -207,7 +206,7 @@ const ShopFormModal: React.FC<Props> = ({ visible, shopId, onClose, onSuccess })
               name="shopName"
               rules={[{ required: true, message: 'Vui lòng nhập tên cửa hàng' }]}
             >
-              <Input prefix={<ShopOutlined />} placeholder="Nhập tên cửa hàng" />
+              <Input placeholder="Nhập tên cửa hàng" />
             </Form.Item>
 
             <Form.Item
