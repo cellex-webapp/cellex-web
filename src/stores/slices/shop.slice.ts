@@ -3,6 +3,7 @@ import { shopService } from '@/services/shop.service';
 
 interface ShopState {
   shop: IShop | null;
+  allShops: IShop[];
   pendingShops: IShop[];
   isLoading: boolean;
   error: string | null;
@@ -10,6 +11,7 @@ interface ShopState {
 
 const initialState: ShopState = {
   shop: null,
+  allShops: [],
   pendingShops: [],
   isLoading: false,
   error: null,
@@ -57,7 +59,17 @@ export const updateShop = createAsyncThunk('shop/update', async ({ id, payload }
 
 export const fetchPendingShops = createAsyncThunk('shop/fetchPending', async (_, { rejectWithValue }) => {
   try {
-    const resp = await shopService.getPendingShops();
+    const resp = await shopService.getShopList('PENDING');
+    return resp.result as IShop[];
+  } catch (error: any) {
+    const message = error?.response?.data?.message ?? error?.message ?? error?.data?.message ?? JSON.stringify(error);
+    return rejectWithValue(message);
+  }
+});
+
+export const fetchAllShops = createAsyncThunk('shop/fetchAll', async (status: StatusVerification | undefined, { rejectWithValue }) => {
+  try {
+    const resp = await shopService.getShopList(status);
     return resp.result as IShop[];
   } catch (error: any) {
     const message = error?.response?.data?.message ?? error?.message ?? error?.data?.message ?? JSON.stringify(error);
@@ -81,6 +93,7 @@ const shopSlice = createSlice({
   reducers: {
     clearShopState: (state) => {
       state.shop = null;
+      state.allShops = [];
       state.pendingShops = [];
       state.error = null;
       state.isLoading = false;
@@ -107,6 +120,10 @@ const shopSlice = createSlice({
       .addCase(fetchPendingShops.fulfilled, (state, action) => {
         state.isLoading = false;
         state.pendingShops = action.payload;
+      })
+      .addCase(fetchAllShops.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.allShops = action.payload;
       })
       .addCase(verifyRegisterShop.fulfilled, (state) => {
         state.isLoading = false;
