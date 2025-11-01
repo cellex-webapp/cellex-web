@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Radio, Input, Descriptions, Spin, message, Space } from 'antd';
-import { CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import { Modal, Radio, Input, Descriptions, Spin, message, Space, Tag, Avatar, Divider } from 'antd';
+import { CheckCircleOutlined, CloseCircleOutlined, ShopOutlined, MailOutlined, PhoneOutlined, HomeOutlined } from '@ant-design/icons';
 import { shopService } from '@/services/shop.service';
 import useShop from '@/hooks/useShop';
 
@@ -54,7 +54,7 @@ const VerifyShopModal: React.FC<Props> = ({ visible, shopId, defaultAction = nul
       setLoading(true);
       const payload: IVerifyShopPayload = {
         shopId,
-        status: action === 'approve' ? 'APPROVE' : 'REJECT',
+        status: action === 'approve' ? 'APPROVED' : 'REJECTED',
         rejectionReason: action === 'reject' ? reason : undefined,
       };
       const res: any = await verifyRegisterShop(payload);
@@ -71,7 +71,12 @@ const VerifyShopModal: React.FC<Props> = ({ visible, shopId, defaultAction = nul
 
   return (
     <Modal
-      title="Chi tiết cửa hàng & Duyệt"
+      title={
+        <Space>
+          <ShopOutlined />
+          <span>Chi tiết cửa hàng & Duyệt</span>
+        </Space>
+      }
       open={visible}
       onCancel={onClose}
       onOk={handleConfirm}
@@ -79,40 +84,90 @@ const VerifyShopModal: React.FC<Props> = ({ visible, shopId, defaultAction = nul
       cancelText="Hủy"
       confirmLoading={loading}
       style={{ top: 40 }}
-      width={600}
-      bodyStyle={{ maxHeight: '60vh', overflowY: 'auto' }}
+      width={700}
     >
       {loading && !shop ? (
-        <div className="text-center"><Spin /></div>
-      ) : (
+        <div className="text-center p-8">
+          <Spin size="large" />
+        </div>
+      ) : shop ? (
         <div>
-          {shop ? (
-            <Descriptions column={1} bordered size="small">
-              <Descriptions.Item label="Tên cửa hàng">{shop.shop_name}</Descriptions.Item>
-              <Descriptions.Item label="Email">{shop.email}</Descriptions.Item>
-              <Descriptions.Item label="SĐT">{shop.phone_number}</Descriptions.Item>
-              <Descriptions.Item label="Địa chỉ">{shop.address}</Descriptions.Item>
-              <Descriptions.Item label="Mô tả">{shop.description}</Descriptions.Item>
-            </Descriptions>
-          ) : null}
-
-          <div className='mt-12 space-y-2'>
-            <Space direction="vertical">
-              <Radio.Group value={action ?? undefined} onChange={(e) => setAction(e.target.value)}>
-                <Space direction="vertical">
-                  <Radio value="approve">
-                    <CheckCircleOutlined style={{ color: 'green', marginRight: 8 }} /> Duyệt
-                  </Radio>
-                  <Radio value="reject">
-                    <CloseCircleOutlined style={{ color: 'red', marginRight: 8 }} /> Từ chối
-                  </Radio>
-                </Space>
-              </Radio.Group>
-            </Space>
-            {action === 'reject' && (
-                <TextArea className='flex w-full' placeholder="Lý do từ chối" value={reason} onChange={(e) => setReason(e.target.value)} style={{ width: '100%' }} />
-              )}
+          {/* Shop Header */}
+          <div className="flex items-center gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
+            {shop.logo_url ? (
+              <Avatar size={80} src={shop.logo_url} />
+            ) : (
+              <Avatar size={80} icon={<ShopOutlined />} style={{ backgroundColor: '#1890ff' }} />
+            )}
+            <div className="flex-1">
+              <h3 className="text-xl font-semibold mb-1">{shop.shop_name}</h3>
+              <Tag color={shop.status === 'PENDING' ? 'orange' : shop.status === 'APPROVED' ? 'green' : 'red'}>
+                {shop.status === 'PENDING' ? 'Chờ duyệt' : shop.status === 'APPROVED' ? 'Đã duyệt' : 'Từ chối'}
+              </Tag>
+            </div>
           </div>
+
+          {/* Shop Details */}
+          <Divider orientation="left">Thông tin chi tiết</Divider>
+          <Descriptions column={1} bordered size="small">
+            <Descriptions.Item label={<span><MailOutlined /> Email</span>}>
+              {shop.email}
+            </Descriptions.Item>
+            <Descriptions.Item label={<span><PhoneOutlined /> Số điện thoại</span>}>
+              {shop.phone_number}
+            </Descriptions.Item>
+            <Descriptions.Item label={<span><HomeOutlined /> Địa chỉ</span>}>
+              {typeof shop.address === 'object' && shop.address?.fullAddress 
+                ? shop.address.fullAddress 
+                : typeof shop.address === 'string' 
+                  ? shop.address 
+                  : '—'}
+            </Descriptions.Item>
+            <Descriptions.Item label="Mô tả">
+              {shop.description || '—'}
+            </Descriptions.Item>
+            {shop.rejection_reason && (
+              <Descriptions.Item label="Lý do từ chối">
+                <span className="text-red-600">{shop.rejection_reason}</span>
+              </Descriptions.Item>
+            )}
+          </Descriptions>
+
+          {/* Verification Actions */}
+          <Divider orientation="left">Hành động duyệt</Divider>
+          <div className="space-y-3">
+            <Radio.Group value={action ?? undefined} onChange={(e) => setAction(e.target.value)}>
+              <Space direction="vertical" className="w-full">
+                <Radio value="approve" className="w-full">
+                  <Space>
+                    <CheckCircleOutlined style={{ color: 'green' }} />
+                    <span className="font-medium">Duyệt cửa hàng</span>
+                  </Space>
+                </Radio>
+                <Radio value="reject" className="w-full">
+                  <Space>
+                    <CloseCircleOutlined style={{ color: 'red' }} />
+                    <span className="font-medium">Từ chối đăng ký</span>
+                  </Space>
+                </Radio>
+              </Space>
+            </Radio.Group>
+
+            {action === 'reject' && (
+              <TextArea
+                placeholder="Nhập lý do từ chối (bắt buộc khi từ chối)"
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                rows={3}
+                className="mt-2"
+              />
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="text-center p-8 text-gray-400">
+          <ShopOutlined style={{ fontSize: 48, marginBottom: 16 }} />
+          <p>Không tìm thấy thông tin cửa hàng</p>
         </div>
       )}
     </Modal>

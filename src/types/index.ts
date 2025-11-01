@@ -1,6 +1,6 @@
 declare global {
     type UserRole = 'ADMIN' | 'USER' | 'VENDOR';
-    type StatusVerification = 'PENDING' | 'APPROVE' | 'REJECT';
+    type StatusVerification = 'PENDING' | 'APPROVED' | 'REJECTED';
     type DataType = 'TEXT' | 'NUMBER' | 'BOOLEAN' | 'SELECT' | 'MULTI_SELECT';
 
     interface IAddress {
@@ -106,14 +106,14 @@ declare global {
     interface IShop {
         id: string;
         description: string;
-        address: string;
+        address: IAddress;
         email: string;
+        status: StatusVerification;
         rating: number;
         vendor_id: string;
         shop_name: string;
         logo_url: string;
         phone_number: string;
-        is_verified: boolean;
         rejection_reason?: string;
         created_at: string;
         updated_at: string;

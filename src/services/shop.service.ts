@@ -2,6 +2,12 @@ import axiosInstance from '@/utils/axiosInstance';
 
 export const shopService = {
   //admin
+  getShopList: async (status?: StatusVerification): Promise<IApiResponse<IShop[]>> => {
+    const resp = await axiosInstance.get<IApiResponse<IShop[]>>('/shops', {
+      params: status ? { status } : {},
+    });
+    return (resp as unknown) as IApiResponse<IShop[]>;
+  },
   getShopById: async (id: string): Promise<IApiResponse<IShop>> => {
     const resp = await axiosInstance.get<IApiResponse<IShop>>(`/shops/${id}`);
     return (resp as unknown) as IApiResponse<IShop>;
@@ -9,10 +15,6 @@ export const shopService = {
   verifyRegisterShop: async (payload: IVerifyShopPayload): Promise<IApiResponse<void>> => {
     const resp = await axiosInstance.post<IApiResponse<void>>(`/shops/verify`, payload);
     return (resp as unknown) as IApiResponse<void>;
-  },
-  getPendingShops: async (): Promise<IApiResponse<IShop[]>> => {
-    const resp = await axiosInstance.get<IApiResponse<IShop[]>>(`/shops/pending`);
-    return (resp as unknown) as IApiResponse<IShop[]>;
   },
 
   //vendor

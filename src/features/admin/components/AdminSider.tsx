@@ -43,7 +43,6 @@ const MENU_CONFIG = [
     key: 'store', label: 'Quản lý Cửa hàng', icon: TeamOutlined,
     children: [
       { key: 'store-all', label: 'Tất cả cửa hàng', path: '/admin/shops' },
-      { key: 'store-create', label: 'Tạo cửa hàng', path: '/admin/shops/create' },
       { key: 'store-requests', label: 'Yêu cầu mở cửa hàng', path: '/admin/shops/pending' },
     ],
   },

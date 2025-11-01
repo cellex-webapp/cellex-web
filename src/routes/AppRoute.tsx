@@ -23,6 +23,7 @@ import UserCreatePage from '@/features/admin/pages/Users/Create/UserCreatePage';
 import AccountManagementPage from '@/features/clients/pages/AccountManagement/AccountManagementPage';
 import ClientLayout from '@/features/clients/components/ClientLayout';
 import PendingShopsPage from '@/features/admin/pages/Shops/RequestShops/PendingShopsPage';
+import ShopsPage from '@/features/admin/pages/Shops/List/ShopsPage';
 
 const router = createBrowserRouter([
   {
@@ -38,6 +39,7 @@ const router = createBrowserRouter([
           { path: 'categories/:categoryId/attributes', element: <AttributesPage /> },
           { path: 'users', element: <UsersListPage /> },
           { path: 'users/create', element: <UserCreatePage /> },
+          { path: 'shops', element: <ShopsPage /> },
           { path: 'shops/pending', element: <PendingShopsPage /> },
         ],
       },
