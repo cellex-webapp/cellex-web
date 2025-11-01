@@ -124,63 +124,34 @@ const ShopsPage: React.FC = () => {
   ];
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h3 className="text-2xl font-bold text-gray-800">Quản lý cửa hàng</h3>
-            <p className="text-gray-500 mt-1">Danh sách tất cả các cửa hàng trong hệ thống</p>
-          </div>
-          <div className="text-right">
-            <div className="text-2xl font-bold text-indigo-600">{filteredShops.length}</div>
-            <div className="text-sm text-gray-500">Cửa hàng</div>
-          </div>
-        </div>
-
-        <div className="mb-4 flex gap-3">
-          <Input
-            placeholder="Tìm kiếm theo tên, email, SĐT..."
-            prefix={<SearchOutlined />}
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            style={{ maxWidth: 400 }}
-            allowClear
-          />
-          <Select
-            value={statusFilter}
-            onChange={setStatusFilter}
-            style={{ width: 180 }}
-            suffixIcon={<FilterOutlined />}
-          >
-            <Option value="ALL">Tất cả</Option>
-            <Option value="PENDING">Chờ duyệt</Option>
-            <Option value="APPROVED">Đã duyệt</Option>
-            <Option value="REJECTED">Từ chối</Option>
-          </Select>
-        </div>
-
-        <Table
-          rowKey="id"
-          loading={isLoading}
-          dataSource={filteredShops}
-          columns={columns}
-          onRow={(record) => ({
-            onClick: () => openDetailModal(record.id),
-            className: 'cursor-pointer hover:bg-gray-50',
-          })}
-          pagination={{
-            pageSize: 10,
-            showSizeChanger: true,
-            showTotal: (total) => `Tổng ${total} cửa hàng`,
-          }}
+    <div className="p-4">
+      <div className="mb-4 flex gap-3 items-center">
+        <Input
+          placeholder="Tìm kiếm theo tên, email, SĐT..."
+          prefix={<SearchOutlined />}
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          style={{ maxWidth: 400 }}
+          allowClear
         />
+        <Select value={statusFilter} onChange={setStatusFilter} style={{ width: 180 }} suffixIcon={<FilterOutlined />}>
+          <Option value="ALL">Tất cả</Option>
+          <Option value="PENDING">Chờ duyệt</Option>
+          <Option value="APPROVED">Đã duyệt</Option>
+          <Option value="REJECTED">Từ chối</Option>
+        </Select>
       </div>
 
-      <ShopDetailModal
-        visible={detailVisible}
-        shopId={selectedShopId}
-        onClose={() => setDetailVisible(false)}
+      <Table
+        rowKey="id"
+        loading={isLoading}
+        dataSource={filteredShops}
+        columns={columns}
+        onRow={(record) => ({ onClick: () => openDetailModal(record.id), className: 'cursor-pointer hover:bg-gray-50' })}
+        pagination={{ pageSize: 10, showSizeChanger: true, showTotal: (total) => `Tổng ${total} cửa hàng` }}
       />
+
+      <ShopDetailModal visible={detailVisible} shopId={selectedShopId} onClose={() => setDetailVisible(false)} />
 
       <ShopFormModal
         visible={formVisible}
