@@ -16,13 +16,12 @@ const UserTable: React.FC<UserTableProps> = ({ data, loading, onRowClick, onLock
       title: 'Ảnh',
       dataIndex: 'avatarUrl',
       key: 'avatarUrl',
-      width: 72,
+      width: 60,
       responsive: ['xs', 'sm', 'md'],
       render: (avatarUrl: string | undefined, record: IUser) => {
         if (avatarUrl) {
-          return <img src={avatarUrl} alt={record.fullName} style={{ width: 40, height: 40, borderRadius: 6, objectFit: 'cover' }} />;
+          return <img src={avatarUrl} alt={record.fullName} style={{ width: 36, height: 36, borderRadius: 6, objectFit: 'cover' }} />;
         }
-        // fallback: initials
         const initials = (record.fullName || record.email || 'U')
           .split(' ')
           .map((s) => s.charAt(0))
@@ -31,14 +30,15 @@ const UserTable: React.FC<UserTableProps> = ({ data, loading, onRowClick, onLock
           .toUpperCase();
         return (
           <div style={{
-            width: 40,
-            height: 40,
+            width: 36,
+            height: 36,
             borderRadius: 6,
             background: '#e6f7ff',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             fontWeight: 600,
+            fontSize: '13px',
           }}>
             {initials}
           </div>
@@ -49,86 +49,73 @@ const UserTable: React.FC<UserTableProps> = ({ data, loading, onRowClick, onLock
       title: 'Họ và Tên',
       dataIndex: 'fullName',
       key: 'fullName',
-      width: 200,
+      width: 150,
       responsive: ['xs', 'sm', 'md', 'lg'],
-      ellipsis: { showTitle: false },
-      render: (text: string) => <div style={{ maxWidth: 200, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={text}>{text}</div>,
+      ellipsis: true,
+      render: (text: string) => <span title={text}>{text}</span>,
     },
     {
       title: 'Email',
       dataIndex: 'email',
       key: 'email',
-      width: 220,
+      width: 180,
       responsive: ['sm', 'md', 'lg'],
-      ellipsis: { showTitle: false },
-      render: (text: string) => <div style={{ maxWidth: 220, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={text}>{text}</div>,
+      ellipsis: true,
+      render: (text: string) => <span title={text}>{text}</span>,
     },
     {
       title: 'Số điện thoại',
       dataIndex: 'phoneNumber',
       key: 'phoneNumber',
-      width: 140,
+      width: 120,
       responsive: ['md', 'lg'],
-      ellipsis: { showTitle: false },
-      render: (text: string) => <div style={{ maxWidth: 140, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={text}>{text}</div>,
+      ellipsis: true,
+      render: (text: string) => <span title={text}>{text}</span>,
     },
     {
       title: 'Vai trò',
       dataIndex: 'role',
       key: 'role',
-      width: 120,
+      width: 90,
       responsive: ['md', 'lg'],
-      render: (role: string) => <Tag color="blue" style={{ textTransform: 'capitalize' }}>{role}</Tag>,
+      ellipsis: true,
+      render: (role: string) => <Tag color="blue" style={{ textTransform: 'capitalize', margin: 0 }}>{role}</Tag>,
     },
     {
       title: 'Trạng thái',
       dataIndex: 'active',
       key: 'active',
-      width: 100,
+      width: 95,
       responsive: ['sm', 'md', 'lg'],
+      ellipsis: true,
       render: (isActive: boolean, record: IUser) => {
         const isBanned = typeof record.banned === 'boolean' ? record.banned : !isActive;
         if (isBanned) {
           return (
-            <Tag color="red">Bị khóa</Tag>
+            <Tag color="red" style={{ margin: 0 }}>Bị khóa</Tag>
           );
         }
         return (
-          <Tag color={isActive ? 'green' : 'red'}>
+          <Tag color={isActive ? 'green' : 'red'} style={{ margin: 0 }}>
             {isActive ? 'Hoạt động' : 'Ngừng'}
           </Tag>
         );
       },
     },
     {
-      title: 'Lý do khóa',
-      dataIndex: 'banReason',
-      key: 'banReason',
-      width: 240,
-      responsive: ['lg', 'xl'],
-      ellipsis: { showTitle: false },
-      render: (reason: string | undefined) => (
-        reason && reason.trim() ? (
-          <div style={{ maxWidth: 240, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={reason}>
-            {reason}
-          </div>
-        ) : (
-          '-'
-        )
-      ),
-    },
-    {
       title: 'Hành động',
       key: 'actions',
       align: 'center',
-      width: 120,
+      width: 90,
+      fixed: 'right',
       render: (_: any, record: IUser) => {
         const isBanned = typeof record.banned === 'boolean' ? record.banned : !record.active;
         return (
-          <Space>
-            <Tooltip title={isBanned ? 'Mở khóa tài khoản' : 'Khóa tài khoản'}>
+          <Space size="small">
+            <Tooltip title={isBanned ? 'Mở khóa' : 'Khóa'}>
               <Button
                 type="text"
+                size="small"
                 icon={isBanned ? <UnlockOutlined /> : <LockOutlined />}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -148,12 +135,13 @@ const UserTable: React.FC<UserTableProps> = ({ data, loading, onRowClick, onLock
       dataSource={data}
       loading={loading}
       pagination={{ pageSize: 10 }}
-      scroll={{ x: 1000 }}
+      scroll={{ x: 800 }}
       rowKey="id"
       onRow={(record) => ({
         onClick: () => onRowClick(record.id),
       })}
       rowClassName="cursor-pointer"
+      size="middle"
     />
   );
 };
