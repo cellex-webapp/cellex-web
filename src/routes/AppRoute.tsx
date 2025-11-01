@@ -26,6 +26,7 @@ import PendingShopsPage from '@/features/admin/pages/Shops/RequestShops/PendingS
 import ShopsPage from '@/features/admin/pages/Shops/List/ShopsPage';
 import VendorCategoriesPage from '@/features/vendors/pages/Categories/CategoriesPage';
 import VendorAttributesPage from '@/features/vendors/pages/Categories/AttributesPage';
+import AdminProductsPage from '@/features/admin/pages/Products/List/ProductsPage';
 
 const router = createBrowserRouter([
   {
@@ -39,6 +40,7 @@ const router = createBrowserRouter([
           { path: 'categories', element: <CategoriesPage /> },
           { path: 'categories/create', element: <CategoryCreatePage /> },
           { path: 'categories/:slug/attributes', element: <AttributesPage /> },
+          { path: 'products', element: <AdminProductsPage /> },
           { path: 'users', element: <UsersListPage /> },
           { path: 'users/create', element: <UserCreatePage /> },
           { path: 'shops', element: <ShopsPage /> },

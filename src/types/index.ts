@@ -237,6 +237,30 @@ declare global {
         shopInfo?: IShopInfo;
         categoryInfo?: ICategoryInfo;
     }
+
+    interface ICreateProductPayload {
+        categoryId: string;
+        name: string;
+        description?: string;
+        price: string | number;
+        saleOff?: string | number;
+        stockQuantity: string | number;
+        attributeValues?: Array<{ attributeId: string; value: string }>|string;
+        isPublished?: boolean | string;
+        images?: File[];
+    }
+
+    interface IUpdateProductPayload {
+        categoryId?: string;
+        name?: string;
+        description?: string;
+        price?: string | number;
+        saleOff?: string | number;
+        stockQuantity?: string | number;
+        attributeValues?: Array<{ attributeId: string; value: string }>|string;
+        isPublished?: boolean | string;
+        images?: File[];
+    }
 }
 
 

@@ -28,12 +28,51 @@ export const fetchProductById = createAsyncThunk(
     }
 );
 
+export const fetchAllProducts = createAsyncThunk(
+    'product/fetchAll',
+    async (params: { page?: number; limit?: number; sortType?: string; sortBy?: string } | undefined, { rejectWithValue }) => {
+        try {
+            const resp = await productService.getAllProducts(params);
+            return resp.result as IPage<IProduct>;
+        } catch (error: any) {
+            const message = error?.response?.data?.message ?? error?.message ?? JSON.stringify(error);
+            return rejectWithValue(message);
+        }
+    }
+);
+
 export const updateProduct = createAsyncThunk(
     'product/update',
     async ({ id, data }: { id: string; data: any }, { rejectWithValue }) => {
         try {
             const resp = await productService.updateProduct(id, data);
             return resp.result as IProduct;
+        } catch (error: any) {
+            const message = error?.response?.data?.message ?? error?.message ?? JSON.stringify(error);
+            return rejectWithValue(message);
+        }
+    }
+);
+
+export const createProduct = createAsyncThunk(
+    'product/create',
+    async (data: ICreateProductPayload | FormData | any, { rejectWithValue }) => {
+        try {
+            const resp = await productService.createProduct(data);
+            return resp.result as IProduct;
+        } catch (error: any) {
+            const message = error?.response?.data?.message ?? error?.message ?? JSON.stringify(error);
+            return rejectWithValue(message);
+        }
+    }
+);
+
+export const deleteProductById = createAsyncThunk(
+    'product/delete',
+    async (id: string, { rejectWithValue }) => {
+        try {
+            const resp = await productService.deleteProduct(id);
+            return { id, message: resp.message } as { id: string; message: string };
         } catch (error: any) {
             const message = error?.response?.data?.message ?? error?.message ?? JSON.stringify(error);
             return rejectWithValue(message);
@@ -86,9 +125,17 @@ const productSlice = createSlice({
     reducers: {},
     extraReducers: (builder) => {
         builder
+            .addCase(fetchAllProducts.fulfilled, (state, action) => {
+                state.isLoading = false;
+                state.products = action.payload.content || [];
+            })
             .addCase(fetchProductById.fulfilled, (state, action) => {
                 state.isLoading = false;
                 state.selectedProduct = action.payload;
+            })
+            .addCase(createProduct.fulfilled, (state, action) => {
+                state.isLoading = false;
+                state.products = [action.payload, ...state.products];
             })
             .addCase(updateProduct.fulfilled, (state, action) => {
                 state.isLoading = false;
@@ -97,6 +144,11 @@ const productSlice = createSlice({
                 if (idx !== -1) state.products[idx] = action.payload;
                 // set selected if matches
                 if (state.selectedProduct?.id === action.payload.id) state.selectedProduct = action.payload;
+            })
+            .addCase(deleteProductById.fulfilled, (state, action) => {
+                state.isLoading = false;
+                state.products = state.products.filter((p) => p.id !== action.payload.id);
+                if (state.selectedProduct?.id === action.payload.id) state.selectedProduct = null;
             })
             .addCase(fetchProductsByShop.fulfilled, (state, action) => {
                 state.isLoading = false;

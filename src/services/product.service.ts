@@ -2,19 +2,21 @@ import axiosInstance from "@/utils/axiosInstance";
 import { isFormData } from '@/utils/formData';
 
 export const productService = {
+    getAllProducts: async (params?: { page?: number; limit?: number; sortType?: string; sortBy?: string }): Promise<IApiResponse<IPage<IProduct>>> => {
+        const resp = await axiosInstance.get<IApiResponse<IPage<IProduct>>>('/products', { params });
+        return (resp as unknown) as IApiResponse<IPage<IProduct>>;
+    },
     getProductById: async (id: string): Promise<IApiResponse<IProduct>> => {
         const resp = await axiosInstance.get<IApiResponse<IProduct>>(`/products/${id}`);
         return (resp as unknown) as IApiResponse<IProduct>;
     },
 
     updateProduct: async (productId: string, data: any): Promise<IApiResponse<IProduct>> => {
-        // If already FormData, send directly
         if (isFormData(data)) {
             const resp = await axiosInstance.put<IApiResponse<IProduct>>(`/products/${productId}`, data);
             return (resp as unknown) as IApiResponse<IProduct>;
         }
 
-        // Detect if we need to send multipart (files present)
         const hasFiles = data && (
             (Array.isArray(data.images) && data.images.some((f: any) => typeof File !== 'undefined' && f instanceof File)) ||
             (data.image && typeof File !== 'undefined' && data.image instanceof File)
@@ -23,7 +25,6 @@ export const productService = {
         if (hasFiles) {
             const fd = new FormData();
 
-            // Append simple fields
             if (data.categoryId !== undefined && data.categoryId !== null) fd.append('categoryId', String(data.categoryId));
             if (data.name !== undefined && data.name !== null) fd.append('name', String(data.name));
             if (data.description !== undefined && data.description !== null) fd.append('description', String(data.description));
@@ -36,12 +37,10 @@ export const productService = {
                 try {
                     fd.append('attributeValues', JSON.stringify(data.attributeValues));
                 } catch (e) {
-                    // fallback
                     fd.append('attributeValues', String(data.attributeValues));
                 }
             }
 
-            // Append files in images array
             if (Array.isArray(data.images)) {
                 for (const file of data.images) {
                     if (typeof File !== 'undefined' && file instanceof File) {
@@ -60,6 +59,11 @@ export const productService = {
 
         const resp = await axiosInstance.put<IApiResponse<IProduct>>(`/products/${productId}`, data);
         return (resp as unknown) as IApiResponse<IProduct>;
+    },
+
+    deleteProduct: async (productId: string): Promise<IApiResponse<string>> => {
+        const resp = await axiosInstance.delete<IApiResponse<string>>(`/products/${productId}`);
+        return (resp as unknown) as IApiResponse<string>;
     },
 
     getProductsByShop: async (shopId: string, pageable?: IPageable): Promise<IApiResponse<IPage<IProduct>>> => {

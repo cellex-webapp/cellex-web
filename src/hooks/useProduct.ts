@@ -2,7 +2,10 @@ import { useAppSelector, useAppDispatch } from '@/hooks/redux';
 import { useCallback } from 'react';
 import {
     fetchProductById,
+    fetchAllProducts,
     updateProduct,
+    createProduct,
+    deleteProductById,
     fetchProductsByShop,
     searchProducts,
     fetchProductsByCategory,
@@ -23,7 +26,10 @@ export const useProduct = () => {
     const error = useAppSelector(selectProductError);
 
     const handleFetchById = useCallback((id: string) => dispatch(fetchProductById(id)), [dispatch]);
+    const handleFetchAll = useCallback((params?: { page?: number; limit?: number; sortType?: string; sortBy?: string }) => dispatch(fetchAllProducts(params)), [dispatch]);
     const handleUpdate = useCallback((id: string, data: any) => dispatch(updateProduct({ id, data })), [dispatch]);
+    const handleCreate = useCallback((data: ICreateProductPayload | FormData | any) => dispatch(createProduct(data)), [dispatch]);
+    const handleDelete = useCallback((id: string) => dispatch(deleteProductById(id)), [dispatch]);
     const handleFetchByShop = useCallback((shopId: string, pageable?: IPageable) => dispatch(fetchProductsByShop({ shopId, pageable })), [dispatch]);
     const handleSearch = useCallback((keyword: string, pageable?: IPageable) => dispatch(searchProducts({ keyword, pageable })), [dispatch]);
     const handleFetchByCategory = useCallback((categoryId: string, pageable?: IPageable) => dispatch(fetchProductsByCategory({ categoryId, pageable })), [dispatch]);
@@ -34,7 +40,10 @@ export const useProduct = () => {
         isLoading,
         error,
         fetchProductById: handleFetchById,
+        fetchAllProducts: handleFetchAll,
         updateProduct: handleUpdate,
+        createProduct: handleCreate,
+        deleteProduct: handleDelete,
         fetchProductsByShop: handleFetchByShop,
         searchProducts: handleSearch,
         fetchProductsByCategory: handleFetchByCategory,
