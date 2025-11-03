@@ -57,7 +57,7 @@ const Header: React.FC = () => {
           {isAuthenticated ? (
             <>
               <div className="flex items-center gap-3">
-                <button aria-label="Thông báo" className="p-3 rounded-full bg-indigo-600 text-white hover:brightness-90 cursor-pointer">
+                <button aria-label="Thông báo" className="p-3 rounded-full bg-indigo-600 !text-white hover:brightness-90 cursor-pointer">
                   <BellOutlined className="text-sm md:text-lg" />
                 </button>
 

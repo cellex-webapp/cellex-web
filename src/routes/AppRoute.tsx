@@ -9,7 +9,6 @@ import { NotFoundPage } from '@/pages/NotFoundPage';
 import SignupPage from '@/features/auth/pages/SignupPage';
 import OTPPage from '@/features/auth/pages/OTPPage';
 import { AdminDashboard } from '@/features/admin/pages/Dashboard';
-import { ClientDashboard } from '@/features/clients/pages/Dashboard';
 import { VendorDashboard } from '@/features/vendors/pages/Dashboard';
 import AdminLayout from '@/features/admin/components/AdminLayout';
 import VendorLayout from '@/features/vendors/components/VendorLayout';
@@ -26,6 +25,7 @@ import ShopsPage from '@/features/admin/pages/Shops/List/ShopsPage';
 import VendorCategoriesPage from '@/features/vendors/pages/Categories/CategoriesPage';
 import VendorAttributesPage from '@/features/vendors/pages/Categories/AttributesPage';
 import AdminProductsPage from '@/features/admin/pages/Products/List/ProductsPage';
+import HomePage from '@/features/clients/pages/Home/HomePage';
 
 const router = createBrowserRouter([
   {
@@ -59,7 +59,7 @@ const router = createBrowserRouter([
           </MainLayout>
         ),
         children: [
-          { index: true, element: <ClientDashboard /> },
+          { index: true, element: <HomePage /> },
           { path: 'account', element: <AccountManagementPage /> },
         ],
       },
