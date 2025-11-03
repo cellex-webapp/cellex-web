@@ -234,8 +234,8 @@ declare global {
         averageRating: number;
         reviewCount: number;
         purchaseCount: number;
-        shopInfo?: IShopInfo;
-        categoryInfo?: ICategoryInfo;
+        shopInfo?: IShop;
+        categoryInfo?: ICategory;
     }
 
     interface ICreateProductPayload {

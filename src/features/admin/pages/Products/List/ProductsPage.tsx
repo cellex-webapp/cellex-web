@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Table, message, Input, Select, Space } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 import { useProduct } from '@/hooks/useProduct';
@@ -10,6 +10,11 @@ import { getAdminProductColumns } from './ProductsTable';
 const AdminProductsPage: React.FC = () => {
   const [q, setQ] = useState('');
   const [debouncedQ, setDebouncedQ] = useState('');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [total, setTotal] = useState(0);
+  const [numberOfElements, setNumberOfElements] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
   const { products, isLoading, error, fetchAllProducts, searchProducts, deleteProduct, fetchProductsByShop, fetchProductsByCategory } = useProduct();
   const [shops, setShops] = useState<IShop[]>([]);
@@ -22,7 +27,14 @@ const AdminProductsPage: React.FC = () => {
 
   useEffect(() => {
     // initial load
-    fetchAllProducts({ page: 1, limit: 50, sortType: 'desc', sortBy: 'createdAt' });
+    fetchAllProducts({ page: 1, limit: pageSize, sortType: 'desc', sortBy: 'createdAt' })
+      .unwrap()
+      .then((res: IPage<IProduct>) => {
+        setTotal(res.totalElements);
+        setNumberOfElements(res.numberOfElements || res.content?.length || 0);
+        setTotalPages(res.totalPages);
+      })
+      .catch(() => {});
     // load shops for filter
     (async () => {
       try {
@@ -34,7 +46,7 @@ const AdminProductsPage: React.FC = () => {
     })();
     // load categories for filter
     fetchAllCategories();
-  }, [fetchAllProducts]);
+  }, [fetchAllProducts, pageSize, fetchAllCategories]);
 
   useEffect(() => {
     if (error) message.error(error);
@@ -46,35 +58,58 @@ const AdminProductsPage: React.FC = () => {
     return () => clearTimeout(t);
   }, [q]);
 
-  useEffect(() => {
+  const loadData = useCallback(() => {
     const kw = debouncedQ;
+    // Decide which API to call based on filter mode
     if (filterMode === 'shop' && shopId) {
-      fetchProductsByShop(shopId, { page: 1, size: 50 });
+      fetchProductsByShop(shopId, { page, size: pageSize })
+        .unwrap()
+        .then((res: IPage<IProduct>) => {
+          setTotal(res.totalElements);
+          setNumberOfElements(res.numberOfElements || res.content?.length || 0);
+          setTotalPages(res.totalPages);
+        })
+        .catch(() => {});
       return;
     }
     if (filterMode === 'category' && categoryId) {
-      fetchProductsByCategory(categoryId, { page: 1, size: 50 });
+      fetchProductsByCategory(categoryId, { page, size: pageSize })
+        .unwrap()
+        .then((res: IPage<IProduct>) => {
+          setTotal(res.totalElements);
+          setNumberOfElements(res.numberOfElements || res.content?.length || 0);
+          setTotalPages(res.totalPages);
+        })
+        .catch(() => {});
       return;
     }
     // no filter (all)
     if (!kw) {
-      fetchAllProducts({ page: 1, limit: 50, sortType: 'desc', sortBy: 'createdAt' });
+      fetchAllProducts({ page, limit: pageSize, sortType: 'desc', sortBy: 'createdAt' })
+        .unwrap()
+        .then((res: IPage<IProduct>) => {
+          setTotal(res.totalElements);
+          setNumberOfElements(res.numberOfElements || res.content?.length || 0);
+          setTotalPages(res.totalPages);
+        })
+        .catch(() => {});
     } else {
-      searchProducts(kw, { page: 1, size: 50 });
+      searchProducts(kw, { page, size: pageSize })
+        .unwrap()
+        .then((res: IPage<IProduct>) => {
+          setTotal(res.totalElements);
+          setNumberOfElements(res.numberOfElements || res.content?.length || 0);
+          setTotalPages(res.totalPages);
+        })
+        .catch(() => {});
     }
-  }, [debouncedQ, filterMode, shopId, categoryId, fetchAllProducts, searchProducts, fetchProductsByShop, fetchProductsByCategory]);
+  }, [debouncedQ, filterMode, shopId, categoryId, page, pageSize, fetchAllProducts, searchProducts, fetchProductsByShop, fetchProductsByCategory]);
 
-  const data = useMemo(() => {
-    const base = products || [];
-    const kw = debouncedQ.toLowerCase();
-    if (!kw) return base;
-    // When a filter mode is applied, apply client-side keyword filter
-    if ((filterMode === 'shop' && shopId) || (filterMode === 'category' && categoryId)) {
-      return base.filter((p: IProduct) => p.name?.toLowerCase().includes(kw));
-    }
-    // Otherwise, base already comes from server-side search
-    return base;
-  }, [products, debouncedQ, filterMode, shopId, categoryId]);
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  const data = useMemo(() => products || [], [products]);
 
   // Note: Statistics removed per request to simplify logic and UI
 
@@ -102,6 +137,7 @@ const AdminProductsPage: React.FC = () => {
     setShopId(undefined);
     setCategoryId(undefined);
     setQ('');
+    setPage(1);
   };
 
   const columns = useMemo(() => getAdminProductColumns(handleOpenDetail, handleDelete), []);
@@ -115,7 +151,7 @@ const AdminProductsPage: React.FC = () => {
         </div>
 
         {/* Filters */}
-        <div className="mb-4">
+        <div className="mb-3">
           <Space wrap size="middle">
             <Input
               placeholder="Tìm kiếm sản phẩm..."
@@ -143,7 +179,7 @@ const AdminProductsPage: React.FC = () => {
                 placeholder="Chọn cửa hàng"
                 style={{ width: 240 }}
                 value={shopId}
-                onChange={(val: any) => setShopId(val)}
+                onChange={(val: any) => { setShopId(val); setPage(1); }}
                 showSearch
                 optionFilterProp="label"
                 options={(shops || []).map((s: any) => ({ value: s.id, label: s.shop_name ?? s.name }))}
@@ -156,13 +192,23 @@ const AdminProductsPage: React.FC = () => {
                 placeholder="Chọn danh mục"
                 style={{ width: 240 }}
                 value={categoryId}
-                onChange={(val: any) => setCategoryId(val)}
+                onChange={(val: any) => { setCategoryId(val); setPage(1); }}
                 showSearch
                 optionFilterProp="label"
                 options={(categories || []).map((c: any) => ({ value: c.id, label: c.name }))}
               />
             )}
           </Space>
+        </div>
+
+        {/* Meta summary */}
+        <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
+          <div>
+            Tổng: <span className="font-medium">{total}</span> • Trang <span className="font-medium">{(page - 0)}</span>/{totalPages || 1}
+          </div>
+          <div>
+            Hiển thị: <span className="font-medium">{numberOfElements}</span> mục
+          </div>
         </div>
 
         <Table
@@ -173,9 +219,17 @@ const AdminProductsPage: React.FC = () => {
           scroll={{ x: 1100 }}
           size="middle"
           pagination={{
-            pageSize: 10,
+            current: page,
+            pageSize,
+            total,
             showSizeChanger: true,
-            showTotal: (total) => `Tổng ${total} sản phẩm`,
+            showTotal: (t) => `Tổng ${t} sản phẩm`,
+          }}
+          onChange={(pagination) => {
+            const nextPage = pagination.current || 1;
+            const nextSize = pagination.pageSize || pageSize;
+            setPage(nextPage);
+            setPageSize(nextSize);
           }}
         />
       </div>

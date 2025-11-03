@@ -36,7 +36,7 @@ const Header: React.FC = () => {
 
         <Link
           to="/categories"
-          className="flex items-center gap-2 px-4 md:px-6 h-9 md:h-10 text-sm md:text-base font-semibold rounded-full bg-indigo-600 text-white hover:bg-indigo-700 no-underline min-w-fit"
+          className="flex items-center gap-2 px-4 md:px-6 h-9 md:h-10 text-sm md:text-base font-semibold !rounded-full !bg-indigo-600 !text-white hover:!bg-indigo-700 no-underline min-w-fit"
         >
           <MenuOutlined className="text-base md:text-lg" />
           <span className="hidden sm:inline">Danh mục</span>
@@ -68,7 +68,7 @@ const Header: React.FC = () => {
               </div>
               <button
                 onClick={handleLogout} 
-                className="px-4 md:px-6 h-9 md:h-10 text-sm md:text-base font-semibold rounded bg-indigo-600 text-white hover:bg-indigo-700 flex items-center justify-center no-underline min-w-[40px]"
+                className="px-4 md:px-6 h-9 md:h-10 text-sm md:text-base font-semibold !rounded !bg-indigo-600 !text-white hover:!bg-indigo-700 flex items-center justify-center no-underline min-w-[40px] cursor-pointer"
               >
                 <span className="hidden sm:inline">Đăng xuất</span>
               </button>

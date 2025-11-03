@@ -205,7 +205,7 @@ const AttributesPage: React.FC = () => {
           allowClear
         />
         <div>
-          <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
+          <Button className='!bg-indigo-600 cursor-pointer' type="primary" icon={<PlusOutlined />} onClick={openCreate}>
             Thêm thuộc tính
           </Button>
         </div>

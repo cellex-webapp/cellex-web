@@ -83,8 +83,8 @@ const VerifyShopModal: React.FC<Props> = ({ visible, shopId, defaultAction = nul
       okText="Xác nhận"
       cancelText="Hủy"
       confirmLoading={loading}
-      style={{ top: 40 }}
       width={700}
+      centered
     >
       {loading && !shop ? (
         <div className="text-center p-8">

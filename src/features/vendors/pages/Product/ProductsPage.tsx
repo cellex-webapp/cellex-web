@@ -1,11 +1,11 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Button, Input, message, Table, Image } from 'antd';
-import { useNavigate } from 'react-router-dom';
-import { getItem } from '@/utils/localStorage';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Button, Input, message, Table, Image, Tag, Tooltip, Space } from 'antd';
+import { SearchOutlined, EyeOutlined, EditOutlined, AppstoreOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { unwrapResult } from '@reduxjs/toolkit';
 import { useProduct } from '@/hooks/useProduct';
 import ProductFormModal from './ProductFormModal';
 import ProductDetailModal from './ProductDetailModal';
+import { shopService } from '@/services/shop.service';
 
 const ProductsPage: React.FC = () => {
     const [modalOpen, setModalOpen] = useState(false);
@@ -13,24 +13,46 @@ const ProductsPage: React.FC = () => {
     const [detailId, setDetailId] = useState<string | null>(null);
     const [detailOpen, setDetailOpen] = useState(false);
     const [q, setQ] = useState('');
-    const navigate = useNavigate();
 
-    const { products, isLoading, error, fetchProductsByShop, updateProduct } = useProduct();
+    const { products, isLoading, error, fetchProductsByShop, updateProduct, createProduct } = useProduct();
+
+    const [shopId, setShopId] = useState<string | null>(null);
+    const [shopVerified, setShopVerified] = useState<boolean>(false);
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
+    const [total, setTotal] = useState(0);
+    const [numberOfElements, setNumberOfElements] = useState(0);
+    const [totalPages, setTotalPages] = useState(0);
+
+    // Load current vendor's shop id
+    useEffect(() => {
+        (async () => {
+            try {
+                const resp = await shopService.getMyShop();
+                setShopId(resp.result?.id || null);
+                setShopVerified((resp.result as any)?.status === 'APPROVED');
+            } catch (e) {
+                setShopId(null);
+                setShopVerified(false);
+            }
+        })();
+    }, []);
+
+    const loadData = useCallback(() => {
+        if (!shopId) return;
+        fetchProductsByShop(shopId, { page, size: pageSize })
+            .unwrap()
+            .then((res: IPage<IProduct>) => {
+                setTotal(res.totalElements);
+                setNumberOfElements(res.numberOfElements || res.content?.length || 0);
+                setTotalPages(res.totalPages);
+            })
+            .catch(() => {});
+    }, [fetchProductsByShop, shopId, page, pageSize]);
 
     useEffect(() => {
-        // Get shopId from localStorage user object and call API with pageable payload
-        try {
-            const userStr = getItem('user');
-            const user = userStr ? JSON.parse(userStr) : null;
-            const shopId = user?.id as string | undefined;
-            const pageable: IPageable = { page: 1, size: 1, sort: 'ASC' };
-            if (shopId) {
-                fetchProductsByShop(shopId, pageable);
-            }
-        } catch (e) {
-            // fallback: no-op
-        }
-    }, [fetchProductsByShop]);
+        loadData();
+    }, [loadData]);
 
     useEffect(() => {
         if (error) message.error(error);
@@ -69,10 +91,16 @@ const ProductsPage: React.FC = () => {
                 unwrapResult(actionResult);
                 message.success('Cập nhật sản phẩm thành công');
             } else {
-                // navigate to create page
-                navigate('/vendor/products/create');
+                if (!shopVerified) {
+                    message.error('Cửa hàng của bạn chưa được xác minh. Vui lòng hoàn tất xác minh để tạo sản phẩm.');
+                    return;
+                }
+                const actionResult: any = await createProduct(payload);
+                unwrapResult(actionResult);
+                message.success('Tạo sản phẩm thành công');
             }
             handleCloseModal();
+            loadData();
         } catch (rejectedValue: any) {
             message.error(rejectedValue || 'Không thể lưu sản phẩm');
         }
@@ -83,38 +111,185 @@ const ProductsPage: React.FC = () => {
             title: 'Ảnh',
             dataIndex: 'images',
             key: 'images',
-            width: 120,
-            render: (images: string[]) => (images && images[0] ? <Image src={images[0]} width={80} /> : null),
+            width: 80,
+            render: (images: string[]) =>
+                images && images[0] ? (
+                    <Image
+                        src={images[0]}
+                        width={60}
+                        height={60}
+                        style={{ objectFit: 'cover', borderRadius: 6 }}
+                        preview={{ mask: <EyeOutlined /> }}
+                    />
+                ) : (
+                    <div className="w-[60px] h-[60px] bg-gray-100 rounded flex items-center justify-center">
+                        <AppstoreOutlined className="text-gray-400" />
+                    </div>
+                ),
         },
-        { title: 'Tên', dataIndex: 'name', key: 'name' },
-        { title: 'Giá (VND)', dataIndex: 'price', key: 'price', render: (v: number) => v?.toLocaleString() },
-        { title: 'Tồn kho', dataIndex: 'stockQuantity', key: 'stockQuantity' },
+        {
+            title: 'Tên sản phẩm',
+            dataIndex: 'name',
+            key: 'name',
+            width: 220,
+            ellipsis: true,
+            render: (text: string) => (
+                <span className="font-medium" title={text}>
+                    {text}
+                </span>
+            ),
+        },
+        {
+            title: 'Danh mục',
+            key: 'category',
+            width: 130,
+            ellipsis: true,
+            render: (_: any, r: IProduct) => <Tag color="blue" style={{ margin: 0 }}>{r.categoryInfo?.name || '-'}</Tag>,
+        },
+        {
+            title: 'Giá (VND)',
+            dataIndex: 'price',
+            key: 'price',
+            width: 120,
+            align: 'right' as const,
+            render: (v: number) => <span className="font-medium text-orange-600">{v?.toLocaleString() || '0'}</span>,
+        },
+        {
+            title: 'Giảm (%)',
+            dataIndex: 'saleOff',
+            key: 'saleOff',
+            width: 90,
+            align: 'right' as const,
+            render: (v: number) => <span>{v ? `${v}%` : '0%'}</span>,
+        },
+        {
+            title: 'Giá cuối (VND)',
+            dataIndex: 'finalPrice',
+            key: 'finalPrice',
+            width: 130,
+            align: 'right' as const,
+            render: (v: number) => <span className="font-medium">{v?.toLocaleString() || '0'}</span>,
+        },
+        {
+            title: 'Tồn kho',
+            dataIndex: 'stockQuantity',
+            key: 'stockQuantity',
+            width: 90,
+            align: 'right' as const,
+        },
+        {
+            title: 'Đánh giá',
+            dataIndex: 'averageRating',
+            key: 'averageRating',
+            width: 90,
+            align: 'center' as const,
+            render: (v: number) => (v ?? 0).toFixed(2),
+        },
+        {
+            title: 'Reviews',
+            dataIndex: 'reviewCount',
+            key: 'reviewCount',
+            width: 90,
+            align: 'right' as const,
+        },
+        {
+            title: 'Đã bán',
+            dataIndex: 'purchaseCount',
+            key: 'purchaseCount',
+            width: 90,
+            align: 'right' as const,
+        },
+        {
+            title: 'Trạng thái',
+            dataIndex: 'isPublished',
+            key: 'isPublished',
+            width: 110,
+            align: 'center' as const,
+            render: (v: boolean) => (
+                <Tag icon={v ? <CheckCircleOutlined /> : undefined} color={v ? 'success' : 'default'} style={{ margin: 0 }}>
+                    {v ? 'Xuất bản' : 'Nháp'}
+                </Tag>
+            ),
+        },
+        {
+            title: 'Ngày tạo',
+            dataIndex: 'createdAt',
+            key: 'createdAt',
+            width: 150,
+            render: (v: string) => (v ? new Date(v).toLocaleString() : '-'),
+        },
         {
             title: 'Hành động',
             key: 'action',
+            width: 120,
+            align: 'center' as const,
             render: (_: any, record: IProduct) => (
-                <div className="flex gap-2">
-                    <Button size="small" onClick={() => handleOpenDetail(record.id)}>
-                        Xem
-                    </Button>
-                    <Button size="small" onClick={() => handleOpenModalForEdit(record)}>
-                        Sửa
-                    </Button>
-                </div>
+                <Space size="small">
+                    <Tooltip title="Xem chi tiết">
+                        <Button type="text" size="small" icon={<EyeOutlined />} onClick={() => handleOpenDetail(record.id)} />
+                    </Tooltip>
+                    <Tooltip title="Chỉnh sửa">
+                        <Button type="text" size="small" icon={<EditOutlined />} onClick={() => handleOpenModalForEdit(record)} />
+                    </Tooltip>
+                </Space>
             ),
         },
     ];
 
     return (
-        <div className="p-4 space-y-4">
-            <div className="flex items-center justify-between gap-3">
-                <Input placeholder="Tìm theo tên sản phẩm" value={q} onChange={(e) => setQ(e.target.value)} className="max-w-sm" />
-                <Button type="primary" className="!bg-indigo-600" onClick={() => navigate('/vendor/products/create')}>
-                    Thêm sản phẩm
-                </Button>
-            </div>
+        <div className="p-4 bg-gray-50 min-h-screen">
+            <div className="bg-white rounded-lg p-4">
+                {/* Header */}
+                <div className="mb-4 flex items-center justify-between gap-3">
+                    <h3 className="text-xl font-semibold text-gray-800">Sản phẩm của tôi</h3>
+                    <Tooltip title={shopVerified ? '' : 'Cửa hàng chưa được xác minh - không thể tạo sản phẩm'}>
+                        <Button
+                            type="primary"
+                            className="!bg-indigo-600"
+                            disabled={!shopVerified}
+                            onClick={() => {
+                                setEditingProduct(null);
+                                setModalOpen(true);
+                            }}
+                        >
+                            Thêm sản phẩm
+                        </Button>
+                    </Tooltip>
+                </div>
 
-            <Table dataSource={filtered} columns={columns as any} rowKey="id" loading={isLoading} />
+                <div className="mb-3">
+                    <Input
+                        placeholder="Tìm theo tên sản phẩm"
+                        prefix={<SearchOutlined />}
+                        value={q}
+                        onChange={(e) => setQ(e.target.value)}
+                        className="max-w-sm"
+                        allowClear
+                    />
+                </div>
+
+                <Table
+                    dataSource={filtered}
+                    columns={columns as any}
+                    rowKey="id"
+                    loading={isLoading}
+                    scroll={{ x: 1100 }}
+                    pagination={{
+                        current: page,
+                        pageSize,
+                        total,
+                        showSizeChanger: true,
+                        showTotal: (t) => `Tổng ${t} sản phẩm`,
+                    }}
+                    onRow={(record) => ({ onClick: () => handleOpenDetail(record.id), className: 'cursor-pointer hover:bg-gray-50' })}
+                    onChange={(pagination) => {
+                        const nextPage = pagination.current || 1;
+                        const nextSize = pagination.pageSize || pageSize;
+                        setPage(nextPage);
+                        setPageSize(nextSize);
+                    }}
+                />
+            </div>
 
             <ProductFormModal open={modalOpen} onClose={handleCloseModal} onSubmit={handleSubmit} editingProduct={editingProduct} loading={isLoading} />
             <ProductDetailModal productId={detailId} open={detailOpen} onClose={handleCloseDetail} />

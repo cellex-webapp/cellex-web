@@ -7,7 +7,6 @@ import { useCategory } from '@/hooks/useCategory';
 
 const VendorAttributesPage: React.FC = () => {
   const { slug } = useParams();
-  // navigate not used in simplified UI
   const [q, setQ] = useState('');
 
   const { attributes, isLoading, fetchAttributesOfCategory, fetchHighlightAttributesOfCategory } = useAttribute();
@@ -17,7 +16,6 @@ const VendorAttributesPage: React.FC = () => {
     fetchAllCategories();
   }, [fetchAllCategories]);
 
-  // Map slug to category id for API calls
   const currentCategory = useMemo(() => categories.find((c) => (c as any).slug === slug), [categories, slug]);
   const categoryId = currentCategory?.id as string | undefined;
 
@@ -35,7 +33,6 @@ const VendorAttributesPage: React.FC = () => {
     return attrs.filter((a: IAttribute) => a.attributeName.toLowerCase().includes(kw) || a.attributeKey.toLowerCase().includes(kw));
   }, [q, attrs]);
 
-  // currentCategory is already derived by slug above
   const columns = [
     { 
       title: 'Tên thuộc tính', 

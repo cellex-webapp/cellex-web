@@ -66,16 +66,16 @@ const LoginForm: React.FC<Props> = ({
             onClick={() => setShowPassword((v) => !v)}
           >
             {showPassword ? (
-              <EyeInvisibleOutlined className="text-gray-500 text-lg" />
+              <EyeInvisibleOutlined className="!text-gray-500 text-lg cursor-pointer" />
             ) : (
-              <EyeOutlined className="text-gray-500 text-lg" />
+              <EyeOutlined className="!text-gray-500 text-lg cursor-pointer" />
             )}
           </button>
         </div>
       </div>
       <button
         type="submit"
-        className="w-full inline-flex items-center justify-center gap-2 bg-indigo-500 hover:bg-indigo-700 active:bg-indigo-800 text-white font-semibold py-2.5 rounded-lg transition-colors duration-150 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-indigo-300/40 shadow"
+        className="w-full inline-flex items-center justify-center gap-2 !bg-indigo-500 hover:!bg-indigo-700 active:bg-indigo-800 !text-white font-semibold py-2.5 rounded-lg transition-colors duration-150 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-indigo-300/40 shadow cursor-pointer"
         disabled={loading}
       >
         {loading && (
@@ -93,7 +93,7 @@ const LoginForm: React.FC<Props> = ({
       </div>
       <button
         type="button"
-        className="w-full flex items-center justify-center gap-2 border border-gray-300 text-gray-700 font-semibold py-2.5 rounded-lg bg-white hover:bg-gray-50 transition-colors duration-150 hover:shadow focus:outline-none focus:ring-4 focus:ring-indigo-200/40"
+        className="w-full flex items-center justify-center gap-2 border border-gray-300 text-gray-700 font-semibold py-2.5 rounded-lg bg-white hover:bg-gray-50 transition-colors duration-150 hover:shadow focus:outline-none focus:ring-4 focus:ring-indigo-200/40 cursor-pointer"
         onClick={onGoogleSignIn}
       >
         <svg width="20" height="20" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -103,7 +103,7 @@ const LoginForm: React.FC<Props> = ({
       <div className="flex justify-between items-center text-sm mt-2">
         <button
           type="button"
-          className="text-indigo-600 hover:underline bg-transparent border-none p-0 cursor-pointer"
+          className="!text-indigo-600 hover:!underline bg-transparent border-none p-0 cursor-pointer"
           onClick={onForgotPassword}
         >
           Quên mật khẩu?
@@ -112,7 +112,7 @@ const LoginForm: React.FC<Props> = ({
           Bạn chưa có tài khoản?{' '}
           <button
             type="button"
-            className="text-indigo-600 hover:underline bg-transparent border-none p-0 cursor-pointer"
+            className="!text-indigo-600 hover:!underline bg-transparent border-none p-0 cursor-pointer"
             onClick={onSignup}
           >
             Đăng ký

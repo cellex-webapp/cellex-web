@@ -96,6 +96,7 @@ export const productService = {
             if (data.price !== undefined && data.price !== null) fd.append('price', String(data.price));
             if (data.saleOff !== undefined && data.saleOff !== null) fd.append('saleOff', String(data.saleOff));
             if (data.stockQuantity !== undefined && data.stockQuantity !== null) fd.append('stockQuantity', String(data.stockQuantity));
+            if (data.isPublished !== undefined && data.isPublished !== null) fd.append('isPublished', String(data.isPublished));
             if (data.attributeValues !== undefined && data.attributeValues !== null) {
                 try {
                     fd.append('attributeValues', JSON.stringify(data.attributeValues));

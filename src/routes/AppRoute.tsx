@@ -14,7 +14,6 @@ import { VendorDashboard } from '@/features/vendors/pages/Dashboard';
 import AdminLayout from '@/features/admin/components/AdminLayout';
 import VendorLayout from '@/features/vendors/components/VendorLayout';
 import ProductsPage from '@/features/vendors/pages/Product/ProductsPage';
-import ProductCreatePage from '@/features/vendors/pages/Product/ProductCreatePage';
 import CategoriesPage from '@/features/admin/pages/Categories/List/CategoriesPage';
 import CategoryCreatePage from '@/features/admin/pages/Categories/Create/CategoryCreatePage';
 import AttributesPage from '@/features/admin/pages/Categories/Attributes/AttributesPage';
@@ -75,7 +74,6 @@ const router = createBrowserRouter([
         children: [
           { index: true, element: <VendorDashboard /> },
           { path: 'products', element: <ProductsPage /> },
-          { path: 'products/create', element: <ProductCreatePage /> },
           { path: 'categories', element: <VendorCategoriesPage /> },
           { path: 'categories/:slug/attributes', element: <VendorAttributesPage /> },
         ],
