@@ -1,15 +1,21 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import Header from '@/components/header/Header';
+import { Layout } from 'antd';
+
+const { Content } = Layout;
 
 const ClientLayout: React.FC = () => {
   return (
-    <div className="h-full w-full bg-slate-50">
+    <div className="h-screen w-full">
       <Header />
-      
-      <main className="h-full overflow-y-auto pt-16 md:pt-20">
-        <Outlet />
-      </main>
+      <Layout hasSider className="h-full pt-14">
+        <Layout>
+          <Content className="h-full overflow-auto p-4">
+            <Outlet />
+          </Content>
+        </Layout>
+      </Layout>
     </div>
   );
 };
