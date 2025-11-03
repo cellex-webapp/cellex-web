@@ -165,8 +165,8 @@ const ShopFormModal: React.FC<Props> = ({ visible, shopId, onClose, onSuccess })
       onCancel={handleCancel}
       footer={null}
       width={800}
-      style={{ top: 20 }}
       destroyOnClose
+      centered
     >
       {fetching ? (
         <div className="text-center py-12">

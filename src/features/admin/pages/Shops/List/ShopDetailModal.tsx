@@ -53,8 +53,8 @@ const ShopDetailModal: React.FC<Props> = ({ visible, shopId, onClose }) => {
       open={visible}
       onCancel={onClose}
       footer={null}
-      style={{ top: 40 }}
       width={800}
+      centered
     >
       {loading ? (
         <div className="text-center p-8">

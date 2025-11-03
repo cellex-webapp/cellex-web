@@ -108,7 +108,7 @@
             className="max-w-sm"
             allowClear
           />
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalOpen(true)}>
+          <Button className='!bg-indigo-600 cursor-pointer' type="primary" icon={<PlusOutlined />} onClick={() => setModalOpen(true)}>
             Thêm danh mục
           </Button>
         </div>

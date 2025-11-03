@@ -29,7 +29,6 @@ const menuItems = [
     icon: <ShopOutlined style={{ color: 'white' }} />,
     children: [
       { key: 'product-all', label: <span className="text-white">Tất cả sản phẩm</span> },
-      { key: 'product-add', label: <span className="text-white">Thêm sản phẩm</span> },
       { key: 'product-category', label: <span className="text-white">Danh mục sản phẩm</span> },
       { key: 'product-inventory', label: <span className="text-white">Quản lý tồn kho</span> },
       { key: 'product-violation', label: <span className="text-white">Sản phẩm vi phạm</span> },

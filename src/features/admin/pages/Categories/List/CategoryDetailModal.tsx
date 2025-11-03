@@ -22,7 +22,6 @@ const CategoryDetailModal: React.FC<Props> = ({ categoryId, open, onClose }) => 
         if (!mounted) return;
         setCategory(resp.result ?? null);
       } catch (err: any) {
-        // show friendly error
         message.error(err?.message ?? 'Không thể tải thông tin danh mục');
       } finally {
         if (mounted) setLoading(false);
@@ -38,11 +37,10 @@ const CategoryDetailModal: React.FC<Props> = ({ categoryId, open, onClose }) => 
     <Modal
       title="Chi tiết danh mục"
       open={open}
-      // match user modal position
-      style={{ top: 40 }}
       onCancel={onClose}
       footer={null}
       width={600}
+      centered
     >
       {loading ? (
         <div className="text-center">
