@@ -26,6 +26,9 @@ import VendorCategoriesPage from '@/features/vendors/pages/Categories/Categories
 import VendorAttributesPage from '@/features/vendors/pages/Categories/AttributesPage';
 import AdminProductsPage from '@/features/admin/pages/Products/List/ProductsPage';
 import HomePage from '@/features/clients/pages/Home/HomePage';
+import ProductDetailPage from '@/features/clients/pages/Product/ProductDetailPage';
+import ProductByCategory from '@/features/clients/pages/Product/ProductByCategory';
+import ProductByShop from '@/features/clients/pages/Product/ProductByShop';
 
 const router = createBrowserRouter([
   {
@@ -60,6 +63,9 @@ const router = createBrowserRouter([
         ),
         children: [
           { index: true, element: <HomePage /> },
+          { path: 'categories/:slug', element: <ProductByCategory /> },
+          { path: 'shops/:id', element: <ProductByShop /> },
+          { path: 'products/:id', element: <ProductDetailPage /> },
           { path: 'account', element: <AccountManagementPage /> },
         ],
       },

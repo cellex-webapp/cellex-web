@@ -10,12 +10,14 @@ import {
   selectAllCategories,
   selectCategoryIsLoading,
   selectCategoryError,
+  selectCategoryTree,
 } from '@/stores/selectors/category.selector';
 
 export const useCategory = () => {
   const dispatch = useAppDispatch();
 
   const categories = useAppSelector(selectAllCategories);
+  const categoryTree = useAppSelector(selectCategoryTree);
   const isLoading = useAppSelector(selectCategoryIsLoading);
   const error = useAppSelector(selectCategoryError);
 
@@ -37,6 +39,7 @@ export const useCategory = () => {
 
   return {
     categories,
+    categoryTree,
     isLoading,
     error,
     fetchAllCategories: handleFetchAll,
