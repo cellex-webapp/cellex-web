@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Card, Tag, Rate, Tooltip } from 'antd';
 import { AppstoreOutlined } from '@ant-design/icons';
 
@@ -13,6 +14,7 @@ const ProductCard: React.FC<Props> = ({ product }) => {
 	const finalPrice = Number(product.finalPrice || price);
 
 	return (
+		<Link to={`/products/${product.id}`} className="no-underline text-inherit block h-full">
 			<Card
 				hoverable
 				className="h-full flex flex-col rounded-lg overflow-hidden"
@@ -56,6 +58,7 @@ const ProductCard: React.FC<Props> = ({ product }) => {
 					</div>
 				</div>
 			</Card>
+		</Link>
 	);
 };
 

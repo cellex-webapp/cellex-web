@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import logo from '@/assets/logo/cellex.png';
-import { SearchOutlined, MenuOutlined, UserOutlined, ShoppingCartOutlined, BellOutlined } from '@ant-design/icons';
+import { SearchOutlined, UserOutlined, ShoppingCartOutlined, BellOutlined } from '@ant-design/icons';
 import { Badge } from 'antd';
+import { CategoryMegaMenu } from '@/features/clients/components/Category/CategoryMegaMenu';
 
 const Header: React.FC = () => {
   const [q, setQ] = useState('');
@@ -30,13 +31,7 @@ const Header: React.FC = () => {
           </span>
         </div>
 
-        <Link
-          to="/categories"
-          className="flex items-center gap-2 px-4 md:px-6 h-9 md:h-10 text-sm md:text-base font-semibold !rounded-full !bg-indigo-600 !text-white hover:!bg-indigo-700 no-underline min-w-fit"
-        >
-          <MenuOutlined className="text-base md:text-lg" />
-          <span className="hidden sm:inline">Danh mục</span>
-        </Link>
+        <CategoryMegaMenu />
 
         <div className="hidden sm:flex items-center flex-1 max-w-[520px] md:max-w-[600px] ml-4 md:ml-8 rounded-lg border border-gray-300 bg-white">
           <form onSubmit={onSearch} className="flex items-center w-full px-3 md:px-4 h-9 md:h-10">

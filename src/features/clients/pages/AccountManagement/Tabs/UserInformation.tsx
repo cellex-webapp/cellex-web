@@ -27,7 +27,7 @@ const UserInformation: React.FC<{ user?: IUser | null }> = ({ user }) => {
           <Input size="large" value={email} readOnly className="!bg-white" />
         </Form.Item>
         <Form.Item className="mt-4">
-          <Button type="primary" size="large" block>
+          <Button className="!bg-indigo-600" type="primary" size="large" block>
             Chỉnh sửa thông tin
           </Button>
         </Form.Item>
