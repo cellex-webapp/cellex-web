@@ -18,7 +18,8 @@ export const authService = {
         return (resp as unknown) as IApiResponse<void>;
     },
     refreshToken: async (): Promise<IApiResponse<ILoginResponse>> => {
-        const resp = await axiosInstance.post<IApiResponse<ILoginResponse>>('/auth/refresh-token');
+        const refreshToken = localStorage.getItem('refreshToken');
+        const resp = await axiosInstance.post<IApiResponse<ILoginResponse>>('/auth/refresh-token', { refreshToken });
         return (resp as unknown) as IApiResponse<ILoginResponse>;
     },
 };

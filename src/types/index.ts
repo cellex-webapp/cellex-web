@@ -95,6 +95,7 @@ declare global {
         image?: File | string;
         parentId?: string;
         description?: string;
+        isActive?: boolean;
     }
     interface IUpdateCategoryPayload {
         id: string;
@@ -102,6 +103,7 @@ declare global {
         image?: File | string;
         parentId?: string;
         description?: string;
+        isActive?: boolean;
     }
     interface IShop {
         id: string;

@@ -9,7 +9,6 @@ interface CategoryTableProps {
   onEdit: (category: ICategory) => void;
   onDelete: (id: string) => void;
   onRowClick?: (id: string) => void;
-  // Pass slug instead of id for attribute management navigation
   onManageAttributes?: (categorySlug: string) => void;
 }
 

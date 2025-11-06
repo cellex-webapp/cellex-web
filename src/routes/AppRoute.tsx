@@ -14,7 +14,6 @@ import AdminLayout from '@/features/admin/components/AdminLayout';
 import VendorLayout from '@/features/vendors/components/VendorLayout';
 import ProductsPage from '@/features/vendors/pages/Product/ProductsPage';
 import CategoriesPage from '@/features/admin/pages/Categories/List/CategoriesPage';
-import CategoryCreatePage from '@/features/admin/pages/Categories/Create/CategoryCreatePage';
 import AttributesPage from '@/features/admin/pages/Categories/Attributes/AttributesPage';
 import UsersListPage from '@/features/admin/pages/Users/List/UsersListPage';
 import UserCreatePage from '@/features/admin/pages/Users/Create/UserCreatePage';
@@ -40,7 +39,6 @@ const router = createBrowserRouter([
         children: [
           { index: true, element: <AdminDashboard /> },
           { path: 'categories', element: <CategoriesPage /> },
-          { path: 'categories/create', element: <CategoryCreatePage /> },
           { path: 'categories/:slug/attributes', element: <AttributesPage /> },
           { path: 'products', element: <AdminProductsPage /> },
           { path: 'users', element: <UsersListPage /> },
