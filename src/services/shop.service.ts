@@ -1,4 +1,5 @@
 import axiosInstance from '@/utils/axiosInstance';
+import toFormData from '@/utils/formData';
 
 export const shopService = {
   //admin
@@ -19,11 +20,23 @@ export const shopService = {
 
   //vendor
   createShop: async (payload: ICreateUpdateShopPayload): Promise<IApiResponse<IShop>> => {
-    const resp = await axiosInstance.post<IApiResponse<IShop>>(`/shops/register-vendor`, payload);
+    const fd = toFormData({
+      shopName: payload.shopName,
+      description: payload.description,
+      provinceCode: payload.provinceCode,
+      communeCode: payload.communeCode,
+      detailAddress: payload.detailAddress,
+      phoneNumber: payload.phoneNumber,
+      email: payload.email,
+      logo: payload.logo,
+    });
+
+    const resp = await axiosInstance.post<IApiResponse<IShop>>(`/shops/register-vendor`, fd);
     return (resp as unknown) as IApiResponse<IShop>;
   },
   updateShop: async (id: string, payload: ICreateUpdateShopPayload): Promise<IApiResponse<IShop>> => {
-    const resp = await axiosInstance.put<IApiResponse<IShop>>(`/shops/${id}`, payload);
+    const fd = toFormData(payload as any);
+    const resp = await axiosInstance.put<IApiResponse<IShop>>(`/shops/${id}`, fd);
     return (resp as unknown) as IApiResponse<IShop>;
   },
   getMyShop: async (): Promise<IApiResponse<IShop>> => {

@@ -133,7 +133,7 @@ const ProductDetailCard: React.FC = () => {
                                                     : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
                                                     }`}
                                             >
-                                                {av.value}
+                                                {av.value} {av.unit ? `${av.unit}` : ''}
                                             </button>
                                         );
                                     })}

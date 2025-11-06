@@ -6,6 +6,7 @@ import {
   fetchUserById,
   banUser,
   unbanUser,
+  updateUserProfile, 
 } from '@/stores/slices/user.slice';
 import {
   selectAllUsers,
@@ -42,6 +43,10 @@ export const useUser = () => {
     return dispatch(unbanUser(userId));
   }, [dispatch]);
 
+  const handleUpdateProfile = useCallback((payload: IUpdateProfilePayload) => {
+    return dispatch(updateUserProfile(payload));
+  }, [dispatch]);
+
   return {
     users,
     selectedUser,
@@ -52,5 +57,6 @@ export const useUser = () => {
     fetchUserById: handleFetchUserById,
     banUser: handleBanUser,
     unbanUser: handleUnbanUser,
+    updateUserProfile: handleUpdateProfile, 
   };
 };

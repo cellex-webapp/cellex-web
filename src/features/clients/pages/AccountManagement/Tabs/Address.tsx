@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Typography, Form, Input, Button, Space, message, Select } from 'antd';
+import { Typography, Form, Input, Button, Space, message, Select, Descriptions } from 'antd';
 import { useAuth } from '@/hooks/useAuth';
 import { useAppDispatch } from '@/hooks/redux';
 import { updateUserProfile } from '@/stores/slices/user.slice';
@@ -7,48 +7,56 @@ import { addressService } from '@/services/address.service';
 
 const { Title } = Typography;
 
+interface IAddress {
+  provinceCode?: string;
+  communeCode?: string;
+  detailAddress?: string;
+  street?: string;
+  province?: string;
+  commune?: string;
+  fullAddress?: string;
+}
+
 const Address: React.FC = () => {
   const { currentUser } = useAuth();
   const dispatch = useAppDispatch();
   const [form] = Form.useForm();
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [provinces, setProvinces] = useState<string[]>([]);
-  const [communes, setCommunes] = useState<string[]>([]);
+  
+  const [provinces, setProvinces] = useState<IAddressDataUnit[]>([]);
+  const [communes, setCommunes] = useState<IAddressDataUnit[]>([]);
+  
   const [provinceSelected, setProvinceSelected] = useState<string | undefined>(undefined);
   const [provincesLoading, setProvincesLoading] = useState(false);
   const [communesLoading, setCommunesLoading] = useState(false);
 
-  // Prefill form if currentUser has address fields
   useEffect(() => {
     if (!currentUser) return;
     const anyUser: any = currentUser as any;
-    form.setFieldsValue({
-      provinceCode: anyUser.provinceCode ?? anyUser.province_code ?? '',
-      communeCode: anyUser.communeCode ?? anyUser.commune_code ?? '',
-      detailAddress: anyUser.detailAddress ?? anyUser.detail_address ?? '',
-    });
-    // set provinceSelected so we can load communes for prefilled value
-    const preProvince = anyUser.provinceCode ?? anyUser.province_code ?? '';
-    if (preProvince) setProvinceSelected(String(preProvince));
-    // if user has no address fields, default to not showing address and let user add
-    const hasAddress = Boolean(
-      anyUser.detailAddress ?? anyUser.detail_address ?? anyUser.provinceCode ?? anyUser.province_code ?? anyUser.communeCode ?? anyUser.commune_code
-    );
+    
+    const provinceCode = anyUser.provinceCode ?? anyUser.province_code ?? undefined;
+    const communeCode = anyUser.communeCode ?? anyUser.commune_code ?? undefined;
+    const detailAddress = anyUser.detailAddress ?? anyUser.detail_address ?? '';
+
+    form.setFieldsValue({ provinceCode, communeCode, detailAddress });
+    
+    if (provinceCode) {
+      setProvinceSelected(String(provinceCode)); 
+    }
+
+    const hasAddress = Boolean(detailAddress || provinceCode || communeCode);
     setIsEditing(!hasAddress);
   }, [currentUser, form]);
 
-  // fetch provinces on mount
   useEffect(() => {
     let mounted = true;
     const load = async () => {
       setProvincesLoading(true);
       try {
-        const resp: any = await addressService.getProvinces();
-        // resp.result expected to be string[]
+        const resp = await addressService.getProvinces();
         if (mounted) setProvinces(resp.result || []);
       } catch (err) {
-        // ignore silently or show message
         console.error('Failed to load provinces', err);
       } finally {
         if (mounted) setProvincesLoading(false);
@@ -58,7 +66,6 @@ const Address: React.FC = () => {
     return () => { mounted = false; };
   }, []);
 
-  // fetch communes when provinceSelected changes
   useEffect(() => {
     if (!provinceSelected) {
       setCommunes([]);
@@ -69,8 +76,7 @@ const Address: React.FC = () => {
     const load = async () => {
       setCommunesLoading(true);
       try {
-        const codeNum = Number(provinceSelected);
-        const resp: any = await addressService.getCommunesByProvinceCode(codeNum);
+        const resp = await addressService.getCommunesByProvinceCode(provinceSelected);
         if (mounted) setCommunes(resp.result || []);
       } catch (err) {
         console.error('Failed to load communes', err);
@@ -94,44 +100,42 @@ const Address: React.FC = () => {
         detailAddress: values.detailAddress || undefined,
       };
 
-      // dispatch the thunk and wait for result
-      // unwrap is not used here to avoid importing additional helpers; handle result via promise
       const res: any = await dispatch(updateUserProfile(payload));
       if (res?.error) {
         throw new Error(res.error?.message ?? 'Cập nhật thất bại');
       }
 
       message.success('Cập nhật địa chỉ nhận hàng thành công');
-      // close edit form after successful update
       setIsEditing(false);
 
-      // persist address locally for quick reads (structure: IAddress)
       try {
+        const provinceName = provinces.find(p => p.code === payload.provinceCode)?.name;
+        const communeName = communes.find(c => c.code === payload.communeCode)?.name;
+
         const address: IAddress = {
           provinceCode: payload.provinceCode,
           communeCode: payload.communeCode,
           detailAddress: payload.detailAddress,
-          // derive fullAddress from pieces where possible
-          fullAddress: [payload.detailAddress, payload.communeCode, payload.provinceCode].filter(Boolean).join(', '),
+          street: payload.detailAddress,
+          province: provinceName,
+          commune: communeName,
+          fullAddress: [payload.detailAddress, communeName, provinceName].filter(Boolean).join(', '),
         };
 
-        // write separate address key
-        localStorage.setItem('address', JSON.stringify(address));
-
-        // also update user entry in localStorage if present
         const raw = localStorage.getItem('user');
         if (raw) {
           try {
             const u = JSON.parse(raw);
-            u.address = address;
+            u.address = address; 
+            u.provinceCode = payload.provinceCode;
+            u.communeCode = payload.communeCode;
+            u.detailAddress = payload.detailAddress;
             localStorage.setItem('user', JSON.stringify(u));
-          } catch {
-            // ignore
-          }
+          } catch { /* ignore */ }
+        } else {
+          localStorage.setItem('address', JSON.stringify(address)); 
         }
-      } catch (e) {
-        // ignore storage errors
-      }
+      } catch (e) { /* ignore storage errors */ }
     } catch (err: any) {
       message.error(err?.message ?? 'Có lỗi xảy ra. Vui lòng thử lại.');
     } finally {
@@ -139,122 +143,132 @@ const Address: React.FC = () => {
     }
   };
 
+  const renderDisplayView = () => {
+    const fromStorage = (() => {
+      try {
+        const raw = localStorage.getItem('user');
+        return raw ? JSON.parse(raw) : null;
+      } catch {
+        return null;
+      }
+    })();
+    
+    const user = currentUser ?? fromStorage;
+    const anyUser: any = user as any;
+    
+    const detailAddress = anyUser?.detailAddress ?? anyUser?.address?.detailAddress ?? anyUser?.address?.street;
+    const provinceCode = anyUser?.provinceCode ?? anyUser?.address?.provinceCode;
+    const communeCode = anyUser?.communeCode ?? anyUser?.address?.communeCode;
+
+    const hasAddress = Boolean(detailAddress || provinceCode || communeCode);
+
+    if (!hasAddress) {
+      return (
+        <div>
+          <p>Chưa có địa chỉ nhận hàng.</p>
+          <Button type="primary" onClick={() => setIsEditing(true)}>
+            Thêm địa chỉ
+          </Button>
+        </div>
+      );
+    }
+
+    const provinceName = anyUser?.address?.province ?? provinces.find(p => p.code === provinceCode)?.name;
+    const communeName = anyUser?.address?.commune ?? communes.find(c => c.code === communeCode)?.name;
+    const fullAddress = anyUser?.address?.fullAddress ?? [detailAddress, communeName, provinceName].filter(Boolean).join(', ');
+
+    return (
+      <div style={{ width: '100%' }}>
+        <Descriptions bordered column={1} size="small">
+          <Descriptions.Item label="Họ và tên">{anyUser?.fullName ?? '-'}</Descriptions.Item>
+          <Descriptions.Item label="Số điện thoại">{anyUser?.phoneNumber ?? anyUser?.phone_number ?? '-'}</Descriptions.Item>
+          <Descriptions.Item label="Tỉnh/Thành">{provinceName ?? provinceCode ?? '-'}</Descriptions.Item>
+          <Descriptions.Item label="Phường/Xã">{communeName ?? communeCode ?? '-'}</Descriptions.Item>
+          <Descriptions.Item label="Địa chỉ chi tiết">{detailAddress ?? '-'}</Descriptions.Item>
+          <Descriptions.Item label="Địa chỉ đầy đủ">{fullAddress}</Descriptions.Item>
+        </Descriptions>
+      </div>
+    );
+  };
+
   return (
     <div>
-      <Title level={4}>Địa chỉ nhận hàng</Title>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <Title level={4} style={{ margin: 0 }}>Địa chỉ nhận hàng</Title>
+        {!isEditing && (
+          <Button className='!bg-indigo-600' type="primary" onClick={() => setIsEditing(true)}>
+            Cập nhật địa chỉ
+          </Button>
+        )}
+      </div>
 
       {!isEditing ? (
-        // display user's address summary
-        (() => {
-          const fromStorage = (() => {
-            try {
-              const raw = localStorage.getItem('user');
-              return raw ? JSON.parse(raw) : null;
-            } catch {
-              return null;
-            }
-          })();
-          const user = currentUser ?? fromStorage;
-          const anyUser: any = user as any;
-          const hasAddress = Boolean(
-            anyUser?.detailAddress ?? anyUser?.detail_address ?? anyUser?.provinceCode ?? anyUser?.province_code ?? anyUser?.communeCode ?? anyUser?.commune_code
-          );
-
-          if (!hasAddress) {
-            return (
-              <div>
-                <p>Chưa có địa chỉ nhận hàng.</p>
-                <Button type="primary" onClick={() => setIsEditing(true)}>
-                  Thêm địa chỉ
-                </Button>
-              </div>
-            );
-          }
-
-          return (
-            <div style={{ maxWidth: 640 }}>
-              <div style={{ marginBottom: 12 }}>
-                <div><strong>Họ và tên:</strong> {anyUser?.fullName ?? '-'}</div>
-                <div><strong>Số điện thoại:</strong> {anyUser?.phoneNumber ?? anyUser?.phone_number ?? '-'}</div>
-                <div><strong>Tỉnh/Thành (mã):</strong> {anyUser?.provinceCode ?? anyUser?.province_code ?? '-'}</div>
-                <div><strong>Phường/Xã (mã):</strong> {anyUser?.communeCode ?? anyUser?.commune_code ?? '-'}</div>
-                <div><strong>Địa chỉ chi tiết:</strong> {anyUser?.detailAddress ?? anyUser?.detail_address ?? '-'}</div>
-              </div>
-              <Space>
-                <Button type="primary" onClick={() => setIsEditing(true)}>
-                  Cập nhật địa chỉ
-                </Button>
-              </Space>
-            </div>
-          );
-        })()
+        renderDisplayView()
       ) : (
         <Form form={form} layout="vertical" onFinish={onFinish} style={{ maxWidth: 640 }}>
-        <Form.Item label="Tỉnh/Thành (mã)" name="provinceCode">
-          <Select
-            showSearch
-            placeholder="Chọn tỉnh/thành"
-            loading={provincesLoading}
-            optionFilterProp="label"
-            onChange={(value) => {
-              setProvinceSelected(String(value));
-              // when province changes, clear commune field
-              form.setFieldsValue({ communeCode: '' });
-            }}
-            options={provinces.map((p) => {
-              if (typeof p === 'string') return { value: p, label: p };
-              // in case the API returns objects
-              return { value: (p as any).code ?? (p as any).id ?? JSON.stringify(p), label: (p as any).name ?? String(p) };
-            })}
-          />
-        </Form.Item>
-
-        <Form.Item label="Phường/Xã (mã)" name="communeCode">
-          <Select
-            showSearch
-            placeholder="Chọn phường/xã"
-            loading={communesLoading}
-            disabled={!provinceSelected}
-            optionFilterProp="label"
-            options={communes.map((c) => {
-              if (typeof c === 'string') return { value: c, label: c };
-              return { value: (c as any).code ?? (c as any).id ?? JSON.stringify(c), label: (c as any).name ?? String(c) };
-            })}
-          />
-        </Form.Item>
-
-        <Form.Item
-          label="Địa chỉ chi tiết"
-          name="detailAddress"
-          rules={[{ required: true, message: 'Vui lòng nhập địa chỉ chi tiết' }]}
-        >
-          <Input.TextArea rows={4} placeholder="Số nhà, đường, phường/xã, quận/huyện..." />
-        </Form.Item>
-
-        <Form.Item>
-          <Space>
-            <Button type="primary" htmlType="submit" loading={loading}>
-              Lưu địa chỉ
-            </Button>
-            <Button
-              onClick={() => {
-                // cancel editing
-                setIsEditing(false);
-                form.resetFields();
-                // Refill from currentUser after reset
-                const anyUser: any = currentUser as any;
-                form.setFieldsValue({
-                  provinceCode: anyUser?.provinceCode ?? anyUser?.province_code ?? '',
-                  communeCode: anyUser?.communeCode ?? anyUser?.commune_code ?? '',
-                  detailAddress: anyUser?.detailAddress ?? anyUser?.detail_address ?? '',
-                });
+          <Form.Item label="Tỉnh/Thành" name="provinceCode">
+            <Select
+              showSearch
+              placeholder="Chọn tỉnh/thành"
+              loading={provincesLoading}
+              optionFilterProp="label" 
+              onChange={(value) => {
+                setProvinceSelected(String(value));
+                form.setFieldsValue({ communeCode: undefined });
               }}
-            >
-              Hủy
-            </Button>
-          </Space>
-        </Form.Item>
-      </Form>
+              options={provinces.map((p) => ({
+                value: p.code,
+                label: p.name,
+              }))}
+            />
+          </Form.Item>
+
+          <Form.Item label="Phường/Xã" name="communeCode">
+            <Select
+              showSearch
+              placeholder="Chọn phường/xã"
+              loading={communesLoading}
+              disabled={!provinceSelected || communesLoading}
+              optionFilterProp="label"
+              options={communes.map((c) => ({
+                value: c.code,
+                label: c.name,
+              }))}
+            />
+          </Form.Item>
+
+          <Form.Item
+            label="Địa chỉ chi tiết"
+            name="detailAddress"
+            rules={[{ required: true, message: 'Vui lòng nhập địa chỉ chi tiết' }]}
+          >
+            <Input.TextArea rows={3} placeholder="Số nhà, tên đường..." />
+          </Form.Item>
+
+          <Form.Item>
+            <Space>
+              <Button type="primary" htmlType="submit" loading={loading}>
+                Lưu địa chỉ
+              </Button>
+              <Button
+                onClick={() => {
+                  setIsEditing(false);
+                  form.resetFields();
+                  const anyUser: any = currentUser as any;
+                  const provinceCode = anyUser.provinceCode ?? anyUser.province_code ?? undefined;
+                  form.setFieldsValue({
+                    provinceCode: provinceCode,
+                    communeCode: anyUser?.communeCode ?? anyUser?.commune_code ?? undefined,
+                    detailAddress: anyUser?.detailAddress ?? anyUser?.detail_address ?? '',
+                  });
+                  setProvinceSelected(provinceCode ? String(provinceCode) : undefined);
+                }}
+              >
+                Hủy
+              </Button>
+            </Space>
+          </Form.Item>
+        </Form>
       )}
     </div>
   );

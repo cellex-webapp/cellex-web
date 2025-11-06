@@ -1,13 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Form, Input, Upload, Button, message, Select, Spin, Row, Col, Card, Space } from 'antd';
-import { 
-  UploadOutlined, 
-  ShopOutlined, 
-  EnvironmentOutlined,
-  PhoneOutlined,
-  MailOutlined,
-  PictureOutlined
-} from '@ant-design/icons';
+import { Modal, Form, Input, Button, message, Select, Spin, Row, Col, Card, Space, Upload } from 'antd';
+import { ShopOutlined, EnvironmentOutlined, PhoneOutlined, MailOutlined, UploadOutlined, PictureOutlined } from '@ant-design/icons';
 import type { UploadFile } from 'antd/es/upload/interface';
 import { shopService } from '@/services/shop.service';
 import { addressService } from '@/services/address.service';
@@ -24,14 +17,14 @@ const ShopFormModal: React.FC<Props> = ({ visible, shopId, onClose, onSuccess })
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(false);
   const [fileList, setFileList] = useState<UploadFile[]>([]);
-  const [provinces, setProvinces] = useState<string[]>([]);
-  const [communes, setCommunes] = useState<string[]>([]);
+
+  const [provinces, setProvinces] = useState<IAddressDataUnit[]>([]);
+  const [communes, setCommunes] = useState<IAddressDataUnit[]>([]);
   const [selectedProvince, setSelectedProvince] = useState<string | undefined>();
 
-  // Fetch shop data
   useEffect(() => {
     if (!visible || !shopId) return;
-    
+
     setFetching(true);
     shopService
       .getShopById(shopId)
@@ -47,8 +40,7 @@ const ShopFormModal: React.FC<Props> = ({ visible, shopId, onClose, onSuccess })
             phoneNumber: shop.phone_number,
             email: shop.email,
           });
-          
-          // Set logo if exists
+
           if (shop.logo_url) {
             setFileList([
               {
@@ -59,8 +51,7 @@ const ShopFormModal: React.FC<Props> = ({ visible, shopId, onClose, onSuccess })
               },
             ]);
           }
-          
-          // Set selected province for commune loading
+
           if (shop.address?.province_code) {
             setSelectedProvince(shop.address.province_code);
           }
@@ -75,10 +66,9 @@ const ShopFormModal: React.FC<Props> = ({ visible, shopId, onClose, onSuccess })
       });
   }, [visible, shopId, form]);
 
-  // Fetch provinces
   useEffect(() => {
     if (!visible) return;
-    
+
     addressService
       .getProvinces()
       .then((resp: any) => {
@@ -89,15 +79,14 @@ const ShopFormModal: React.FC<Props> = ({ visible, shopId, onClose, onSuccess })
       });
   }, [visible]);
 
-  // Fetch communes when province changes
   useEffect(() => {
     if (!selectedProvince) {
       setCommunes([]);
       return;
     }
-    
+
     addressService
-      .getCommunesByProvinceCode(Number(selectedProvince))
+      .getCommunesByProvinceCode(selectedProvince)
       .then((resp: any) => {
         setCommunes(resp.result || []);
       })
@@ -113,10 +102,10 @@ const ShopFormModal: React.FC<Props> = ({ visible, shopId, onClose, onSuccess })
 
   const handleSubmit = async (values: any) => {
     if (!shopId) return;
-    
+
     setLoading(true);
     const formData = new FormData();
-    
+
     formData.append('shopName', values.shopName);
     formData.append('description', values.description || '');
     formData.append('provinceCode', values.provinceCode);
@@ -124,12 +113,11 @@ const ShopFormModal: React.FC<Props> = ({ visible, shopId, onClose, onSuccess })
     formData.append('detailAddress', values.detailAddress);
     formData.append('phoneNumber', values.phoneNumber);
     formData.append('email', values.email);
-    
-    // Attach logo file if changed
+
     if (fileList.length > 0 && fileList[0].originFileObj) {
       formData.append('logo', fileList[0].originFileObj);
     }
-    
+
     try {
       await shopService.updateShop(shopId, formData as any);
       message.success('Cập nhật cửa hàng thành công');
@@ -153,6 +141,9 @@ const ShopFormModal: React.FC<Props> = ({ visible, shopId, onClose, onSuccess })
     onClose();
   };
 
+  const filterOption = (input: string, option: any) =>
+    (option?.children ?? '').toString().toLowerCase().includes(input.toLowerCase());
+
   return (
     <Modal
       title={
@@ -166,7 +157,7 @@ const ShopFormModal: React.FC<Props> = ({ visible, shopId, onClose, onSuccess })
       footer={null}
       width={800}
       destroyOnClose
-      centered
+      style={{ top: 20 }}
     >
       {fetching ? (
         <div className="text-center py-12">
@@ -179,7 +170,6 @@ const ShopFormModal: React.FC<Props> = ({ visible, shopId, onClose, onSuccess })
           onFinish={handleSubmit}
           autoComplete="off"
         >
-          {/* Logo Section */}
           <Card size="small" className="mb-4" title={<Space><PictureOutlined />Logo cửa hàng</Space>}>
             <Form.Item className="mb-0">
               <Upload
@@ -188,42 +178,36 @@ const ShopFormModal: React.FC<Props> = ({ visible, shopId, onClose, onSuccess })
                 onChange={({ fileList }) => setFileList(fileList)}
                 beforeUpload={() => false}
                 maxCount={1}
+                accept="image/*"
               >
                 {fileList.length === 0 && (
                   <div>
                     <UploadOutlined />
-                    <div style={{ marginTop: 8 }}>Tải ảnh lên</div>
+                    <div style={{ marginTop: 8 }}>Tải logo</div>
                   </div>
                 )}
               </Upload>
             </Form.Item>
           </Card>
 
-          {/* Basic Info */}
           <Card size="small" className="mb-4" title={<Space><ShopOutlined />Thông tin cơ bản</Space>}>
             <Form.Item
               label="Tên cửa hàng"
               name="shopName"
               rules={[{ required: true, message: 'Vui lòng nhập tên cửa hàng' }]}
             >
-              <Input placeholder="Nhập tên cửa hàng" />
+              <Input placeholder="Tên cửa hàng" />
             </Form.Item>
 
-            <Form.Item
-              label="Mô tả cửa hàng"
-              name="description"
-              className="mb-0"
-            >
-              <Input.TextArea 
-                rows={3} 
-                placeholder="Nhập mô tả về cửa hàng của bạn..."
+            <Form.Item label="Mô tả" name="description" className="mb-0">
+              <Input.TextArea
+                rows={3}
+                placeholder="Mô tả ngắn về cửa hàng"
                 showCount
                 maxLength={500}
               />
             </Form.Item>
           </Card>
-
-          {/* Address Info */}
           <Card size="small" className="mb-4" title={<Space><EnvironmentOutlined />Địa chỉ</Space>}>
             <Row gutter={12}>
               <Col span={12}>
@@ -237,10 +221,11 @@ const ShopFormModal: React.FC<Props> = ({ visible, shopId, onClose, onSuccess })
                     onChange={handleProvinceChange}
                     showSearch
                     optionFilterProp="children"
+                    filterOption={filterOption}
                   >
                     {provinces.map((p) => (
-                      <Select.Option key={p} value={p}>
-                        {p}
+                      <Select.Option key={p.code} value={p.code}>
+                        {p.name}
                       </Select.Option>
                     ))}
                   </Select>
@@ -258,10 +243,11 @@ const ShopFormModal: React.FC<Props> = ({ visible, shopId, onClose, onSuccess })
                     disabled={!selectedProvince}
                     showSearch
                     optionFilterProp="children"
+                    filterOption={filterOption}
                   >
                     {communes.map((c) => (
-                      <Select.Option key={c} value={c}>
-                        {c}
+                      <Select.Option key={c.code} value={c.code}>
+                        {c.name}
                       </Select.Option>
                     ))}
                   </Select>
@@ -275,14 +261,13 @@ const ShopFormModal: React.FC<Props> = ({ visible, shopId, onClose, onSuccess })
               rules={[{ required: true, message: 'Vui lòng nhập địa chỉ chi tiết' }]}
               className="mb-0"
             >
-              <Input 
+              <Input
                 prefix={<EnvironmentOutlined />}
-                placeholder="Số nhà, tên đường... (VD: 118 Đường B)" 
+                placeholder="Số nhà, tên đường... (VD: 118 Đường B)"
               />
             </Form.Item>
           </Card>
 
-          {/* Contact Info */}
           <Card size="small" className="mb-4" title={<Space><PhoneOutlined />Thông tin liên hệ</Space>}>
             <Row gutter={12}>
               <Col span={12}>
@@ -313,7 +298,6 @@ const ShopFormModal: React.FC<Props> = ({ visible, shopId, onClose, onSuccess })
             </Row>
           </Card>
 
-          {/* Action Buttons */}
           <Form.Item className="mb-0">
             <div className="flex justify-end gap-2 pt-2">
               <Button onClick={handleCancel} size="large">

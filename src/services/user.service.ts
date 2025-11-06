@@ -15,7 +15,6 @@ export const userService = {
     return (resp as unknown) as IApiResponse<IUser>;
   },
   updateUserProfile: async (data: IUpdateProfilePayload): Promise<IApiResponse<IUser>> => {
-    const avatarVal = (data as any).avatar;
     const payload: Record<string, any> = {
       fullName: data.fullName,
       phoneNumber: data.phoneNumber,
@@ -24,8 +23,8 @@ export const userService = {
       detailAddress: data.detailAddress,
     };
 
-    if (avatarVal && typeof avatarVal !== 'string') {
-      payload.avatar = avatarVal as File;
+    if (data.avatar && data.avatar instanceof File) {
+      payload.avatar = data.avatar;
     }
 
     const form = toFormData(payload);

@@ -1,30 +1,28 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Button, Input, message, Table, Image, Tag, Tooltip, Space } from 'antd';
-import { SearchOutlined, EyeOutlined, EditOutlined, AppstoreOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import { Button, Input, App, Table, Image, Tag, Tooltip, Space } from 'antd';
+import { SearchOutlined, EyeOutlined, EditOutlined, AppstoreOutlined, CheckCircleOutlined, PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import { unwrapResult } from '@reduxjs/toolkit';
 import { useProduct } from '@/hooks/useProduct';
 import ProductFormModal from './ProductFormModal';
 import ProductDetailModal from './ProductDetailModal';
 import { shopService } from '@/services/shop.service';
 
-const ProductsPage: React.FC = () => {
+const ProductPageContent: React.FC = () => {
+    const { message, modal } = App.useApp();
     const [modalOpen, setModalOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState<IProduct | null>(null);
     const [detailId, setDetailId] = useState<string | null>(null);
     const [detailOpen, setDetailOpen] = useState(false);
     const [q, setQ] = useState('');
 
-    const { products, isLoading, error, fetchProductsByShop, updateProduct, createProduct } = useProduct();
+    const { products, isLoading, error, fetchProductsByShop, updateProduct, createProduct, deleteProduct } = useProduct();
 
     const [shopId, setShopId] = useState<string | null>(null);
     const [shopVerified, setShopVerified] = useState<boolean>(false);
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
     const [total, setTotal] = useState(0);
-    const [numberOfElements, setNumberOfElements] = useState(0);
-    const [totalPages, setTotalPages] = useState(0);
 
-    // Load current vendor's shop id
     useEffect(() => {
         (async () => {
             try {
@@ -44,19 +42,13 @@ const ProductsPage: React.FC = () => {
             .unwrap()
             .then((res: IPage<IProduct>) => {
                 setTotal(res.totalElements);
-                setNumberOfElements(res.numberOfElements || res.content?.length || 0);
-                setTotalPages(res.totalPages);
             })
-            .catch(() => {});
+            .catch(() => { });
     }, [fetchProductsByShop, shopId, page, pageSize]);
 
     useEffect(() => {
         loadData();
     }, [loadData]);
-
-    useEffect(() => {
-        if (error) message.error(error);
-    }, [error]);
 
     const filtered = useMemo(() => {
         const kw = q.trim().toLowerCase();
@@ -106,6 +98,27 @@ const ProductsPage: React.FC = () => {
         }
     };
 
+    const handleDelete = (id: string) => {
+        modal.confirm({
+            title: 'Bạn có chắc muốn xóa sản phẩm này?',
+            content: 'Hành động này sẽ xóa sản phẩm vĩnh viễn.',
+            okText: 'Xóa',
+            okType: 'danger',
+            cancelText: 'Hủy',
+            centered: true,
+            onOk: async () => {
+                try {
+                    const actionResult: any = await deleteProduct(id);
+                    unwrapResult(actionResult);
+                    message.success('Đã xóa sản phẩm');
+                    loadData();
+                } catch (err: any) {
+                    message.error(err || 'Không thể xóa sản phẩm');
+                }
+            },
+        });
+    };
+
     const columns = [
         {
             title: 'Ảnh',
@@ -147,48 +160,17 @@ const ProductsPage: React.FC = () => {
             render: (_: any, r: IProduct) => <Tag color="blue" style={{ margin: 0 }}>{r.categoryInfo?.name || '-'}</Tag>,
         },
         {
-            title: 'Giá (VND)',
-            dataIndex: 'price',
-            key: 'price',
-            width: 120,
-            align: 'right' as const,
-            render: (v: number) => <span className="font-medium text-orange-600">{v?.toLocaleString() || '0'}</span>,
-        },
-        {
-            title: 'Giảm (%)',
-            dataIndex: 'saleOff',
-            key: 'saleOff',
-            width: 90,
-            align: 'right' as const,
-            render: (v: number) => <span>{v ? `${v}%` : '0%'}</span>,
-        },
-        {
             title: 'Giá cuối (VND)',
             dataIndex: 'finalPrice',
             key: 'finalPrice',
             width: 130,
             align: 'right' as const,
-            render: (v: number) => <span className="font-medium">{v?.toLocaleString() || '0'}</span>,
+            render: (v: number) => <span className="font-medium text-orange-600">{v?.toLocaleString() || '0'}</span>,
         },
         {
             title: 'Tồn kho',
             dataIndex: 'stockQuantity',
             key: 'stockQuantity',
-            width: 90,
-            align: 'right' as const,
-        },
-        {
-            title: 'Đánh giá',
-            dataIndex: 'averageRating',
-            key: 'averageRating',
-            width: 90,
-            align: 'center' as const,
-            render: (v: number) => (v ?? 0).toFixed(2),
-        },
-        {
-            title: 'Reviews',
-            dataIndex: 'reviewCount',
-            key: 'reviewCount',
             width: 90,
             align: 'right' as const,
         },
@@ -216,20 +198,38 @@ const ProductsPage: React.FC = () => {
             dataIndex: 'createdAt',
             key: 'createdAt',
             width: 150,
-            render: (v: string) => (v ? new Date(v).toLocaleString() : '-'),
+            render: (v: string) => (v ? new Date(v).toLocaleString('vi-VN') : '-'),
         },
         {
             title: 'Hành động',
             key: 'action',
-            width: 120,
+            width: 100,
             align: 'center' as const,
+            fixed: 'right',
             render: (_: any, record: IProduct) => (
                 <Space size="small">
-                    <Tooltip title="Xem chi tiết">
-                        <Button type="text" size="small" icon={<EyeOutlined />} onClick={() => handleOpenDetail(record.id)} />
-                    </Tooltip>
                     <Tooltip title="Chỉnh sửa">
-                        <Button type="text" size="small" icon={<EditOutlined />} onClick={() => handleOpenModalForEdit(record)} />
+                        <Button
+                            type="text"
+                            size="small"
+                            icon={<EditOutlined className='!text-blue-500' />}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleOpenModalForEdit(record);
+                            }}
+                        />
+                    </Tooltip>
+                    <Tooltip title="Xóa">
+                        <Button
+                            type="text"
+                            size="small"
+                            danger
+                            icon={<DeleteOutlined className='!text-red-500' />}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleDelete(record.id);
+                            }}
+                        />
                     </Tooltip>
                 </Space>
             ),
@@ -238,14 +238,14 @@ const ProductsPage: React.FC = () => {
 
     return (
         <div className="p-4 bg-gray-50 min-h-screen">
-            <div className="bg-white rounded-lg p-4">
-                {/* Header */}
+            <div className="bg-white rounded-lg p-4 shadow-sm">
                 <div className="mb-4 flex items-center justify-between gap-3">
-                    <h3 className="text-xl font-semibold text-gray-800">Sản phẩm của tôi</h3>
-                    <Tooltip title={shopVerified ? '' : 'Cửa hàng chưa được xác minh - không thể tạo sản phẩm'}>
+                    <h3 className="text-xl font-semibold text-gray-800">Quản lý Sản phẩm</h3>
+                    <Tooltip title={shopVerified ? 'Tạo sản phẩm mới' : 'Cửa hàng chưa được xác minh - không thể tạo sản phẩm'}>
                         <Button
                             type="primary"
                             className="!bg-indigo-600"
+                            icon={<PlusOutlined />}
                             disabled={!shopVerified}
                             onClick={() => {
                                 setEditingProduct(null);
@@ -273,7 +273,7 @@ const ProductsPage: React.FC = () => {
                     columns={columns as any}
                     rowKey="id"
                     loading={isLoading}
-                    scroll={{ x: 1100 }}
+                    scroll={{ x: 1300 }}
                     pagination={{
                         current: page,
                         pageSize,
@@ -281,7 +281,10 @@ const ProductsPage: React.FC = () => {
                         showSizeChanger: true,
                         showTotal: (t) => `Tổng ${t} sản phẩm`,
                     }}
-                    onRow={(record) => ({ onClick: () => handleOpenDetail(record.id), className: 'cursor-pointer hover:bg-gray-50' })}
+                    onRow={(record) => ({
+                        onClick: () => handleOpenDetail(record.id),
+                        className: 'cursor-pointer hover:bg-gray-50'
+                    })}
                     onChange={(pagination) => {
                         const nextPage = pagination.current || 1;
                         const nextSize = pagination.pageSize || pageSize;
@@ -294,6 +297,14 @@ const ProductsPage: React.FC = () => {
             <ProductFormModal open={modalOpen} onClose={handleCloseModal} onSubmit={handleSubmit} editingProduct={editingProduct} loading={isLoading} />
             <ProductDetailModal productId={detailId} open={detailOpen} onClose={handleCloseDetail} />
         </div>
+    );
+};
+
+const ProductsPage: React.FC = () => {
+    return (
+        <App>
+            <ProductPageContent />
+        </App>
     );
 };
 
