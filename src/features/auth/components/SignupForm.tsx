@@ -36,7 +36,6 @@ const SignupForm: React.FC<Props> = ({
   const [showConfirm, setShowConfirm] = useState(false);
   return (
     <form className="w-full max-w-sm space-y-5" onSubmit={onSubmit}>
-      {/* Full name */}
       <div>
         <label className="block text-gray-800 font-semibold mb-1">Họ và tên</label>
         <div className="relative">
@@ -54,7 +53,6 @@ const SignupForm: React.FC<Props> = ({
           />
         </div>
       </div>
-      {/* Email */}
       <div>
         <label className="block text-gray-800 font-semibold mb-1">Email</label>
         <div className="relative">
@@ -72,7 +70,6 @@ const SignupForm: React.FC<Props> = ({
           />
         </div>
       </div>
-      {/* Phone number */}
       <div>
         <label className="block text-gray-800 font-semibold mb-1">Số điện thoại</label>
         <div className="relative">
@@ -91,7 +88,6 @@ const SignupForm: React.FC<Props> = ({
           />
         </div>
       </div>
-      {/* Password */}
       <div>
         <label className="block text-gray-800 font-semibold mb-1">Mật khẩu</label>
         <div className="relative">
@@ -122,7 +118,6 @@ const SignupForm: React.FC<Props> = ({
           </button>
         </div>
       </div>
-      {/* Confirm Password */}
       <div>
         <label className="block text-gray-800 font-semibold mb-1">Xác nhận mật khẩu</label>
         <div className="relative">
@@ -153,17 +148,16 @@ const SignupForm: React.FC<Props> = ({
           </button>
         </div>
       </div>
-      {/* Submit */}
       <button
         type="submit"
-        className="w-full inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-semibold py-2.5 rounded-lg transition-colors duration-150 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-indigo-300/40 shadow"
+        className="w-full cursor-pointer inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 !text-white font-semibold py-2.5 rounded-lg transition-colors duration-150 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-indigo-300/40 shadow"
         disabled={loading}
       >
         {loading ? 'Đang tạo tài khoản...' : 'Đăng ký'}
       </button>
-      <div className="text-sm text-gray-600">
+      <div className="text-sm text-gray-600 mt-4">
         Đã có tài khoản?{' '}
-        <button type="button" className="text-indigo-600 hover:underline" onClick={onLoginLink}>
+        <button type="button" className="!text-indigo-600 hover:underline" onClick={onLoginLink}>
           Đăng nhập
         </button>
       </div>

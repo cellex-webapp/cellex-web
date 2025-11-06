@@ -16,7 +16,7 @@ const AdminProductsPage: React.FC = () => {
   const [numberOfElements, setNumberOfElements] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
 
-  const { products, isLoading, error, fetchAllProducts, searchProducts, deleteProduct, fetchProductsByShop, fetchProductsByCategory } = useProduct();
+  const { products, isLoading, error, fetchAllProducts, searchProducts, fetchProductsByShop, fetchProductsByCategory } = useProduct();
   const [shops, setShops] = useState<IShop[]>([]);
   const [shopId, setShopId] = useState<string | undefined>(undefined);
   const [detailId, setDetailId] = useState<string | null>(null);
@@ -111,18 +111,6 @@ const AdminProductsPage: React.FC = () => {
 
   const data = useMemo(() => products || [], [products]);
 
-  // Note: Statistics removed per request to simplify logic and UI
-
-  const handleDelete = async (id: string) => {
-    try {
-      await deleteProduct(id).unwrap();
-      message.success('Đã xóa sản phẩm');
-      fetchAllProducts({ page: 1, limit: 50, sortType: 'desc', sortBy: 'createdAt' });
-    } catch (e: any) {
-      message.error(e?.message || 'Không thể xóa sản phẩm');
-    }
-  };
-
   const handleOpenDetail = (id: string) => {
     setDetailId(id);
     setDetailOpen(true);
@@ -140,7 +128,7 @@ const AdminProductsPage: React.FC = () => {
     setPage(1);
   };
 
-  const columns = useMemo(() => getAdminProductColumns(handleOpenDetail, handleDelete), []);
+  const columns = useMemo(() => getAdminProductColumns(handleOpenDetail), []);
 
   return (
     <div className="p-4 bg-gray-50 min-h-screen">

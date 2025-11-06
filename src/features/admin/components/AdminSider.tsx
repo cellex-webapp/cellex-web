@@ -22,6 +22,7 @@ const MENU_CONFIG = [
     key: 'category', label: 'Quản lý Danh mục', icon: PartitionOutlined,
     children: [
       { key: 'category-all', label: 'Tất cả danh mục', path: '/admin/categories' },
+      { key: 'category-attributes', label: 'Thuộc tính danh mục', path: '/admin/categories/attributes' },
     ],
   },
   {

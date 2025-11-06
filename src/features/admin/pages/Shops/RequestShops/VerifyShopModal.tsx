@@ -117,11 +117,7 @@ const VerifyShopModal: React.FC<Props> = ({ visible, shopId, defaultAction = nul
               {shop.phone_number}
             </Descriptions.Item>
             <Descriptions.Item label={<span><HomeOutlined /> Địa chỉ</span>}>
-              {typeof shop.address === 'object' && shop.address?.fullAddress 
-                ? shop.address.fullAddress 
-                : typeof shop.address === 'string' 
-                  ? shop.address 
-                  : '—'}
+              {shop.address.fullAddress}
             </Descriptions.Item>
             <Descriptions.Item label="Mô tả">
               {shop.description || '—'}

@@ -28,6 +28,7 @@ import HomePage from '@/features/clients/pages/Home/HomePage';
 import ProductDetailPage from '@/features/clients/pages/Product/ProductDetailPage';
 import ProductByCategory from '@/features/clients/pages/Product/ProductByCategory';
 import ProductByShop from '@/features/clients/pages/Product/ProductByShop';
+import AttributeByCategoryPage from '@/features/admin/pages/Categories/Attributes/AttributeByCategoryPage';
 
 const router = createBrowserRouter([
   {
@@ -39,6 +40,7 @@ const router = createBrowserRouter([
         children: [
           { index: true, element: <AdminDashboard /> },
           { path: 'categories', element: <CategoriesPage /> },
+          { path: 'categories/attributes', element: <AttributeByCategoryPage /> },
           { path: 'categories/:slug/attributes', element: <AttributesPage /> },
           { path: 'products', element: <AdminProductsPage /> },
           { path: 'users', element: <UsersListPage /> },

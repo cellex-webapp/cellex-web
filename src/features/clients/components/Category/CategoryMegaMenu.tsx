@@ -44,7 +44,7 @@ export const CategoryMegaMenu: React.FC = () => {
     cats.map((cat) => ({
       key: String(cat.id),
       label: (
-        <a href={`/category/${cat.slug}`} onClick={handleNavigate} className="text-gray-800">
+        <a href={`/categories/${cat.slug}`} onClick={handleNavigate} className="text-gray-800">
           {cat.name}
         </a>
       ),
@@ -83,7 +83,7 @@ export const CategoryMegaMenu: React.FC = () => {
                   {col.map((cat) => (
                     <div key={cat.id} className="">
                       <a
-                        href={`/category/${cat.slug}`}
+                        href={`/categories/${cat.slug}`}
                         className="block text-gray-900 font-semibold hover:text-blue-600 transition-colors truncate"
                         onClick={handleNavigate}
                         title={cat.name}
@@ -96,7 +96,7 @@ export const CategoryMegaMenu: React.FC = () => {
                           {cat.children.map((child) => (
                             <li key={child.id}>
                               <a
-                                href={`/category/${child.slug}`}
+                                href={`/categories/${child.slug}`}
                                 className="block text-sm text-gray-600 hover:text-blue-600 py-0.5 transition-colors truncate"
                                 onClick={handleNavigate}
                                 title={child.name}
@@ -108,7 +108,7 @@ export const CategoryMegaMenu: React.FC = () => {
                                   {child.children.map((grand) => (
                                     <li key={grand.id}>
                                       <a
-                                        href={`/category/${grand.slug}`}
+                                        href={`/categories/${grand.slug}`}
                                         className="block text-xs text-gray-500 hover:text-blue-600 py-0.5 transition-colors truncate"
                                         onClick={handleNavigate}
                                         title={grand.name}

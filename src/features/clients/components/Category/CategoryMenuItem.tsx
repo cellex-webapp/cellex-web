@@ -24,7 +24,7 @@ export const CategoryMenuItem: React.FC<CategoryMenuItemProps> = ({ category, le
   return (
     <li className={`relative ${hasChildren ? 'has-children' : ''}`}>
       <a
-        href={`/category/${category.slug}`}
+        href={`/categories/${category.slug}`}
         onClick={handleClick}
         className={`flex items-center justify-between px-4 py-3 rounded-lg transition-all duration-200 ${
           level === 0

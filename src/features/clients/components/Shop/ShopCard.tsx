@@ -9,7 +9,6 @@ interface Props {
   shopId?: string | number;
   shop?: IShop | null;
   reviewCount?: number | string;
-  productCount?: number | string;
   purchaseCount?: number | string;
   joinDate?: string;
   showViewLink?: boolean;
@@ -19,7 +18,6 @@ const ShopCard: React.FC<Props> = ({
   shopId,
   shop: shopProp,
   reviewCount = 0,
-  productCount = 0,
   purchaseCount = 0,
   joinDate,
   showViewLink = true,
@@ -118,7 +116,7 @@ const ShopCard: React.FC<Props> = ({
 
         <div className="flex items-center gap-3">
           <span className={statLabelClass}>Sản phẩm</span>
-          <span className={statValueClass}>{(shop as any)?.productCount ?? productCount ?? '-'}</span>
+          <span className={statValueClass}>{formatNumber(shop?.product_count ?? 0)}</span>
         </div>
       </div>
 

@@ -93,6 +93,7 @@ declare global {
         description?: string;
         isActive: boolean;
         parent?: string;
+        attributes?: IAttribute[];
     }
 
     interface ICreateCategoryPayload {
@@ -122,6 +123,7 @@ declare global {
         logo_url: string;
         phone_number: string;
         rejection_reason?: string;
+        product_count?: number;
         created_at: string;
         updated_at: string;
     }
