@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Button, Spin, Tag } from 'antd';
+import { Button, Spin, Tag, message, InputNumber } from 'antd';
+import { unwrapResult } from '@reduxjs/toolkit';
 import { ShoppingCartOutlined, LeftOutlined, RightOutlined } from '@ant-design/icons';
 import { useProduct } from '@/hooks/useProduct';
 import { useAttribute } from '@/hooks/useAttribute';
 import ShopCard from '@/features/clients/components/Shop/ShopCard';
+import { useCart } from '@/hooks/useCart';
 
 const formatCurrency = (v?: number) => {
     if (v == null) return '';
@@ -24,6 +26,7 @@ const ProductDetailCard: React.FC = () => {
     const { id } = useParams();
 
     const { selectedProduct, isLoading, fetchProductById } = useProduct();
+    const { addToCart, isLoading: cartLoading } = useCart();
     const [imgIndex, setImgIndex] = useState(0);
     const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string>>({});
 
@@ -43,13 +46,50 @@ const ProductDetailCard: React.FC = () => {
         return acc;
     }, {} as Record<string, typeof p.attributeValues>);
 
-    const { highlightAttributes, fetchHighlightAttributesOfCategory, isLoading: attrLoading } = useAttribute();
+    const { fetchHighlightAttributesOfCategory } = useAttribute();
 
     useEffect(() => {
         if (p?.categoryId) {
             fetchHighlightAttributesOfCategory(p.categoryId);
         }
     }, [p?.categoryId, fetchHighlightAttributesOfCategory]);
+
+    const canBuy = useMemo(() => {
+        if (!p) return false;
+        if (p.stockQuantity <= 0) return false;
+        return true;
+    }, [p]);
+
+    const [quantity, setQuantity] = useState<number>(1);
+
+    useEffect(() => {
+        // reset qty when product changes
+        setQuantity(1);
+    }, [p?.id]);
+
+    const handleAddToCart = async (goCheckout?: boolean) => {
+        if (!p) return;
+        if (quantity <= 0) {
+            message.warning('Vui lòng chọn số lượng hợp lệ');
+            return;
+        }
+        if (quantity > p.stockQuantity) {
+            message.error(`Số lượng tồn kho chỉ còn ${p.stockQuantity} sản phẩm.`);
+            setQuantity(p.stockQuantity);
+            return;
+        }
+        try {
+            const action = await addToCart({ productId: p.id, quantity });
+            unwrapResult(action as any);
+            message.success('Đã thêm vào giỏ hàng');
+            if (goCheckout) {
+                // navigate to checkout page
+                window.location.href = '/checkout';
+            }
+        } catch (e: any) {
+            message.error(e?.message || 'Không thể thêm vào giỏ hàng');
+        }
+    };
 
     if (isLoading || !p) {
         return (
@@ -163,13 +203,32 @@ const ProductDetailCard: React.FC = () => {
                         </div>
 
                         <div className="flex items-center gap-3">
-                            <button className="w-12 h-12 rounded-lg border-2 border-blue-600 flex items-center justify-center hover:bg-blue-50 transition-colors cursor-pointer">
+                            <button
+                                className="w-12 h-12 rounded-lg border-2 border-blue-600 flex items-center justify-center hover:bg-blue-50 transition-colors cursor-pointer disabled:opacity-60"
+                                disabled={!canBuy || cartLoading}
+                                onClick={() => handleAddToCart(false)}
+                                aria-label="Thêm vào giỏ"
+                            >
                                 <ShoppingCartOutlined className="text-xl text-blue-600" />
                             </button>
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm text-gray-600">Số lượng</span>
+                                <InputNumber
+                                    min={1}
+                                    max={p.stockQuantity}
+                                    value={quantity}
+                                    onChange={(v) => setQuantity(Number(v) || 1)}
+                                    style={{ width: 90 }}
+                                    disabled={!canBuy || cartLoading}
+                                />
+                            </div>
                             <Button
                                 type="primary"
                                 size="large"
                                 className="flex-1 h-12 !bg-indigo-600 hover:!bg-indigo-700 font-medium text-base"
+                                disabled={!canBuy || cartLoading}
+                                loading={cartLoading}
+                                onClick={() => handleAddToCart(true)}
                             >
                                 Mua ngay
                             </Button>
