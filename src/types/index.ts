@@ -3,6 +3,11 @@ declare global {
     type StatusVerification = 'PENDING' | 'APPROVED' | 'REJECTED';
     type DataType = 'TEXT' | 'NUMBER' | 'BOOLEAN' | 'SELECT' | 'MULTI_SELECT';
 
+    interface IAddressDataUnit {
+        code: string;
+        name: string;
+    }
+
     interface IAddress {
         street?: string;
         commune?: string;
@@ -123,7 +128,9 @@ declare global {
     interface ICreateUpdateShopPayload {
         shopName: string;
         description: string;
-        address: string;
+        provinceCode: string;
+        communeCode: string;
+        detailAddress: string;
         phoneNumber: string;
         email: string;
         logo?: File | string;
@@ -247,7 +254,7 @@ declare global {
         price: string | number;
         saleOff?: string | number;
         stockQuantity: string | number;
-        attributeValues?: Array<{ attributeId: string; value: string }>|string;
+        attributeValues?: Array<{ attributeId: string; value: string }> | string;
         isPublished?: boolean | string;
         images?: File[];
     }
@@ -259,7 +266,7 @@ declare global {
         price?: string | number;
         saleOff?: string | number;
         stockQuantity?: string | number;
-        attributeValues?: Array<{ attributeId: string; value: string }>|string;
+        attributeValues?: Array<{ attributeId: string; value: string }> | string;
         isPublished?: boolean | string;
         images?: File[];
     }

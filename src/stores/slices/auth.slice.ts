@@ -97,7 +97,11 @@ const authSlice = createSlice({
       })
       .addCase(updateUserProfile.fulfilled, (state, action) => {
         if (state.user && state.user.id === action.payload.id) {
-          state.user = { ...state.user, ...action.payload };
+          const updatedUser = { ...state.user, ...action.payload } as IUser;
+          state.user = updatedUser;
+          try {
+            localStorage.setItem('user', JSON.stringify(updatedUser));
+          } catch {}
         }
       })
       .addCase(login.fulfilled, (state, action: PayloadAction<AuthResult>) => {

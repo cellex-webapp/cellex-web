@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Input, Button, Upload, Typography, message, theme, Row, Col, Image, Space } from 'antd';
+import { Form, Input, Button, Upload, Typography, message, theme, Row, Col, Image, Space, Select } from 'antd';
 import { UploadOutlined, DeleteOutlined } from '@ant-design/icons';
 import useShop from '@/hooks/useShop';
 import { useAuth } from '@/hooks/useAuth';
+import { addressService } from '@/services/address.service';
+import { useNavigate } from 'react-router-dom';
 
 const { Title } = Typography;
 
@@ -13,12 +15,22 @@ const VendorRegistration: React.FC = () => {
   const { createShop, isLoading, error } = useShop();
   const { currentUser } = useAuth();
   const { token } = theme.useToken();
+  const navigate = useNavigate();
+
+  const [provinces, setProvinces] = useState<IAddressDataUnit[]>([]);
+  const [communes, setCommunes] = useState<IAddressDataUnit[]>([]);
+  const [provinceSelected, setProvinceSelected] = useState<string | undefined>(undefined);
+  const [provincesLoading, setProvincesLoading] = useState(false);
+  const [communesLoading, setCommunesLoading] = useState(false);
+
 
   const onFinish = async (values: any) => {
     const payload: ICreateUpdateShopPayload = {
       shopName: values.shopName,
       description: values.description,
-      address: values.address,
+      provinceCode: values.provinceCode,
+      communeCode: values.communeCode,
+      detailAddress: values.detailAddress,
       phoneNumber: values.phoneNumber,
       email: values.email,
       logo: logoFile || undefined,
@@ -26,14 +38,42 @@ const VendorRegistration: React.FC = () => {
 
     try {
       await createShop(payload);
-      message.success('Đã gửi yêu cầu đăng ký cửa hàng.');
+      message.success('Đã gửi yêu cầu đăng ký cửa hàng. Vui lòng chờ quản trị viên duyệt.');
+      navigate('/account');
       form.resetFields();
       setLogoFile(null);
     } catch (err) {
       console.error(err);
-      message.error('Đăng ký thất bại.');
+      message.error(error || 'Đăng ký thất bại.');
     }
   };
+
+  useEffect(() => {
+    (async () => {
+      setProvincesLoading(true);
+      try {
+        const resp = await addressService.getProvinces();
+        setProvinces(resp.result || []);
+      } catch (e) { console.error(e); }
+      finally { setProvincesLoading(false); }
+    })();
+  }, []);
+
+  useEffect(() => {
+    if (!provinceSelected) {
+      setCommunes([]);
+      return;
+    }
+    (async () => {
+      setCommunesLoading(true);
+      try {
+        const resp = await addressService.getCommunesByProvinceCode(provinceSelected);
+        setCommunes(resp.result || []);
+      } catch (e) { console.error(e); }
+      finally { setCommunesLoading(false); }
+    })();
+  }, [provinceSelected]);
+
 
   useEffect(() => {
     if (!logoFile) {
@@ -64,22 +104,52 @@ const VendorRegistration: React.FC = () => {
               <Input placeholder="Ví dụ: Cửa hàng ABC" />
             </Form.Item>
 
-            <Form.Item name="description" label="Mô tả" rules={[{ required: true, message: 'Vui lòng nhập mô tả' }]}>
+            <Form.Item name="description" label="Mô tả">
               <Input.TextArea rows={4} placeholder="Mô tả ngắn về cửa hàng" />
-            </Form.Item>
-
-            <Form.Item name="address" label="Địa chỉ" rules={[{ required: true, message: 'Vui lòng nhập địa chỉ' }]}>
-              <Input placeholder="Số nhà, đường, phường, quận" />
             </Form.Item>
 
             <Row gutter={12}>
               <Col xs={24} md={12}>
-                <Form.Item name="phoneNumber" label="Số điện thoại" rules={[{ required: true, message: 'Vui lòng nhập số điện thoại' }]}>
+                <Form.Item name="provinceCode" label="Tỉnh/Thành phố" rules={[{ required: true, message: 'Vui lòng chọn Tỉnh/Thành' }]}>
+                  <Select
+                    showSearch
+                    placeholder="Chọn tỉnh/thành"
+                    loading={provincesLoading}
+                    optionFilterProp="label"
+                    onChange={(value) => {
+                      setProvinceSelected(value);
+                      form.setFieldsValue({ communeCode: undefined });
+                    }}
+                    options={provinces.map(p => ({ label: p.name, value: p.code }))}
+                  />
+                </Form.Item>
+              </Col>
+              <Col xs={24} md={12}>
+                <Form.Item name="communeCode" label="Xã/Phường" rules={[{ required: true, message: 'Vui lòng chọn Xã/Phường' }]}>
+                  <Select
+                    showSearch
+                    placeholder="Chọn xã/phường"
+                    loading={communesLoading}
+                    disabled={!provinceSelected}
+                    optionFilterProp="label"
+                    options={communes.map(c => ({ label: c.name, value: c.code }))}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Form.Item name="detailAddress" label="Địa chỉ chi tiết" rules={[{ required: true, message: 'Vui lòng nhập địa chỉ chi tiết' }]}>
+              <Input placeholder="Số nhà, tên đường..." />
+            </Form.Item>
+
+            <Row gutter={12}>
+              <Col xs={24} md={12}>
+                <Form.Item name="phoneNumber" label="Số điện thoại cửa hàng" rules={[{ required: true, message: 'Vui lòng nhập số điện thoại' }]}>
                   <Input placeholder="Điện thoại liên hệ" />
                 </Form.Item>
               </Col>
               <Col xs={24} md={12}>
-                <Form.Item name="email" label="Email liên hệ" rules={[{ required: true, message: 'Vui lòng nhập email' }, { type: 'email', message: 'Email không hợp lệ' }]}>
+                <Form.Item name="email" label="Email cửa hàng" rules={[{ required: true, message: 'Vui lòng nhập email' }, { type: 'email', message: 'Email không hợp lệ' }]}>
                   <Input placeholder="Email liên hệ" />
                 </Form.Item>
               </Col>
@@ -109,7 +179,6 @@ const VendorRegistration: React.FC = () => {
               ) : (
                 <div style={{ color: '#888', marginBottom: 12 }}>Chưa có logo</div>
               )}
-
               <Upload
                 beforeUpload={(file) => {
                   setLogoFile(file as File);
@@ -120,7 +189,6 @@ const VendorRegistration: React.FC = () => {
               >
                 <Button icon={<UploadOutlined />}>Tải lên logo</Button>
               </Upload>
-
               {logoPreview && (
                 <Button
                   danger

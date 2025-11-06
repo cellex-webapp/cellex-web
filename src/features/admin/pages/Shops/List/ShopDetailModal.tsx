@@ -42,6 +42,37 @@ const ShopDetailModal: React.FC<Props> = ({ visible, shopId, onClose }) => {
     REJECTED: { color: 'red', text: 'Từ chối' },
   };
 
+  const formatAddress = (address: IAddress | string | null | undefined): string => {
+    if (!address) {
+      return '—';
+    }
+
+    if (typeof address === 'string') {
+      return address;
+    }
+
+    if (typeof address === 'object') {
+      if (address.fullAddress) {
+        return address.fullAddress;
+      }
+
+      const parts = [
+        address.street,
+        address.commune,
+        address.province,
+      ];
+
+      const validParts = parts.filter(part => part);
+
+      if (validParts.length > 0) {
+        return validParts.join(', ');
+      }
+    }
+
+    return '—';
+  };
+
+
   return (
     <Modal
       title={
@@ -54,7 +85,7 @@ const ShopDetailModal: React.FC<Props> = ({ visible, shopId, onClose }) => {
       onCancel={onClose}
       footer={null}
       width={800}
-      centered
+      style={{ top: 20 }}
     >
       {loading ? (
         <div className="text-center p-8">
@@ -82,6 +113,7 @@ const ShopDetailModal: React.FC<Props> = ({ visible, shopId, onClose }) => {
             </div>
           </div>
 
+
           <Divider orientation="left">Thông tin liên hệ</Divider>
           <Descriptions column={2} bordered size="small">
             <Descriptions.Item label={<span><MailOutlined /> Email</span>} span={2}>
@@ -90,12 +122,9 @@ const ShopDetailModal: React.FC<Props> = ({ visible, shopId, onClose }) => {
             <Descriptions.Item label={<span><PhoneOutlined /> Số điện thoại</span>} span={2}>
               {shop.phone_number}
             </Descriptions.Item>
+
             <Descriptions.Item label={<span><HomeOutlined /> Địa chỉ</span>} span={2}>
-              {typeof shop.address === 'object' && shop.address?.fullAddress
-                ? shop.address.fullAddress
-                : typeof shop.address === 'string'
-                  ? shop.address
-                  : '—'}
+              {formatAddress(shop.address)}
             </Descriptions.Item>
           </Descriptions>
 

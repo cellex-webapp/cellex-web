@@ -116,9 +116,7 @@ const ShopsPage: React.FC = () => {
             e.stopPropagation();
             openFormModal(record.id);
           }}
-        >
-          Sửa
-        </Button>
+        />
       ),
     },
   ];
