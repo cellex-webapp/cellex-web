@@ -1,5 +1,5 @@
 import axiosInstance from "@/utils/axiosInstance";
-import { isFormData } from '@/utils/formData';
+import toFormData, { isFormData } from '@/utils/formData';
 
 export const productService = {
     getAllProducts: async (params?: { page?: number; limit?: number; sortType?: string; sortBy?: string }): Promise<IApiResponse<IPage<IProduct>>> => {
@@ -17,47 +17,9 @@ export const productService = {
             return (resp as unknown) as IApiResponse<IProduct>;
         }
 
-        const hasFiles = data && (
-            (Array.isArray(data.images) && data.images.some((f: any) => typeof File !== 'undefined' && f instanceof File)) ||
-            (data.image && typeof File !== 'undefined' && data.image instanceof File)
-        );
+        const fd = toFormData(data);
 
-        if (hasFiles) {
-            const fd = new FormData();
-
-            if (data.categoryId !== undefined && data.categoryId !== null) fd.append('categoryId', String(data.categoryId));
-            if (data.name !== undefined && data.name !== null) fd.append('name', String(data.name));
-            if (data.description !== undefined && data.description !== null) fd.append('description', String(data.description));
-            if (data.price !== undefined && data.price !== null) fd.append('price', String(data.price));
-            if (data.saleOff !== undefined && data.saleOff !== null) fd.append('saleOff', String(data.saleOff));
-            if (data.stockQuantity !== undefined && data.stockQuantity !== null) fd.append('stockQuantity', String(data.stockQuantity));
-            if (data.isPublished !== undefined && data.isPublished !== null) fd.append('isPublished', String(data.isPublished));
-
-            if (data.attributeValues !== undefined && data.attributeValues !== null) {
-                try {
-                    fd.append('attributeValues', JSON.stringify(data.attributeValues));
-                } catch (e) {
-                    fd.append('attributeValues', String(data.attributeValues));
-                }
-            }
-
-            if (Array.isArray(data.images)) {
-                for (const file of data.images) {
-                    if (typeof File !== 'undefined' && file instanceof File) {
-                        try {
-                            fd.append('images', file, file.name || 'image');
-                        } catch (e) {
-                            fd.append('images', file as any);
-                        }
-                    }
-                }
-            }
-
-            const resp = await axiosInstance.put<IApiResponse<IProduct>>(`/products/${productId}`, fd);
-            return (resp as unknown) as IApiResponse<IProduct>;
-        }
-
-        const resp = await axiosInstance.put<IApiResponse<IProduct>>(`/products/${productId}`, data);
+        const resp = await axiosInstance.put<IApiResponse<IProduct>>(`/products/${productId}`, fd);
         return (resp as unknown) as IApiResponse<IProduct>;
     },
 
@@ -87,38 +49,9 @@ export const productService = {
             return (resp as unknown) as IApiResponse<IProduct>;
         }
 
-        const hasFiles = data && Array.isArray(data.images) && data.images.some((f: any) => typeof File !== 'undefined' && f instanceof File);
-        if (hasFiles) {
-            const fd = new FormData();
-            if (data.categoryId !== undefined && data.categoryId !== null) fd.append('categoryId', String(data.categoryId));
-            if (data.name !== undefined && data.name !== null) fd.append('name', String(data.name));
-            if (data.description !== undefined && data.description !== null) fd.append('description', String(data.description));
-            if (data.price !== undefined && data.price !== null) fd.append('price', String(data.price));
-            if (data.saleOff !== undefined && data.saleOff !== null) fd.append('saleOff', String(data.saleOff));
-            if (data.stockQuantity !== undefined && data.stockQuantity !== null) fd.append('stockQuantity', String(data.stockQuantity));
-            if (data.isPublished !== undefined && data.isPublished !== null) fd.append('isPublished', String(data.isPublished));
-            if (data.attributeValues !== undefined && data.attributeValues !== null) {
-                try {
-                    fd.append('attributeValues', JSON.stringify(data.attributeValues));
-                } catch (e) {
-                    fd.append('attributeValues', String(data.attributeValues));
-                }
-            }
-            for (const file of data.images || []) {
-                if (typeof File !== 'undefined' && file instanceof File) {
-                    try {
-                        fd.append('images', file, file.name || 'image');
-                    } catch (e) {
-                        fd.append('images', file as any);
-                    }
-                }
-            }
+        const fd = toFormData(data);
 
-            const resp = await axiosInstance.post<IApiResponse<IProduct>>('/products', fd);
-            return (resp as unknown) as IApiResponse<IProduct>;
-        }
-
-        const resp = await axiosInstance.post<IApiResponse<IProduct>>('/products', data);
+        const resp = await axiosInstance.post<IApiResponse<IProduct>>('/products', fd);
         return (resp as unknown) as IApiResponse<IProduct>;
     },
 };

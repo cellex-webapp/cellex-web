@@ -2,6 +2,7 @@ declare global {
     type UserRole = 'ADMIN' | 'USER' | 'VENDOR';
     type StatusVerification = 'PENDING' | 'APPROVED' | 'REJECTED';
     type DataType = 'TEXT' | 'NUMBER' | 'BOOLEAN' | 'SELECT' | 'MULTI_SELECT';
+    type CartUpdateAction = 'INCREASE' | 'DECREASE';
 
     interface IAddressDataUnit {
         code: string;
@@ -271,6 +272,54 @@ declare global {
         attributeValues?: Array<{ attributeId: string; value: string }> | string;
         isPublished?: boolean | string;
         images?: File[];
+    }
+
+    interface IAddToCartRequest {
+        productId: string;
+        quantity: number;
+    }
+
+    interface IUpdateCartItemQuantityRequest {
+        productId: string;
+        action: CartUpdateAction;
+    }
+
+    interface ISetCartItemQuantityRequest {
+        productId: string;
+        quantity: number;
+    }
+
+    interface IRemoveFromCartRequest {
+        productIds: string[];
+    }
+
+    interface ICartItem {
+  productId: string;
+  productName: string;    
+  productImage: string;   
+  quantity: number;
+  price: number;          
+  subtotal: number;       
+  shopId: string;
+  shopName: string;
+  availableStock: number; 
+  isAvailable: boolean;
+}
+
+    interface ICart {
+        id: string;
+        userId: string;
+        items: ICartItem[];
+        totalQuantity: number;
+        totalPrice: number;
+        createdAt: string;
+        updatedAt: string;
+    }
+
+    interface ICartState {
+        cart: ICart | null;
+        isLoading: boolean;
+        error: string | null;
     }
 }
 

@@ -29,6 +29,7 @@ import ProductDetailPage from '@/features/clients/pages/Product/ProductDetailPag
 import ProductByCategory from '@/features/clients/pages/Product/ProductByCategory';
 import ProductByShop from '@/features/clients/pages/Product/ProductByShop';
 import AttributeByCategoryPage from '@/features/admin/pages/Categories/Attributes/AttributeByCategoryPage';
+import CartPage from '@/features/clients/pages/Cart/CartPage';
 
 const router = createBrowserRouter([
   {
@@ -67,6 +68,7 @@ const router = createBrowserRouter([
           { path: 'shops/:id', element: <ProductByShop /> },
           { path: 'products/:id', element: <ProductDetailPage /> },
           { path: 'account', element: <AccountManagementPage /> },
+          { path: 'cart', element: <CartPage /> },
         ],
       },
     ],

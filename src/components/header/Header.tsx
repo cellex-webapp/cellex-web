@@ -1,16 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import logo from '@/assets/logo/cellex.png';
 import { SearchOutlined, UserOutlined, ShoppingCartOutlined, BellOutlined } from '@ant-design/icons';
 import { Badge } from 'antd';
 import { CategoryMegaMenu } from '@/features/clients/components/Category/CategoryMegaMenu';
+import { useCart } from '@/hooks/useCart';
 
 const Header: React.FC = () => {
   const [q, setQ] = useState('');
   const navigate = useNavigate();
 
   const { isAuthenticated } = useAuth();
+  const { totalItems, fetchMyCart } = useCart();
 
   const onSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -18,6 +20,12 @@ const Header: React.FC = () => {
       navigate(`/search?q=${encodeURIComponent(q.trim())}`);
     }
   };
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchMyCart();
+    }
+  }, [isAuthenticated, fetchMyCart]);
 
   return (
     <header className="w-full fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-20">
@@ -61,7 +69,7 @@ const Header: React.FC = () => {
                 </Link>
 
                 <Link to="/cart" className="no-underline">
-                  <Badge count={2} offset={[-6, 8]}>
+                  <Badge count={totalItems} offset={[-6, 8]}>
                     <div className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 md:px-4 md:py-3 rounded-full">
                       <ShoppingCartOutlined className="text-lg md:text-2xl" />
                       <span className="hidden sm:inline md:inline">Giỏ hàng</span>

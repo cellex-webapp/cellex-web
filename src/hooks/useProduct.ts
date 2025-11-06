@@ -27,8 +27,11 @@ export const useProduct = () => {
 
     const handleFetchById = useCallback((id: string) => dispatch(fetchProductById(id)), [dispatch]);
     const handleFetchAll = useCallback((params?: { page?: number; limit?: number; sortType?: string; sortBy?: string }) => dispatch(fetchAllProducts(params)), [dispatch]);
-    const handleUpdate = useCallback((id: string, data: any) => dispatch(updateProduct({ id, data })), [dispatch]);
-    const handleCreate = useCallback((data: ICreateProductPayload | FormData | any) => dispatch(createProduct(data)), [dispatch]);
+
+    const handleUpdate = useCallback((id: string, data: IUpdateProductPayload) => dispatch(updateProduct({ id, data })), [dispatch]);
+
+    const handleCreate = useCallback((data: ICreateProductPayload) => dispatch(createProduct(data)), [dispatch]);
+
     const handleDelete = useCallback((id: string) => dispatch(deleteProductById(id)), [dispatch]);
     const handleFetchByShop = useCallback((shopId: string, pageable?: IPageable) => dispatch(fetchProductsByShop({ shopId, pageable })), [dispatch]);
     const handleSearch = useCallback((keyword: string, pageable?: IPageable) => dispatch(searchProducts({ keyword, pageable })), [dispatch]);
@@ -49,4 +52,3 @@ export const useProduct = () => {
         fetchProductsByCategory: handleFetchByCategory,
     };
 };
-
