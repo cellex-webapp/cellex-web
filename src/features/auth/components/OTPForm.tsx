@@ -26,7 +26,7 @@ const OTPForm: React.FC<OTPFormProps> = ({ otp, onChange, onSubmit, onResend, lo
           value={otp}
           onChange={onChange}
           numInputs={6}
-          renderSeparator={<span className="mx-1.5">-</span>}
+          renderSeparator={<span></span>}
           renderInput={(props) => <input {...props} />}
           containerStyle="flex justify-center"
           inputStyle={{
@@ -36,7 +36,7 @@ const OTPForm: React.FC<OTPFormProps> = ({ otp, onChange, onSubmit, onResend, lo
             borderRadius: '0.5rem',
             border: '1px solid #d1d5db',
             textAlign: 'center',
-            margin: '0 0.2rem',
+            margin: '0 0.25rem',
           }}
         />
       </div>
@@ -44,7 +44,7 @@ const OTPForm: React.FC<OTPFormProps> = ({ otp, onChange, onSubmit, onResend, lo
       <button
         type="submit"
         disabled={loading || !isOtpValid}
-        className="w-full px-4 py-2.5 text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:bg-indigo-300 transition-colors"
+        className="w-full px-4 py-2.5 !text-white !bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:bg-indigo-300 transition-colors cursor-pointer disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-indigo-300/40 font-semibold"
       >
         {loading ? 'Đang xác thực...' : 'Xác thực'}
       </button>

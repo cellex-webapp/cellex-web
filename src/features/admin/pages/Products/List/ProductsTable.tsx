@@ -3,7 +3,6 @@ import { EyeOutlined, AppstoreOutlined, CheckCircleOutlined, DeleteOutlined } fr
 
 export const getAdminProductColumns = (
   onOpenDetail: (id: string) => void,
-  onDelete: (id: string) => void
 ) => [
   {
     title: 'Ảnh',
@@ -141,15 +140,6 @@ export const getAdminProductColumns = (
         <Tooltip title="Xem chi tiết">
           <Button type="text" size="small" icon={<EyeOutlined />} onClick={() => onOpenDetail(record.id)} />
         </Tooltip>
-        <Popconfirm
-          title="Xóa sản phẩm?"
-          description="Hành động này không thể hoàn tác"
-          okText="Xóa"
-          cancelText="Hủy"
-          onConfirm={() => onDelete(record.id)}
-        >
-          <Button type="text" size="small" danger icon={<DeleteOutlined />} />
-        </Popconfirm>
       </Space>
     ),
   },

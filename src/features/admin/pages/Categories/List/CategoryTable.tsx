@@ -87,6 +87,7 @@ const CategoryTable: React.FC<CategoryTableProps> = ({ data, loading, onEdit, on
 
   return (
     <Table
+      className='cursor-pointer'
       columns={columns}
       dataSource={data}
       loading={loading}

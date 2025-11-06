@@ -31,6 +31,30 @@ const Address: React.FC = () => {
   const [provincesLoading, setProvincesLoading] = useState(false);
   const [communesLoading, setCommunesLoading] = useState(false);
 
+  const populateForm = () => {
+    if (!currentUser) return { hasAddress: false };
+    
+    const anyUser: any = currentUser as any;
+    const provinceCode = anyUser.provinceCode ?? anyUser.province_code ?? undefined;
+    const communeCode = anyUser.communeCode ?? anyUser.commune_code ?? undefined;
+    const detailAddress = anyUser.detailAddress ?? anyUser.detail_address ?? '';
+
+    form.setFieldsValue({ provinceCode, communeCode, detailAddress });
+    
+    if (provinceCode) {
+      setProvinceSelected(String(provinceCode)); 
+    }
+    
+    return { hasAddress: Boolean(detailAddress || provinceCode || communeCode) };
+  };
+
+  useEffect(() => {
+    const { hasAddress } = populateForm();
+    if (currentUser) {
+      setIsEditing(!hasAddress);
+    }
+   }, [currentUser, form]);
+
   useEffect(() => {
     if (!currentUser) return;
     const anyUser: any = currentUser as any;
@@ -191,12 +215,17 @@ const Address: React.FC = () => {
     );
   };
 
+  const handleEditClick = () => {
+    populateForm();
+    setIsEditing(true);
+  }
+
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+      <div className="flex justify-between items-center mb-4">
         <Title level={4} style={{ margin: 0 }}>Địa chỉ nhận hàng</Title>
         {!isEditing && (
-          <Button className='!bg-indigo-600' type="primary" onClick={() => setIsEditing(true)}>
+          <Button className='!bg-indigo-600' type="primary" onClick={handleEditClick}>
             Cập nhật địa chỉ
           </Button>
         )}
@@ -247,7 +276,7 @@ const Address: React.FC = () => {
 
           <Form.Item>
             <Space>
-              <Button type="primary" htmlType="submit" loading={loading}>
+              <Button className="!bg-indigo-600" type="primary" htmlType="submit" loading={loading}>
                 Lưu địa chỉ
               </Button>
               <Button

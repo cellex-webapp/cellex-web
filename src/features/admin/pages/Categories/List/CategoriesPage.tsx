@@ -18,18 +18,12 @@ const CategoriesPageContent: React.FC = () => {
   const [detailOpen, setDetailOpen] = useState(false);
   const [q, setQ] = useState('');
 
-  const { categories, isLoading, error, fetchAllCategories, createCategory, updateCategory, deleteCategory } =
+  const { categories, isLoading, fetchAllCategories, createCategory, updateCategory, deleteCategory } =
     useCategory();
 
   useEffect(() => {
     fetchAllCategories();
   }, [fetchAllCategories]);
-
-  useEffect(() => {
-    if (error) {
-      message.error(error);
-    }
-  }, [error, message]);
 
   const filteredCategories = useMemo(() => {
     const kw = q.trim().toLowerCase();

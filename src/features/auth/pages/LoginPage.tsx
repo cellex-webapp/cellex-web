@@ -1,15 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth'; 
+import { useAuth } from '@/hooks/useAuth';
 import LoginForm from '../components/LoginForm';
 import { unwrapResult } from '@reduxjs/toolkit';
+import { message } from 'antd';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   const navigate = useNavigate();
-  const { login, isLoading, error } = useAuth();
+  const { login, isLoading } = useAuth();
 
   const onLogin = async (e?: React.FormEvent<HTMLFormElement>) => {
     if (e) e.preventDefault();
@@ -24,19 +25,13 @@ const LoginPage: React.FC = () => {
       } else if (role === 'vendor') {
         navigate('/vendor');
       } else {
-        navigate('/'); 
+        navigate('/');
       }
     } catch (rejectedValue) {
-      console.error('Failed to login:', rejectedValue);
+      const errMsg = (rejectedValue as any)?.message || String(rejectedValue) || 'Đăng nhập thất bại';
+      message.error(errMsg);
     }
   };
-
-  useEffect(() => {
-    if (error) {
-      alert(`Lỗi đăng nhập: ${error}`);
-    }
-  }, [error]);
-
 
   return (
     <div className="min-h-screen pt-14 flex items-center justify-center relative bg-gradient-to-br from-sky-500 via-indigo-600 to-violet-600">
@@ -59,7 +54,6 @@ const LoginPage: React.FC = () => {
             onSignup={() => navigate('/signup')}
             onGoogleSignIn={() => alert('Tính năng Google chưa khả dụng')}
           />
-          {error && <p className="text-red-500 text-sm mt-4 text-center">{error}</p>}
         </div>
       </div>
     </div>

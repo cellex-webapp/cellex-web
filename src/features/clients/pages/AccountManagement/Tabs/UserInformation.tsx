@@ -148,7 +148,6 @@ const UserInformation: React.FC<{ user?: IUser | null }> = ({ user }) => {
         onFinish={onFinish}
       >
         <Form.Item name="avatar" className="flex flex-col items-center gap-2">
-          {/* Wrap avatar with Upload; click avatar to change in edit mode, preview in view mode */}
           <ImgCrop
             rotationSlider
             modalTitle="Chỉnh sửa ảnh đại diện"

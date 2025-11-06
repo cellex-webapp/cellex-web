@@ -22,7 +22,7 @@ export const categoryService = {
       name: data.name,
       description: data.description,
       parentId: data.parentId,
-      isActive: data.isActive, 
+      isActive: data.isActive,
       image: data.image,
     });
 
@@ -32,13 +32,13 @@ export const categoryService = {
 
   updateCategory: async (payload: IUpdateCategoryPayload): Promise<IApiResponse<ICategory>> => {
     const { id, ...data } = payload;
-    
+
     const fd = toFormData({
       name: data.name,
       description: data.description,
       parentId: data.parentId,
-      isActive: data.isActive, 
-      image: data.image, 
+      isActive: data.isActive,
+      image: data.image,
     });
 
     const resp = await axiosInstance.put<IApiResponse<ICategory>>(`/categories/${id}`, fd);
