@@ -6,12 +6,13 @@ import shopReducer from '@/stores/slices/shop.slice';
 import attributeReducer from '@/stores/slices/attribute.slice';
 import productReducer from '@/stores/slices/product.slice';
 import cartReducer from '@/stores/slices/cart.slice';
-
+import couponReducer from '@/stores/slices/coupon.slice';
 const rootReducer = combineReducers({
   auth: authReducer,
   user: userReducer,
   category: categoryReducer,
   cart: cartReducer,
+  coupon: couponReducer,
   shop: shopReducer,
   attribute: attributeReducer,
   product: productReducer,
