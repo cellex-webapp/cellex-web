@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import logo from '@/assets/logo/cellex.png';
-import { SearchOutlined, MenuOutlined, UserOutlined } from '@ant-design/icons';
+import { UserOutlined } from '@ant-design/icons';
 
 const Header: React.FC = () => {
-  const [q, setQ] = useState('');
   const navigate = useNavigate();
 
   const { isAuthenticated, currentUser, logout } = useAuth();
@@ -13,13 +12,6 @@ const Header: React.FC = () => {
   const handleLogout = async () => {
     await logout(); 
     navigate('/login', { replace: true });
-  };
-
-  const onSearch = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (q.trim()) {
-      navigate(`/search?q=${encodeURIComponent(q.trim())}`);
-    }
   };
 
   return (
@@ -32,29 +24,6 @@ const Header: React.FC = () => {
           <span className="ml-2 hidden sm:inline text-lg md:text-xl font-bold tracking-wide text-indigo-600">
             CELLEX
           </span>
-        </div>
-
-        <Link
-          to="/categories"
-          className="flex items-center gap-2 px-4 md:px-6 h-9 md:h-10 text-sm md:text-base font-semibold !rounded-full !bg-indigo-600 !text-white hover:!bg-indigo-700 no-underline min-w-fit"
-        >
-          <MenuOutlined className="text-base md:text-lg" />
-          <span className="hidden sm:inline">Danh mục</span>
-        </Link>
-
-        <div className="hidden sm:flex items-center flex-1 max-w-[520px] md:max-w-[600px] ml-4 md:ml-8 rounded-lg border border-gray-300 bg-white">
-          <form onSubmit={onSearch} className="flex items-center w-full px-3 md:px-4 h-9 md:h-10">
-            <input
-              type="text"
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="Tìm trong trang..."
-              className="flex-1 bg-transparent outline-none text-[14px] md:text-[15px] placeholder:text-gray-400"
-            />
-            <button type="submit" aria-label="Tìm kiếm" className="text-gray-500 hover:text-gray-700">
-              <SearchOutlined className="text-base md:text-lg" />
-            </button>
-          </form>
         </div>
 
         <div className="flex items-center gap-3 text-sm ml-auto">

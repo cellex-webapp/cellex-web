@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Form, Input, Button, Select, Upload, Card, Space } from 'antd';
+import { Modal, Form, Input, Button, Select, Upload, Card, Space, Switch } from 'antd';
 import { UploadOutlined, AppstoreOutlined, PictureOutlined } from '@ant-design/icons';
 import type { UploadFile } from 'antd/es/upload/interface';
 
@@ -24,61 +24,51 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
   const [fileList, setFileList] = useState<UploadFile[]>([]);
 
   useEffect(() => {
-    if (open) {
-      if (editingCategory) {
-        form.setFieldsValue({
-          name: editingCategory.name,
-          description: editingCategory.description,
-          parentId: editingCategory.parentId || null,
-        });
-        // Set existing image if available
-        if (editingCategory.imageUrl) {
-          setFileList([
-            {
-              uid: '-1',
-              name: 'image.png',
-              status: 'done',
-              url: editingCategory.imageUrl,
-            },
-          ]);
-        } else {
-          setFileList([]);
-        }
+    if (editingCategory) {
+      form.setFieldsValue({
+        name: editingCategory.name,
+        description: editingCategory.description,
+        parentId: editingCategory.parentId || null,
+        isActive: editingCategory.isActive ?? true,
+      });
+
+      if (editingCategory.imageUrl) {
+        setFileList([
+          {
+            uid: '-1',
+            name: 'image.png',
+            status: 'done',
+            url: editingCategory.imageUrl,
+          },
+        ]);
       } else {
-        form.resetFields();
         setFileList([]);
       }
     }
-  }, [editingCategory, open, form]);
+  }, [editingCategory, form]);
 
   const handleFinish = (values: any) => {
     const imageFile = fileList.length > 0 && fileList[0].originFileObj ? fileList[0].originFileObj : undefined;
-    
+
+    const payload: ICreateCategoryPayload | IUpdateCategoryPayload = {
+      ...values,
+      parentId: values.parentId || null,
+      image: imageFile,
+    };
+
     if (editingCategory) {
-      const payload: IUpdateCategoryPayload = {
-        id: editingCategory.id,
-        name: values.name,
-        description: values.description,
-        parentId: values.parentId || null,
-        image: imageFile,
-      };
-      onSubmit(payload);
-    } else {
-      const payload: ICreateCategoryPayload = {
-        name: values.name,
-        description: values.description,
-        parentId: values.parentId || null,
-        image: imageFile,
-      };
-      onSubmit(payload);
+      (payload as IUpdateCategoryPayload).id = editingCategory.id;
     }
+
+    onSubmit(payload);
   };
 
   const handleCancel = () => {
-    form.resetFields();
-    setFileList([]);
     onClose();
   };
+
+  const filterOption = (input: string, option: any) =>
+    (option?.children ?? '').toString().toLowerCase().includes(input.toLowerCase());
 
   return (
     <Modal
@@ -88,22 +78,15 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
       title={
         <Space>
           <AppstoreOutlined style={{ fontSize: 18, color: '#1890ff' }} />
-          <span className="font-semibold">
-            {editingCategory ? 'Chỉnh sửa danh mục' : 'Tạo danh mục mới'}
-          </span>
+          <span className="font-semibold">{editingCategory ? 'Chỉnh sửa danh mục' : 'Tạo danh mục mới'}</span>
         </Space>
       }
       width={650}
       style={{ top: 40 }}
       destroyOnClose
     >
-      <Form form={form} layout="vertical" onFinish={handleFinish}>
-        {/* Hình ảnh */}
-        <Card 
-          size="small" 
-          className="mb-4" 
-          title={<Space><PictureOutlined />Hình ảnh danh mục</Space>}
-        >
+      <Form form={form} layout="vertical" onFinish={handleFinish} initialValues={{ isActive: true }}>
+        <Card size="small" className="mb-4" title={<Space><PictureOutlined />Hình ảnh danh mục</Space>}>
           <Form.Item className="mb-0">
             <Upload
               listType="picture-card"
@@ -123,73 +106,44 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
           </Form.Item>
         </Card>
 
-        {/* Thông tin cơ bản */}
-        <Card 
-          size="small" 
-          className="mb-4" 
-          title={<Space><AppstoreOutlined />Thông tin cơ bản</Space>}
-        >
+        <Card size="small" className="mb-4" title={<Space><AppstoreOutlined />Thông tin cơ bản</Space>}>
           <Form.Item
             name="name"
             label="Tên danh mục"
             rules={[
               { required: true, message: 'Vui lòng nhập tên danh mục!' },
               { min: 2, message: 'Tên danh mục phải có ít nhất 2 ký tự' },
-              { max: 100, message: 'Tên danh mục không quá 100 ký tự' }
+              { max: 100, message: 'Tên danh mục không quá 100 ký tự' },
             ]}
           >
-            <Input 
-              placeholder="Nhập tên danh mục" 
-              showCount
-              maxLength={100}
-            />
+            <Input placeholder="Nhập tên danh mục" showCount maxLength={100} />
           </Form.Item>
 
-          <Form.Item 
-            name="description" 
-            label="Mô tả"
-            className="mb-0"
-          >
-            <Input.TextArea 
-              rows={3} 
+          <Form.Item name="description" label="Mô tả">
+            <Input.TextArea
+              rows={3}
               placeholder="Nhập mô tả về danh mục..."
               showCount
               maxLength={500}
             />
           </Form.Item>
+
+          <Form.Item name="isActive" label="Trạng thái" valuePropName="checked">
+            <Switch checkedChildren="Hoạt động" unCheckedChildren="Vô hiệu" />
+          </Form.Item>
         </Card>
 
-        {/* Phân cấp danh mục */}
-        <Card 
-          size="small" 
-          className="mb-4" 
-          title={<Space><AppstoreOutlined />Phân cấp danh mục</Space>}
-        >
-          <Form.Item 
-            name="parentId" 
-            label="Danh mục cha"
-            className="mb-0"
-          >
-            <Select 
-              allowClear 
+        <Card size="small" className="mb-4" title={<Space><AppstoreOutlined />Phân cấp danh mục</Space>}>
+          <Form.Item name="parentId" label="Danh mục cha" className="mb-0">
+            <Select
+              allowClear
               placeholder="Chọn danh mục cha (tùy chọn)"
               showSearch
               optionFilterProp="children"
-              filterOption={(input, option) => {
-                const children = option?.children;
-                const text =
-                  typeof children === 'string'
-                    ? children
-                    : Array.isArray(children)
-                    ? children.join(' ')
-                    : children
-                    ? String(children)
-                    : '';
-                return text.toLowerCase().includes(input.toLowerCase());
-              }}
+              filterOption={filterOption}
             >
               {allCategories
-                .filter(cat => cat.id !== editingCategory?.id)
+                .filter((cat) => cat.id !== editingCategory?.id)
                 .map((cat) => (
                   <Select.Option key={cat.id} value={cat.id}>
                     {cat.name}
@@ -198,8 +152,7 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
             </Select>
           </Form.Item>
         </Card>
-        
-        {/* Action Buttons */}
+
         <Form.Item className="mb-0">
           <div className="flex justify-end gap-2 pt-2">
             <Button onClick={handleCancel} size="large">
