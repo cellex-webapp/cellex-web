@@ -30,6 +30,7 @@ import ProductByCategory from '@/features/clients/pages/Product/ProductByCategor
 import ProductByShop from '@/features/clients/pages/Product/ProductByShop';
 import AttributeByCategoryPage from '@/features/admin/pages/Categories/Attributes/AttributeByCategoryPage';
 import CartPage from '@/features/clients/pages/Cart/CartPage';
+import CampaignListPage from '@/features/admin/pages/Campaign/CampaignListPage';
 
 const router = createBrowserRouter([
   {
@@ -48,6 +49,7 @@ const router = createBrowserRouter([
           { path: 'users/create', element: <UserCreatePage /> },
           { path: 'shops', element: <ShopsPage /> },
           { path: 'shops/pending', element: <PendingShopsPage /> },
+          { path: 'campaigns', element: <CampaignListPage /> },
         ],
       },
     ],

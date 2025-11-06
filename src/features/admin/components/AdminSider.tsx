@@ -62,7 +62,7 @@ const MENU_CONFIG = [
   {
     key: 'marketing', label: 'Kênh Marketing', icon: TagsOutlined,
     children: [
-      { key: 'marketing-coupon', label: 'Khuyến mãi của tôi', path: '/admin/marketing/coupons' },
+      { key: 'marketing-coupon', label: 'Khuyến mãi của tôi', path: '/admin/campaigns' },
       { key: 'marketing-system', label: 'Khuyến mãi hệ thống', path: '/admin/marketing/system' },
     ],
   },

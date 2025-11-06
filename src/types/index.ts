@@ -3,6 +3,9 @@ declare global {
     type StatusVerification = 'PENDING' | 'APPROVED' | 'REJECTED';
     type DataType = 'TEXT' | 'NUMBER' | 'BOOLEAN' | 'SELECT' | 'MULTI_SELECT';
     type CartUpdateAction = 'INCREASE' | 'DECREASE';
+    type CouponType = 'PERCENTAGE' | 'FIXED' | 'FREE_SHIPPING';
+    type DistributionType = 'SHARED_CODE' | 'UNIQUE_PER_USER';
+    type CampaignStatus = 'DRAFT' | 'SCHEDULED' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED';
 
     interface IAddressDataUnit {
         code: string;
@@ -294,17 +297,17 @@ declare global {
     }
 
     interface ICartItem {
-  productId: string;
-  productName: string;    
-  productImage: string;   
-  quantity: number;
-  price: number;          
-  subtotal: number;       
-  shopId: string;
-  shopName: string;
-  availableStock: number; 
-  isAvailable: boolean;
-}
+        productId: string;
+        productName: string;
+        productImage: string;
+        quantity: number;
+        price: number;
+        subtotal: number;
+        shopId: string;
+        shopName: string;
+        availableStock: number;
+        isAvailable: boolean;
+    }
 
     interface ICart {
         id: string;
@@ -318,6 +321,87 @@ declare global {
 
     interface ICartState {
         cart: ICart | null;
+        isLoading: boolean;
+        error: string | null;
+    }
+
+    interface CreateCampaignRequest {
+        title: string;
+        description?: string;
+        codeTemplate?: string;
+        couponType: CouponType;
+        discountValue: number;
+        minOrderAmount?: number;
+        maxDiscountAmount?: number;
+        startDate: string;
+        endDate: string;
+        distributionType: DistributionType;
+        maxTotalIssuance?: number;
+        perUserLimit?: number;
+        applicableProductIds?: string[];
+        note?: string;
+        scheduledAt?: string;
+    }
+
+    type UpdateCampaignRequest = Partial<CreateCampaignRequest>;
+
+    interface DistributeFilter {
+        all?: boolean;
+        customerSegmentId?: string;
+        minTotalSpend?: number;
+        maxTotalSpend?: number;
+        registeredBefore?: string;
+        registeredAfter?: string;
+        city?: string;
+        district?: string;
+        explicitUserIds?: string[];
+        excludeUserIds?: string[];
+    }
+
+    interface DistributeCampaignRequest {
+        campaignId: string;
+        filter: DistributeFilter;
+    }
+
+    interface CouponCampaignResponse {
+        id: string;
+        title: string;
+        description?: string;
+        codeTemplate?: string;
+        couponType: CouponType;
+        discountValue: number;
+        minOrderAmount?: number;
+        maxDiscountAmount?: number;
+        startDate: string;
+        endDate: string;
+        distributionType: DistributionType;
+        maxTotalIssuance?: number;
+        perUserLimit?: number;
+        applicableProductIds?: string[];
+        note?: string;
+        status: CampaignStatus;
+        totalIssued: number;
+        totalRedeemed: number;
+        createdAt: string;
+        scheduledAt?: string;
+    }
+
+    interface CampaignDistributionResponse {
+        id: string;
+        campaignId: string;
+        status: 'SUCCESS' | 'FAILED' | 'PARTIAL';
+        totalSucceeded: number;
+        totalFailed: number;
+        totalSkipped: number;
+        message: string;
+        filterCriteria: DistributeFilter;
+        createdAt: string;
+    }
+
+    interface ICouponState {
+        campaigns: CouponCampaignResponse[];
+        selectedCampaign: CouponCampaignResponse | null;
+        logs: CampaignDistributionResponse[];
         isLoading: boolean;
         error: string | null;
     }
