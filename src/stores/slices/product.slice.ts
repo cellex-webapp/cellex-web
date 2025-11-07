@@ -93,6 +93,19 @@ export const fetchProductsByShop = createAsyncThunk(
     }
 );
 
+export const fetchMyProducts = createAsyncThunk(
+    'product/fetchMyProducts',
+    async (pageable: IPageable | undefined, { rejectWithValue }) => {
+        try {
+            const resp = await productService.getMyProduct(pageable);
+            return resp.result as IPage<IProduct>;
+        } catch (error: any) {
+            const message = error?.response?.data?.message ?? error?.message ?? JSON.stringify(error);
+            return rejectWithValue(message);
+        }
+    }
+);
+
 export const searchProducts = createAsyncThunk(
     'product/search',
     async ({ keyword, pageable }: { keyword: string; pageable?: IPageable }, { rejectWithValue }) => {
@@ -151,6 +164,10 @@ const productSlice = createSlice({
                 if (state.selectedProduct?.id === action.payload.id) state.selectedProduct = null;
             })
             .addCase(fetchProductsByShop.fulfilled, (state, action) => {
+                state.isLoading = false;
+                state.products = action.payload.content || [];
+            })
+            .addCase(fetchMyProducts.fulfilled, (state, action) => {
                 state.isLoading = false;
                 state.products = action.payload.content || [];
             })

@@ -7,6 +7,7 @@ import {
     createProduct,
     deleteProductById,
     fetchProductsByShop,
+    fetchMyProducts,
     searchProducts,
     fetchProductsByCategory,
 } from '@/stores/slices/product.slice';
@@ -34,6 +35,7 @@ export const useProduct = () => {
 
     const handleDelete = useCallback((id: string) => dispatch(deleteProductById(id)), [dispatch]);
     const handleFetchByShop = useCallback((shopId: string, pageable?: IPageable) => dispatch(fetchProductsByShop({ shopId, pageable })), [dispatch]);
+    const handleFetchMyProducts = useCallback((pageable?: IPageable) => dispatch(fetchMyProducts(pageable)), [dispatch]);
     const handleSearch = useCallback((keyword: string, pageable?: IPageable) => dispatch(searchProducts({ keyword, pageable })), [dispatch]);
     const handleFetchByCategory = useCallback((categoryId: string, pageable?: IPageable) => dispatch(fetchProductsByCategory({ categoryId, pageable })), [dispatch]);
 
@@ -48,6 +50,7 @@ export const useProduct = () => {
         createProduct: handleCreate,
         deleteProduct: handleDelete,
         fetchProductsByShop: handleFetchByShop,
+        fetchMyProducts: handleFetchMyProducts,
         searchProducts: handleSearch,
         fetchProductsByCategory: handleFetchByCategory,
     };

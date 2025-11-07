@@ -70,6 +70,7 @@ const CategoriesPageContent: React.FC = () => {
 
   const handleDelete = (id: string) => {
     modal.confirm({
+      centered: true,
       title: 'Bạn có chắc muốn xóa danh mục này?',
       content: 'Hành động này không thể hoàn tác.',
       okText: 'Xóa',

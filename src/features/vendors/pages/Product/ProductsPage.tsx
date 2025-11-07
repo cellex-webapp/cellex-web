@@ -15,12 +15,12 @@ const ProductPageContent: React.FC = () => {
     const [detailOpen, setDetailOpen] = useState(false);
     const [q, setQ] = useState('');
 
-    const { products, isLoading, error, fetchProductsByShop, updateProduct, createProduct, deleteProduct } = useProduct();
+    const { products, isLoading, error, fetchMyProducts, updateProduct, createProduct, deleteProduct } = useProduct();
 
     const [shopId, setShopId] = useState<string | null>(null);
     const [shopVerified, setShopVerified] = useState<boolean>(false);
     const [page, setPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
+    const [pageSize, setPageSize] = useState(50);
     const [total, setTotal] = useState(0);
 
     useEffect(() => {
@@ -37,18 +37,19 @@ const ProductPageContent: React.FC = () => {
     }, []);
 
     const loadData = useCallback(() => {
-        if (!shopId) return;
-        fetchProductsByShop(shopId, { page, size: pageSize })
+        fetchMyProducts({ page, size: pageSize })
             .unwrap()
             .then((res: IPage<IProduct>) => {
                 setTotal(res.totalElements);
             })
             .catch(() => { });
-    }, [fetchProductsByShop, shopId, page, pageSize]);
+    }, [fetchMyProducts, page, pageSize]);
 
     useEffect(() => {
-        loadData();
-    }, [loadData]);
+        if (shopId) {
+            loadData();
+        }
+    }, [loadData, shopId]);
 
     const filtered = useMemo(() => {
         const kw = q.trim().toLowerCase();

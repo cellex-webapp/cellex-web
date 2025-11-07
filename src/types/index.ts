@@ -417,11 +417,11 @@ declare global {
         minOrderAmount: number | null;
         applicableProductIds: string[] | null;
         applicableCategoryIds: string[] | null;
-        issuedDate: string;   
-        expiresAt: string;   
+        issuedDate: string;
+        expiresAt: string;
         status: UserCouponStatus;
         redeemedOrderId: string | null;
-        redeemedAt: string | null;  
+        redeemedAt: string | null;
         issuedVia: string;
         issuedBy: string;
         createdAt: string;
@@ -436,6 +436,29 @@ declare global {
         isLoading: boolean;
         error: string | null;
     }
+
+    interface CreateCustomerSegmentRequest {
+        name: string;
+        description?: string;
+        // filterRules?: any;
+    }
+
+    type UpdateCustomerSegmentRequest = Partial<CreateCustomerSegmentRequest>;
+
+    interface CustomerSegmentResponse {
+        id: string;
+        name: string;
+        description?: string;
+        memberCount: number;
+        createdAt: string;
+        updatedAt: string;
+    }
+    interface ICustomerSegmentState {
+        segments: CustomerSegmentResponse[];
+        isLoading: boolean;
+        error: string | null;
+    }
 }
+
 
 
