@@ -54,6 +54,11 @@ export const productService = {
         const resp = await axiosInstance.post<IApiResponse<IProduct>>('/products', fd);
         return (resp as unknown) as IApiResponse<IProduct>;
     },
+
+    getMyProduct: async (pageable?: IPageable): Promise<IApiResponse<IPage<IProduct>>> => {
+        const resp = await axiosInstance.get<IApiResponse<IPage<IProduct>>>('/products/my-products', { params: pageable });
+        return (resp as unknown) as IApiResponse<IPage<IProduct>>;
+    }
 };
 
 export default productService;
