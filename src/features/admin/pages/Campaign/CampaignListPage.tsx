@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { App, Button, Card, Table, Tabs, Tag, Space, Tooltip } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
 import { useCoupon } from '@/hooks/useCoupon';
 import CampaignFormModal from './CampaignFormModal'; 
+import { useNavigate } from 'react-router-dom';
 import type { ColumnsType } from 'antd/es/table';
 
 const { TabPane } = Tabs;
@@ -18,15 +18,29 @@ const statusTabs: { key: CampaignStatus, label: string }[] = [
 
 const CampaignListPageContent: React.FC = () => {
   const { modal, message } = App.useApp();
+  const { campaigns, fetchCampaignsByStatus, deleteCampaign } = useCoupon();
   const navigate = useNavigate();
-  const { campaigns, isLoading, fetchCampaignsByStatus, deleteCampaign } = useCoupon();
   
   const [activeTab, setActiveTab] = useState<CampaignStatus>('DRAFT');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCampaign, setEditingCampaign] = useState<CouponCampaignResponse | null>(null);
+  // detail navigation handled via route
+
+  const [listLoading, setListLoading] = useState(false);
 
   useEffect(() => {
-    fetchCampaignsByStatus(activeTab);
+    let mounted = true;
+    const load = async () => {
+      setListLoading(true);
+      try {
+        await fetchCampaignsByStatus(activeTab);
+      } catch (e) {
+      } finally {
+        if (mounted) setListLoading(false);
+      }
+    };
+    load();
+    return () => { mounted = false; };
   }, [activeTab, fetchCampaignsByStatus]);
 
   const handleOpenModal = (campaign: CouponCampaignResponse | null) => {
@@ -41,6 +55,7 @@ const CampaignListPageContent: React.FC = () => {
 
   const handleDelete = (id: string, title: string) => {
     modal.confirm({
+      centered: true,
       title: `Xóa campaign "${title}"?`,
       content: 'Không thể hoàn tác hành động này.',
       okText: 'Xóa',
@@ -75,13 +90,13 @@ const CampaignListPageContent: React.FC = () => {
       render: (_, record) => (
         <Space>
           <Tooltip title="Xem & Phát">
-            <Button icon={<EyeOutlined />} onClick={() => navigate(`/admin/campaigns/${record.id}`)} />
+            <Button icon={<EyeOutlined />} onClick={(e) => { e.stopPropagation(); navigate(`/admin/campaigns/${record.id}`); }} />
           </Tooltip>
           <Tooltip title="Sửa">
-            <Button icon={<EditOutlined />} onClick={() => handleOpenModal(record)} />
+            <Button icon={<EditOutlined />} onClick={(e) => { e.stopPropagation(); handleOpenModal(record); }} />
           </Tooltip>
           <Tooltip title="Xóa">
-            <Button danger icon={<DeleteOutlined />} onClick={() => handleDelete(record.id, record.title)} />
+            <Button danger icon={<DeleteOutlined />} onClick={(e) => { e.stopPropagation(); handleDelete(record.id, record.title); }} />
           </Tooltip>
         </Space>
       )
@@ -103,8 +118,13 @@ const CampaignListPageContent: React.FC = () => {
           rowKey="id"
           columns={columns}
           dataSource={campaigns}
-          loading={isLoading}
+          loading={listLoading}
           pagination={{ pageSize: 10 }}
+          onRow={(record) => ({
+            onClick: () => {
+              navigate(`/admin/campaigns/${record.id}`);
+            }
+          })}
           scroll={{ x: 1000 }}
         />
       </Card>

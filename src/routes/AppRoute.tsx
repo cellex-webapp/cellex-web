@@ -31,6 +31,7 @@ import ProductByShop from '@/features/clients/pages/Product/ProductByShop';
 import AttributeByCategoryPage from '@/features/admin/pages/Categories/Attributes/AttributeByCategoryPage';
 import CartPage from '@/features/clients/pages/Cart/CartPage';
 import CampaignListPage from '@/features/admin/pages/Campaign/CampaignListPage';
+import CampaignDetailPage from '@/features/admin/pages/Campaign/CampaignDetailPage';
 
 const router = createBrowserRouter([
   {
@@ -50,6 +51,7 @@ const router = createBrowserRouter([
           { path: 'shops', element: <ShopsPage /> },
           { path: 'shops/pending', element: <PendingShopsPage /> },
           { path: 'campaigns', element: <CampaignListPage /> },
+          { path: 'campaigns/:id', element: <CampaignDetailPage /> },
         ],
       },
     ],

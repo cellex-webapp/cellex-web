@@ -6,6 +6,7 @@ const initialState: ICouponState = {
   campaigns: [],
   selectedCampaign: null,
   logs: [],
+  myCoupons: [],
   isLoading: false,
   error: null,
 };
@@ -75,7 +76,7 @@ export const distributeCampaign = createAsyncThunk(
   async (payload: DistributeCampaignRequest, { rejectWithValue }) => {
     try {
       const response = await couponService.distributeCampaign(payload);
-      return response.result; // Trả về log
+      return response.result; 
     } catch (err: any) {
       return rejectWithValue(err.response?.data?.message || 'Phát coupon thất bại');
     }
@@ -90,6 +91,18 @@ export const fetchCampaignLogs = createAsyncThunk(
       return response.result;
     } catch (err: any) {
       return rejectWithValue(err.response?.data?.message || 'Không thể tải logs');
+    }
+  }
+);
+
+export const fetchMyCoupons = createAsyncThunk(
+  'coupon/fetchMyCoupons',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await couponService.getMyCoupons();
+      return response.result;
+    } catch (err: any) {
+      return rejectWithValue(err.response?.data?.message || 'Không thể tải phiếu giảm giá của bạn');
     }
   }
 );
@@ -146,12 +159,27 @@ const couponSlice = createSlice({
       })
 
       .addCase(fetchCampaignLogs.fulfilled, (state, action: PayloadAction<CampaignDistributionResponse[]>) => {
+        state.isLoading = false;
         state.logs = action.payload;
       })
       
       .addCase(distributeCampaign.fulfilled, (state, action: PayloadAction<CampaignDistributionResponse>) => {
-        state.logs.unshift(action.payload);
+        state.isLoading = false;
+        // add new distribution log to top
+        state.logs = [action.payload, ...(state.logs || [])];
         message.success('Phát coupon thành công!');
+      })
+      .addCase(fetchMyCoupons.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchMyCoupons.fulfilled, (state, action: PayloadAction<IUserCoupon[]>) => {
+        state.isLoading = false;
+        state.myCoupons = action.payload;
+      })
+      .addCase(fetchMyCoupons.rejected, (state, action: PayloadAction<any>) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
       })
       
       .addMatcher(
