@@ -6,6 +6,7 @@ declare global {
     type CouponType = 'PERCENTAGE' | 'FIXED' | 'FREE_SHIPPING';
     type DistributionType = 'SHARED_CODE' | 'UNIQUE_PER_USER';
     type CampaignStatus = 'DRAFT' | 'SCHEDULED' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED';
+    type UserCouponStatus = 'ACTIVE' | 'REDEEMED' | 'EXPIRED';
 
     interface IAddressDataUnit {
         code: string;
@@ -366,42 +367,72 @@ declare global {
     interface CouponCampaignResponse {
         id: string;
         title: string;
-        description?: string;
-        codeTemplate?: string;
+        description: string | null;
+        codeTemplate: string | null;
         couponType: CouponType;
         discountValue: number;
-        minOrderAmount?: number;
-        maxDiscountAmount?: number;
+        minOrderAmount: number | null;
+        applicableProductIds: string[] | null;
+        applicableCategoryIds: string[] | null;
         startDate: string;
         endDate: string;
         distributionType: DistributionType;
-        maxTotalIssuance?: number;
-        perUserLimit?: number;
-        applicableProductIds?: string[];
-        note?: string;
+        maxTotalIssuance: number | null;
+        perUserLimit: number;
+        currentIssuance: number;
         status: CampaignStatus;
-        totalIssued: number;
-        totalRedeemed: number;
+        scheduledAt: string | null;
+        distributedAt: string | null;
+        isActive: boolean;
+        createdBy: string;
+        note: string | null;
         createdAt: string;
-        scheduledAt?: string;
+        updatedAt: string;
     }
 
     interface CampaignDistributionResponse {
         id: string;
         campaignId: string;
-        status: 'SUCCESS' | 'FAILED' | 'PARTIAL';
-        totalSucceeded: number;
-        totalFailed: number;
-        totalSkipped: number;
-        message: string;
+        campaignTitle: string | null;
+        adminId: string;
         filterCriteria: DistributeFilter;
+        recipientsCount: number;
+        successCount: number;
+        failedCount: number;
+        errorSummary: string;
+        executionTimeMs: number;
         createdAt: string;
     }
 
+    interface IUserCoupon {
+        id: string;
+        userId: string;
+        segmentCouponId: string | null;
+        campaignId: string;
+        code: string;
+        title: string | null;
+        description: string | null;
+        couponType: CouponType;
+        discountValue: number;
+        minOrderAmount: number | null;
+        applicableProductIds: string[] | null;
+        applicableCategoryIds: string[] | null;
+        issuedDate: string;   
+        expiresAt: string;   
+        status: UserCouponStatus;
+        redeemedOrderId: string | null;
+        redeemedAt: string | null;  
+        issuedVia: string;
+        issuedBy: string;
+        createdAt: string;
+        updatedAt: string;
+
+    }
     interface ICouponState {
         campaigns: CouponCampaignResponse[];
         selectedCampaign: CouponCampaignResponse | null;
         logs: CampaignDistributionResponse[];
+        myCoupons: IUserCoupon[];
         isLoading: boolean;
         error: string | null;
     }

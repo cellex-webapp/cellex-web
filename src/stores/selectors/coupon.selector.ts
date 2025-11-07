@@ -27,3 +27,8 @@ export const selectCouponError = createSelector(
   [selectCouponState],
   (state) => state.error
 );
+
+export const selectMyCoupons = createSelector(
+  [selectCouponState],
+  (state) => state.myCoupons || []
+);

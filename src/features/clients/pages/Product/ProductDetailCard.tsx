@@ -7,6 +7,7 @@ import { useProduct } from '@/hooks/useProduct';
 import { useAttribute } from '@/hooks/useAttribute';
 import ShopCard from '@/features/clients/components/Shop/ShopCard';
 import { useCart } from '@/hooks/useCart';
+import CouponList from '@/features/clients/components/Coupon/CouponList';
 
 const formatCurrency = (v?: number) => {
     if (v == null) return '';
@@ -63,7 +64,6 @@ const ProductDetailCard: React.FC = () => {
     const [quantity, setQuantity] = useState<number>(1);
 
     useEffect(() => {
-        // reset qty when product changes
         setQuantity(1);
     }, [p?.id]);
 
@@ -83,7 +83,6 @@ const ProductDetailCard: React.FC = () => {
             unwrapResult(action as any);
             message.success('Đã thêm vào giỏ hàng');
             if (goCheckout) {
-                // navigate to checkout page
                 window.location.href = '/checkout';
             }
         } catch (e: any) {
@@ -232,6 +231,9 @@ const ProductDetailCard: React.FC = () => {
                             >
                                 Mua ngay
                             </Button>
+                        </div>
+                        <div className="mt-6">
+                            <CouponList />
                         </div>
                     </div>
                 </div>
