@@ -449,13 +449,16 @@ declare global {
     interface CustomerSegmentResponse {
         id: string;
         name: string;
-        description?: string;
-        memberCount: number;
+        minSpend: number;
+        maxSpend: number | null;
+        level: number;
+        description: string | null;
         createdAt: string;
         updatedAt: string;
     }
     interface ICustomerSegmentState {
         segments: CustomerSegmentResponse[];
+        selectedSegment: CustomerSegmentResponse | null;
         isLoading: boolean;
         error: string | null;
     }
@@ -475,6 +478,14 @@ declare global {
         myShop: IShop | null;
         isLoading: boolean;
         error: string | null;
+    }
+
+    interface CreateCustomerSegmentRequest {
+        name: string;
+        description?: string;
+        minSpend: number;
+        maxSpend?: number | null;
+        level: number;
     }
 }
 
