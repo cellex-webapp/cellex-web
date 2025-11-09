@@ -43,4 +43,9 @@ export const shopService = {
     const resp = await axiosInstance.get<IApiResponse<IShop>>(`/shops/my-shop`);
     return (resp as unknown) as IApiResponse<IShop>;
   },
+  updateMyShop: async (payload: IUpdateMyShopPayload): Promise<IApiResponse<IShop>> => {
+    const fd = toFormData(payload as any);
+    const resp = await axiosInstance.put<IApiResponse<IShop>>(`/shops/my-shop`, fd);
+    return (resp as unknown) as IApiResponse<IShop>;
+  },
 };

@@ -7,6 +7,7 @@ declare global {
     type DistributionType = 'SHARED_CODE' | 'UNIQUE_PER_USER';
     type CampaignStatus = 'DRAFT' | 'SCHEDULED' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED';
     type UserCouponStatus = 'ACTIVE' | 'REDEEMED' | 'EXPIRED';
+    type ShopStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'BANNED';
 
     interface IAddressDataUnit {
         code: string;
@@ -455,6 +456,23 @@ declare global {
     }
     interface ICustomerSegmentState {
         segments: CustomerSegmentResponse[];
+        isLoading: boolean;
+        error: string | null;
+    }
+
+    interface IUpdateMyShopPayload {
+        shopName?: string;
+        description?: string;
+        provinceCode?: string;
+        communeCode?: string;
+        detailAddress?: string;
+        phoneNumber?: string;
+        email?: string;
+        logo?: File;
+    }
+
+    interface IShopState {
+        myShop: IShop | null;
         isLoading: boolean;
         error: string | null;
     }

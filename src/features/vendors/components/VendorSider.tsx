@@ -87,6 +87,7 @@ const VendorSider: React.FC = () => {
     if (key === 'product-all') return navigate('/vendor/products');
     if (key === 'product-add') return navigate('/vendor/products/create');
     if (key === 'product-category') return navigate('/vendor/categories');
+    if (key === 'shop-profile') return navigate('/vendor/shop');
     // add more mappings if needed
   };
   return (
