@@ -33,6 +33,7 @@ import CartPage from '@/features/clients/pages/Cart/CartPage';
 import CampaignListPage from '@/features/admin/pages/Campaign/CampaignListPage';
 import CampaignDetailPage from '@/features/admin/pages/Campaign/CampaignDetailPage';
 import ShopManagementPage from '@/features/vendors/pages/ShopManagement/ShopManagementPage';
+import CustomerSegmentPage from '@/features/admin/pages/CustomerSegment/CustomerSegmentPage';
 
 const router = createBrowserRouter([
   {
@@ -53,6 +54,7 @@ const router = createBrowserRouter([
           { path: 'shops/pending', element: <PendingShopsPage /> },
           { path: 'campaigns', element: <CampaignListPage /> },
           { path: 'campaigns/:id', element: <CampaignDetailPage /> },
+          { path: 'customer-segments', element: <CustomerSegmentPage /> },
         ],
       },
     ],

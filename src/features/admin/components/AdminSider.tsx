@@ -37,6 +37,7 @@ const MENU_CONFIG = [
     children: [
       { key: 'user-all', label: 'Tất cả người dùng', path: '/admin/users' },
       { key: 'user-create', label: 'Tạo người dùng', path: '/admin/users/create' },
+      { key: 'user-segments', label: 'Phân khúc Khách hàng', path: '/admin/customer-segments' },
     ],
   },
   {

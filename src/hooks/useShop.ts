@@ -6,6 +6,7 @@ export const useShop = () => {
   const dispatch = useAppDispatch();
 
   const shop = useAppSelector((state) => state.shop.shop);
+  
   const allShops = useAppSelector((state) => state.shop.allShops);
   const pendingShops = useAppSelector((state) => state.shop.pendingShops);
   const isLoading = useAppSelector((state) => state.shop.isLoading);
