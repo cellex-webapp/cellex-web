@@ -32,6 +32,7 @@ import AttributeByCategoryPage from '@/features/admin/pages/Categories/Attribute
 import CartPage from '@/features/clients/pages/Cart/CartPage';
 import CampaignListPage from '@/features/admin/pages/Campaign/CampaignListPage';
 import CampaignDetailPage from '@/features/admin/pages/Campaign/CampaignDetailPage';
+import ShopManagementPage from '@/features/vendors/pages/ShopManagement/ShopManagementPage';
 
 const router = createBrowserRouter([
   {
@@ -88,6 +89,7 @@ const router = createBrowserRouter([
           { path: 'products', element: <ProductsPage /> },
           { path: 'categories', element: <VendorCategoriesPage /> },
           { path: 'categories/:slug/attributes', element: <VendorAttributesPage /> },
+          { path: 'shop', element: <ShopManagementPage /> },
         ],
       },
     ],

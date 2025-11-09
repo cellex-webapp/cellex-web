@@ -1,6 +1,6 @@
 import { useAppSelector, useAppDispatch } from '@/hooks/redux';
 import { useCallback } from 'react';
-import { fetchMyShop, fetchShopById, createShop, updateShop, fetchPendingShops, fetchAllShops, verifyRegisterShop, clearShopState } from '@/stores/slices/shop.slice';
+import { fetchMyShop, fetchShopById, createShop, updateShop, fetchPendingShops, fetchAllShops, verifyRegisterShop, clearShopState, updateMyShop } from '@/stores/slices/shop.slice';
 
 export const useShop = () => {
   const dispatch = useAppDispatch();
@@ -43,6 +43,10 @@ export const useShop = () => {
     return dispatch(clearShopState());
   }, [dispatch]);
 
+  const handleUpdateMyShop = useCallback((payload: IUpdateMyShopPayload) => {
+    return dispatch(updateMyShop(payload));
+  }, [dispatch]);
+
   return {
     shop,
     allShops,
@@ -57,6 +61,7 @@ export const useShop = () => {
     fetchAllShops: handleFetchAllShops,
     verifyRegisterShop: handleVerifyRegisterShop,
     clearShopState: handleClearShopState,
+    updateMyShop: handleUpdateMyShop,
   };
 };
 

@@ -37,6 +37,16 @@ export const fetchShopById = createAsyncThunk('shop/fetchById', async (id: strin
   }
 });
 
+export const updateMyShop = createAsyncThunk('shop/updateMyShop', async (payload: IUpdateMyShopPayload, { rejectWithValue }) => {
+  try {
+    const resp = await shopService.updateMyShop(payload);
+    return resp.result as IShop;
+  } catch (error: any) {
+    const message = error?.response?.data?.message ?? error?.message ?? error?.data?.message ?? JSON.stringify(error);
+    return rejectWithValue(message);
+  }
+});
+
 export const createShop = createAsyncThunk('shop/create', async (payload: ICreateUpdateShopPayload, { rejectWithValue }) => {
   try {
     const resp = await shopService.createShop(payload);
@@ -108,6 +118,19 @@ const shopSlice = createSlice({
       .addCase(fetchShopById.fulfilled, (state, action) => {
         state.isLoading = false;
         state.shop = action.payload;
+      })
+      .addCase(updateMyShop.fulfilled, (state, action) => {
+        state.isLoading = false;
+        if (state.shop?.id === action.payload.id) state.shop = { ...state.shop, ...action.payload };
+      })
+      .addCase(updateMyShop.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(updateMyShop.rejected, (state, action) => {
+        state.isLoading = false;
+        const a: any = action;
+        state.error = a.payload ?? a.error?.message ?? String(a.error) ?? 'Unknown error';
       })
       .addCase(createShop.fulfilled, (state, action) => {
         state.isLoading = false;

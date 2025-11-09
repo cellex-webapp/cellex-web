@@ -24,7 +24,30 @@ export function toFormData(payload: Record<string, any> | undefined | null): For
       continue;
     }
 
-    if (Array.isArray(val) || typeof val === 'object') {
+    if (Array.isArray(val)) {
+      // If it's an array of File objects, append each file individually under the same key
+      const allFiles = val.every((it: any) => typeof File !== 'undefined' && it instanceof File);
+      if (allFiles) {
+        for (const fileItem of val) {
+          try {
+            fd.append(key, fileItem, (fileItem as File).name || key);
+          } catch (e) {
+            fd.append(key, fileItem as any);
+          }
+        }
+        continue;
+      }
+
+      // Otherwise stringify the array/object
+      try {
+        fd.append(key, JSON.stringify(val));
+      } catch (e) {
+        fd.append(key, String(val));
+      }
+      continue;
+    }
+
+    if (typeof val === 'object') {
       try {
         fd.append(key, JSON.stringify(val));
       } catch (e) {
