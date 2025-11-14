@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { App, Button, Card, Table, Space, Tooltip } from 'antd';
+import React, { useEffect, useMemo, useState } from 'react';
+import { App, Button, Card, Table, Space, Tooltip, Input, Tag } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, UsergroupAddOutlined } from '@ant-design/icons';
 import { useCustomerSegment } from '@/hooks/useCustomerSegment';
 import CustomerSegmentFormModal from './CustomerSegmentFormModal';
@@ -11,6 +11,7 @@ const CustomerSegmentPageContent: React.FC = () => {
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSegment, setEditingSegment] = useState<CustomerSegmentResponse | null>(null);
+  const [q, setQ] = useState('');
 
   useEffect(() => {
     fetchAllSegments();
@@ -29,6 +30,7 @@ const CustomerSegmentPageContent: React.FC = () => {
   const handleDelete = (id: string, name: string) => {
     modal.confirm({
       title: `Xóa phân khúc "${name}"?`,
+      centered: true,
       content: 'Không thể hoàn tác hành động này.',
       okText: 'Xóa',
       okType: 'danger',
@@ -43,39 +45,53 @@ const CustomerSegmentPageContent: React.FC = () => {
     });
   };
   
+  const filteredSegments = useMemo(() => {
+    const kw = q.trim().toLowerCase();
+    if (!kw) return segments;
+    return segments.filter((s) =>
+      s.name.toLowerCase().includes(kw) || (s.description || '').toLowerCase().includes(kw)
+    );
+  }, [q, segments]);
+  
   const columns: ColumnsType<CustomerSegmentResponse> = [
     { 
-      title: 'Cấp độ (Level)', 
+      title: 'Cấp độ', 
       dataIndex: 'level', 
       key: 'level',
-      width: 120,
       align: 'center',
+      render: (level: number) => (
+        <Tag color="blue" style={{ margin: 0 }}>Lv {level}</Tag>
+      ),
     },
     { 
       title: 'Tên phân khúc', 
       dataIndex: 'name', 
       key: 'name',
-      render: (text) => <span className="font-medium">{text}</span>
+      ellipsis: true,
+      render: (text) => <span className="font-medium" title={text}>{text}</span>
     },
     { 
       title: 'Mô tả', 
       dataIndex: 'description', 
-      key: 'description', 
-      ellipsis: true 
+      key: 'description',
+      ellipsis: true,
+      render: (text: string | undefined) => text ? <span title={text}>{text}</span> : <span className="text-gray-400">—</span>
     },
     {
       title: 'Chi tiêu tối thiểu (VND)',
       dataIndex: 'minSpend',
       key: 'minSpend',
       align: 'right',
-      render: (val) => val.toLocaleString('vi-VN'),
+      width: 180,
+      render: (val: number) => (typeof val === 'number' ? val.toLocaleString('vi-VN') : '—'),
     },
     {
       title: 'Chi tiêu tối đa (VND)',
       dataIndex: 'maxSpend',
       key: 'maxSpend',
       align: 'right',
-      render: (val) => val ? val.toLocaleString('vi-VN') : 'Không giới hạn',
+      width: 200,
+      render: (val?: number | null) => (typeof val === 'number' ? val.toLocaleString('vi-VN') : 'Không giới hạn'),
     },
     {
       title: 'Hành động', 
@@ -85,10 +101,23 @@ const CustomerSegmentPageContent: React.FC = () => {
       render: (_, record) => (
         <Space>
           <Tooltip title="Sửa">
-            <Button icon={<EditOutlined />} onClick={() => handleOpenModal(record)} />
+            <Button
+              icon={<EditOutlined />}
+              onClick={(e: React.MouseEvent) => {
+                e.stopPropagation();
+                handleOpenModal(record);
+              }}
+            />
           </Tooltip>
           <Tooltip title="Xóa">
-            <Button danger icon={<DeleteOutlined />} onClick={() => handleDelete(record.id, record.name)} />
+            <Button
+              danger
+              icon={<DeleteOutlined />}
+              onClick={(e: React.MouseEvent) => {
+                e.stopPropagation();
+                handleDelete(record.id, record.name);
+              }}
+            />
           </Tooltip>
         </Space>
       )
@@ -99,16 +128,32 @@ const CustomerSegmentPageContent: React.FC = () => {
     <div className="p-4">
       <Card
         title={<Space><UsergroupAddOutlined /> Quản lý Phân khúc Khách hàng</Space>}
-        extra={<Button className='!bg-indigo-600' type="primary" icon={<PlusOutlined />} onClick={() => handleOpenModal(null)}>Thêm phân khúc</Button>}
+        extra={
+          <Space>
+            <Input
+              placeholder="Tìm kiếm phân khúc (tên/mô tả)"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              allowClear
+              style={{ width: 260 }}
+            />
+            <Button className='!bg-indigo-600' type="primary" icon={<PlusOutlined />} onClick={() => handleOpenModal(null)}>Thêm phân khúc</Button>
+          </Space>
+        }
         className="shadow-sm"
       >
         <Table
           rowKey="id"
           columns={columns}
-          dataSource={segments}
+          dataSource={filteredSegments}
           loading={isLoading}
-          pagination={false}
-          scroll={{ x: 800 }}
+          pagination={{ pageSize: 10 }}
+          scroll={{ x: 900 }}
+          size="middle"
+          rowClassName="cursor-pointer"
+          onRow={(record) => ({
+            onClick: () => handleOpenModal(record),
+          })}
         />
       </Card>
       

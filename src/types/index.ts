@@ -8,6 +8,11 @@ declare global {
     type CampaignStatus = 'DRAFT' | 'SCHEDULED' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED';
     type UserCouponStatus = 'ACTIVE' | 'REDEEMED' | 'EXPIRED';
     type ShopStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'BANNED';
+    type DiscountType = 'PERCENTAGE' | 'FIXED';
+    type ScheduleFrequency = 'NONE' | 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
+    type DayOfWeek = 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
+    type OrderStatus = 'PENDING' | 'CONFIRMED' | 'SHIPPING' | 'DELIVERED' | 'CANCELLED';
+    type PaymentMethod = 'COD';
 
     interface IAddressDataUnit {
         code: string;
@@ -438,13 +443,92 @@ declare global {
         error: string | null;
     }
 
-    interface CreateCustomerSegmentRequest {
-        name: string;
-        description?: string;
-        // filterRules?: any;
+    // Orders
+    interface IOrderItem {
+        price: number;
+        quantity: number;
+        subtotal: number;
+        product_id: string;
+        product_name: string;
+        product_image?: string;
     }
 
-    type UpdateCustomerSegmentRequest = Partial<CreateCustomerSegmentRequest>;
+    interface IOrderStatusHistoryEntry {
+        status: OrderStatus;
+        note: string | null;
+        updated_by: string;
+        updated_at: string;
+    }
+
+    interface IOrder {
+        id: string;
+        items: IOrderItem[];
+        subtotal: number;
+        status: OrderStatus;
+        note?: string | null;
+        user_id: string;
+        shop_id: string;
+        shop_name: string;
+        shipping_address: IAddress | null;
+        shipping_fee: number;
+        discount_amount: number;
+        total_amount: number;
+        coupon_code: string | null;
+        payment_method: PaymentMethod | null;
+        is_paid: boolean;
+        paid_at: string | null;
+        status_history: IOrderStatusHistoryEntry[];
+        cancel_reason: string | null;
+        cancelled_at: string | null;
+        confirmed_at: string | null;
+        shipping_at: string | null;
+        delivered_at: string | null;
+        created_at: string;
+        updated_at: string;
+    }
+
+    interface ApplyCouponRequest {
+        code: string;
+    }
+
+    interface CheckoutOrderRequest {
+        paymentMethod: PaymentMethod;
+    }
+
+    // For creation from product or from cart
+    interface CreateOrderRequest {
+        // If from product
+        productId?: string;
+        quantity?: number;
+        // If from cart
+        cartItemIds?: string[];
+        // Optional override
+        note?: string;
+    }
+
+    interface AvailableCouponResponse {
+        id: string;
+        code: string;
+        title: string | null;
+        description: string | null;
+        couponType: CouponType;
+        discountValue: number;
+        minOrderAmount?: number | null;
+        estimatedDiscountAmount?: number | null;
+        expiresAt?: string | null;
+    }
+
+    interface IOrderState {
+        myOrders: IPage<IOrder> | null;
+        shopOrders: IPage<IOrder> | null;
+        adminOrders: IPage<IOrder> | null;
+        selectedOrder: IOrder | null;
+        availableCoupons: AvailableCouponResponse[];
+        isLoading: boolean;
+        error: string | null;
+    }
+
+    
 
     interface CustomerSegmentResponse {
         id: string;
@@ -480,6 +564,60 @@ declare global {
         error: string | null;
     }
 
+    // Segment Coupons
+    interface CreateSegmentCouponRequest {
+        segmentId: string;
+        codePrefix: string;
+        title: string;
+        description?: string;
+        discountType: DiscountType;
+        discountValue: number;
+        minOrderAmount?: number;
+        validHours?: number; // hours coupon valid since issuance
+        isActive: boolean;
+        isAutoOnUpgrade: boolean;
+        scheduleFrequency: ScheduleFrequency;
+        // Conditional schedule fields
+        scheduleDayOfWeek?: DayOfWeek; // for WEEKLY
+        scheduleDayOfMonth?: number; // for MONTHLY 1-31
+        scheduleMonthDay?: string; // for YEARLY format MM-DD
+        scheduleTime?: string; // HH:mm:ss
+        maxUsesPerUser?: number | null; // null means unlimited
+    }
+
+    type UpdateSegmentCouponRequest = Partial<CreateSegmentCouponRequest>;
+
+    interface SegmentCouponResponse {
+        id: string;
+        segmentId: string;
+        codePrefix: string;
+        title: string;
+        description?: string | null;
+        discountType: DiscountType;
+        discountValue: number;
+        minOrderAmount?: number | null;
+        validHours?: number | null;
+        isActive: boolean;
+        isAutoOnUpgrade: boolean;
+        scheduleFrequency: ScheduleFrequency;
+        scheduleDayOfWeek?: DayOfWeek | null;
+        scheduleDayOfMonth?: number | null;
+        scheduleMonthDay?: string | null;
+        scheduleTime?: string | null;
+        maxUsesPerUser?: number | null;
+        nextScheduledDate?: string | null;
+        createdAt: string;
+        updatedAt: string;
+    }
+
+    interface SegmentCouponState {
+        items: SegmentCouponResponse[];
+        selected: SegmentCouponResponse | null;
+        bySegment: Record<string, SegmentCouponResponse[]>;
+        isLoading: boolean;
+        error: string | null;
+    }
+
     interface CreateCustomerSegmentRequest {
         name: string;
         description?: string;
@@ -487,7 +625,13 @@ declare global {
         maxSpend?: number | null;
         level: number;
     }
+    
+    type UpdateCustomerSegmentRequest = Partial<CreateCustomerSegmentRequest>;
 }
+
+export {}
+
+
 
 
 

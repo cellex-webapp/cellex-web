@@ -44,5 +44,31 @@ export const couponService = {
   getMyCoupons: async (): Promise<IApiResponse<IUserCoupon[]>> => {
     const resp = await axiosInstance.get('/user-coupons/my-coupons');
     return (resp as unknown) as IApiResponse<IUserCoupon[]>;
-  }
+  },
+
+  // Segment Coupons (Admin)
+  getAllSegmentCoupons: async (): Promise<IApiResponse<SegmentCouponResponse[]>> => {
+    const resp = await axiosInstance.get('/segment-coupons');
+    return (resp as unknown) as IApiResponse<SegmentCouponResponse[]>;
+  },
+  getSegmentCouponById: async (id: string): Promise<IApiResponse<SegmentCouponResponse>> => {
+    const resp = await axiosInstance.get(`/segment-coupons/${id}`);
+    return (resp as unknown) as IApiResponse<SegmentCouponResponse>;
+  },
+  getSegmentCouponsBySegmentId: async (segmentId: string): Promise<IApiResponse<SegmentCouponResponse[]>> => {
+    const resp = await axiosInstance.get(`/segment-coupons/segment/${segmentId}`);
+    return (resp as unknown) as IApiResponse<SegmentCouponResponse[]>;
+  },
+  createSegmentCoupon: async (payload: CreateSegmentCouponRequest): Promise<IApiResponse<SegmentCouponResponse>> => {
+    const resp = await axiosInstance.post('/segment-coupons', payload);
+    return (resp as unknown) as IApiResponse<SegmentCouponResponse>;
+  },
+  updateSegmentCoupon: async (id: string, payload: UpdateSegmentCouponRequest): Promise<IApiResponse<SegmentCouponResponse>> => {
+    const resp = await axiosInstance.put(`/segment-coupons/${id}`, payload);
+    return (resp as unknown) as IApiResponse<SegmentCouponResponse>;
+  },
+  deleteSegmentCoupon: async (id: string): Promise<IApiResponse<string>> => {
+    const resp = await axiosInstance.delete(`/segment-coupons/${id}`);
+    return (resp as unknown) as IApiResponse<string>;
+  },
 };

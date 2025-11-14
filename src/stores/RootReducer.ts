@@ -8,6 +8,8 @@ import productReducer from '@/stores/slices/product.slice';
 import cartReducer from '@/stores/slices/cart.slice';
 import couponReducer from '@/stores/slices/coupon.slice';
 import segmentReducer from '@/stores/slices/segment.slice';
+import segmentCouponReducer from '@/stores/slices/segmentCoupon.slice';
+import orderReducer from '@/stores/slices/order.slice';
 
 const rootReducer = combineReducers({
   auth: authReducer,
@@ -19,6 +21,8 @@ const rootReducer = combineReducers({
   attribute: attributeReducer,
   product: productReducer,
   segment: segmentReducer,
+  segmentCoupon: segmentCouponReducer,
+  order: orderReducer,
 });
 
 export default rootReducer;

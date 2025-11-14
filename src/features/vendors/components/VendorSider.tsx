@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Layout, Menu } from 'antd';
-import { useNavigate } from 'react-router-dom';
+import type { MenuProps } from 'antd';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   AppstoreOutlined,
   ShopOutlined,
@@ -13,83 +14,115 @@ import {
 
 const { Sider } = Layout;
 
-const menuItems = [
+const MENU_CONFIG = [
   {
     key: 'order',
-    label: <span className="text-white font-semibold">Quản lý đơn hàng</span>,
-    icon: <AppstoreOutlined style={{ color: 'white' }} />,
+    label: 'Quản lý đơn hàng',
+    icon: AppstoreOutlined,
     children: [
-      { key: 'order-all', label: <span className="text-white">Tất cả</span> },
-      { key: 'order-shipping', label: <span className="text-white">Đơn vị vận chuyển</span> },
+      { key: 'order-all', label: 'Tất cả', path: '/vendor/orders' },
+      { key: 'order-shipping', label: 'Đơn vị vận chuyển', path: '/vendor/orders/shipping' },
     ],
   },
   {
     key: 'product',
-    label: <span className="text-white font-semibold">Quản lý Sản phẩm</span>,
-    icon: <ShopOutlined style={{ color: 'white' }} />,
+    label: 'Quản lý Sản phẩm',
+    icon: ShopOutlined,
     children: [
-      { key: 'product-all', label: <span className="text-white">Tất cả sản phẩm</span> },
-      { key: 'product-category', label: <span className="text-white">Danh mục sản phẩm</span> },
-      { key: 'product-inventory', label: <span className="text-white">Quản lý tồn kho</span> },
-      { key: 'product-violation', label: <span className="text-white">Sản phẩm vi phạm</span> },
+      { key: 'product-all', label: 'Tất cả sản phẩm', path: '/vendor/products' },
+      { key: 'product-add', label: 'Tạo sản phẩm', path: '/vendor/products/create' },
+      { key: 'product-category', label: 'Danh mục sản phẩm', path: '/vendor/categories' },
     ],
   },
   {
     key: 'marketing',
-    label: <span className="text-white font-semibold">Kênh Marketing</span>,
-    icon: <TagsOutlined style={{ color: 'white' }} />,
+    label: 'Kênh Marketing',
+    icon: TagsOutlined,
     children: [
-      { key: 'marketing-coupon', label: <span className="text-white">Khuyến mãi của tôi</span> },
-      { key: 'marketing-system', label: <span className="text-white">Khuyến mãi hệ thống</span> },
+      { key: 'marketing-coupon', label: 'Khuyến mãi của tôi', path: '/vendor/marketing/coupons' },
+      { key: 'marketing-system', label: 'Khuyến mãi hệ thống', path: '/vendor/marketing/system' },
     ],
   },
   {
     key: 'customer',
-    label: <span className="text-white font-semibold">Chăm sóc Khách hàng</span>,
-    icon: <CustomerServiceOutlined style={{ color: 'white' }} />,
+    label: 'Chăm sóc Khách hàng',
+    icon: CustomerServiceOutlined,
     children: [
-      { key: 'customer-message', label: <span className="text-white">Quản lý tin nhắn</span> },
-      { key: 'customer-rating', label: <span className="text-white">Quản lý đánh giá</span> },
+      { key: 'customer-message', label: 'Quản lý tin nhắn', path: '/vendor/customers/messages' },
+      { key: 'customer-rating', label: 'Quản lý đánh giá', path: '/vendor/customers/ratings' },
     ],
   },
   {
     key: 'finance',
-    label: <span className="text-white font-semibold">Tài chính</span>,
-    icon: <DollarOutlined style={{ color: 'white' }} />,
+    label: 'Tài chính',
+    icon: DollarOutlined,
     children: [
-      { key: 'finance-revenue', label: <span className="text-white">Doanh thu</span> },
+      { key: 'finance-revenue', label: 'Doanh thu', path: '/vendor/finance/revenue' },
     ],
   },
   {
     key: 'data',
-    label: <span className="text-white font-semibold">Dữ liệu</span>,
-    icon: <DatabaseOutlined style={{ color: 'white' }} />,
+    label: 'Dữ liệu',
+    icon: DatabaseOutlined,
     children: [
-      { key: 'data-analytics', label: <span className="text-white">Phân tích bán hàng</span> },
-      { key: 'data-performance', label: <span className="text-white">Hiệu quả hoạt động</span> },
+      { key: 'data-analytics', label: 'Phân tích bán hàng', path: '/vendor/data/analytics' },
     ],
   },
   {
     key: 'shop',
-    label: <span className="text-white font-semibold">Quản lý Shop</span>,
-    icon: <TeamOutlined style={{ color: 'white' }} />,
+    label: 'Quản lý Shop',
+    icon: TeamOutlined,
     children: [
-      { key: 'shop-profile', label: <span className="text-white">Hồ sơ shop</span> },
+      { key: 'shop-profile', label: 'Hồ sơ shop', path: '/vendor/shop' },
     ],
   },
 ];
 
+const pathKeyMap = new Map<string, { childKey: string; parentKey: string }>();
+MENU_CONFIG.forEach(parent => {
+  if (parent.children) {
+    parent.children.forEach(child => {
+      if (child.path) {
+        pathKeyMap.set(child.path, { childKey: child.key, parentKey: parent.key });
+      }
+    });
+  }
+});
+
 const VendorSider: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [openKeys, setOpenKeys] = useState<string[]>([]);
 
-  const handleMenuClick = ({ key }: { key: string }) => {
-    // map specific keys to routes
-    if (key === 'product-all') return navigate('/vendor/products');
-    if (key === 'product-add') return navigate('/vendor/products/create');
-    if (key === 'product-category') return navigate('/vendor/categories');
-    if (key === 'shop-profile') return navigate('/vendor/shop');
-    // add more mappings if needed
+  const activeKeys = useMemo(() => {
+    const match = pathKeyMap.get(location.pathname);
+    if (match) {
+      return { selected: [match.childKey], open: [match.parentKey] };
+    }
+    return { selected: ['order-all'], open: ['order'] };
+  }, [location.pathname]);
+
+  useEffect(() => { setOpenKeys(activeKeys.open); }, [activeKeys.open]);
+
+  const menuItems = useMemo(() => {
+    return MENU_CONFIG.map(item => ({
+      ...item,
+      label: <span className="font-semibold">{item.label}</span>,
+      icon: item.icon ? <item.icon /> : null,
+      children: item.children?.map(child => ({ ...child, label: child.label })),
+    }));
+  }, []);
+
+  const handleMenuClick: MenuProps['onClick'] = ({ key }) => {
+    for (const parent of MENU_CONFIG) {
+      const child = parent.children?.find(c => c.key === key);
+      if (child && child.path) {
+        navigate(child.path);
+        break;
+      }
+    }
   };
+
   return (
     <Sider
       width={260}
@@ -97,11 +130,14 @@ const VendorSider: React.FC = () => {
       collapsedWidth={0}
       className="!sticky !top-0 !left-0 !h-screen !overflow-auto border-r border-white/10 !bg-gradient-to-b !from-indigo-700 !to-indigo-500 text-white"
     >
-      <div className="text-white font-bold text-base px-5 pt-4 pb-2">Trung tâm điều khiển</div>
+      <div className="px-5 pt-4 pb-2 text-base font-bold text-white">Trung tâm điều khiển</div>
       <Menu
         mode="inline"
         theme="dark"
-        defaultOpenKeys={[menuItems[0].key]}
+        selectedKeys={activeKeys.selected}
+        openKeys={openKeys}
+        onOpenChange={(keys) => setOpenKeys(keys as string[])}
+        items={menuItems as any}
         onClick={handleMenuClick}
         className="!border-r-0 !bg-transparent px-2 text-white
           [&_.ant-menu-sub]:!bg-transparent
@@ -110,7 +146,6 @@ const VendorSider: React.FC = () => {
           [&_.ant-menu-item:hover]:!bg-white/10
           [&_.ant-menu-item-selected_span]:!text-white
           [&_.ant-menu-item_span]:text-white/80"
-        items={menuItems as any}
       />
     </Sider>
   );
