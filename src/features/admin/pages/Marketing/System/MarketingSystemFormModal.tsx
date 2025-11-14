@@ -13,7 +13,7 @@ interface Props {
 const { Option } = Select;
 const { RangePicker } = DatePicker;
 
-const CampaignFormModal: React.FC<Props> = ({ open, onClose, editingCampaign }) => {
+const MarketingSystemFormModal: React.FC<Props> = ({ open, onClose, editingCampaign }) => {
     const [form] = Form.useForm();
     const { createCampaign, updateCampaign, isLoading } = useCoupon();
     const distributionType = Form.useWatch('distributionType', form);
@@ -177,4 +177,4 @@ const CampaignFormModal: React.FC<Props> = ({ open, onClose, editingCampaign }) 
     );
 };
 
-export default CampaignFormModal;
+export default MarketingSystemFormModal;

@@ -30,10 +30,13 @@ import ProductByCategory from '@/features/clients/pages/Product/ProductByCategor
 import ProductByShop from '@/features/clients/pages/Product/ProductByShop';
 import AttributeByCategoryPage from '@/features/admin/pages/Categories/Attributes/AttributeByCategoryPage';
 import CartPage from '@/features/clients/pages/Cart/CartPage';
-import CampaignListPage from '@/features/admin/pages/Campaign/CampaignListPage';
-import CampaignDetailPage from '@/features/admin/pages/Campaign/CampaignDetailPage';
+import MarketingSystemListPage from '@/features/admin/pages/Marketing/System/MarketingSystemPage';
+import CampaignDetailPage from '@/features/admin/pages/Marketing/System/MarketingSystemDetailPage';
+import SegmentCouponsPage from '@/features/admin/pages/Marketing/Segment/SegmentCouponsPage';
 import ShopManagementPage from '@/features/vendors/pages/ShopManagement/ShopManagementPage';
 import CustomerSegmentPage from '@/features/admin/pages/CustomerSegment/CustomerSegmentPage';
+import AdminOrdersPage from '@/features/admin/pages/Orders/OrdersPage';
+import VendorOrdersPage from '@/features/vendors/pages/Order/OrdersPage';
 
 const router = createBrowserRouter([
   {
@@ -50,10 +53,12 @@ const router = createBrowserRouter([
           { path: 'products', element: <AdminProductsPage /> },
           { path: 'users', element: <UsersListPage /> },
           { path: 'users/create', element: <UserCreatePage /> },
+          { path: 'orders', element: <AdminOrdersPage /> },
           { path: 'shops', element: <ShopsPage /> },
           { path: 'shops/pending', element: <PendingShopsPage /> },
-          { path: 'campaigns', element: <CampaignListPage /> },
-          { path: 'campaigns/:id', element: <CampaignDetailPage /> },
+          { path: 'marketing/system', element: <MarketingSystemListPage /> },
+          { path: 'marketing/system/:id', element: <CampaignDetailPage /> },
+          { path: 'marketing/segment', element: <SegmentCouponsPage /> },
           { path: 'customer-segments', element: <CustomerSegmentPage /> },
         ],
       },
@@ -91,6 +96,8 @@ const router = createBrowserRouter([
           { path: 'products', element: <ProductsPage /> },
           { path: 'categories', element: <VendorCategoriesPage /> },
           { path: 'categories/:slug/attributes', element: <VendorAttributesPage /> },
+          { path: 'orders', element: <VendorOrdersPage /> },
+          { path: 'orders/shipping', element: <VendorOrdersPage /> },
           { path: 'shop', element: <ShopManagementPage /> },
         ],
       },

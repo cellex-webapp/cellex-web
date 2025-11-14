@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { App, Button, Card, Table, Tabs, Tag, Space, Tooltip } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
 import { useCoupon } from '@/hooks/useCoupon';
-import CampaignFormModal from './CampaignFormModal'; 
+import MarketingSystemFormModal from './MarketingSystemFormModal'; 
 import { useNavigate } from 'react-router-dom';
 import type { ColumnsType } from 'antd/es/table';
 
@@ -16,7 +16,7 @@ const statusTabs: { key: CampaignStatus, label: string }[] = [
   { key: 'CANCELLED', label: 'Đã hủy' },
 ];
 
-const CampaignListPageContent: React.FC = () => {
+const MarketingSystemListPageContent: React.FC = () => {
   const { modal, message } = App.useApp();
   const { campaigns, fetchCampaignsByStatus, deleteCampaign } = useCoupon();
   const navigate = useNavigate();
@@ -129,7 +129,7 @@ const CampaignListPageContent: React.FC = () => {
         />
       </Card>
       
-      <CampaignFormModal
+      <MarketingSystemFormModal
         open={isModalOpen}
         onClose={handleCloseModal}
         editingCampaign={editingCampaign}
@@ -138,10 +138,10 @@ const CampaignListPageContent: React.FC = () => {
   );
 };
 
-const CampaignListPage: React.FC = () => (
+const MarketingSystemListPage: React.FC = () => (
   <App>
-    <CampaignListPageContent />
+    <MarketingSystemListPageContent />
   </App>
 );
 
-export default CampaignListPage;
+export default MarketingSystemListPage;

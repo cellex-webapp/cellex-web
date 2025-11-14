@@ -8,11 +8,11 @@ import { useUser } from '@/hooks/useUser';
 
 const { Title } = Typography;
 
-interface CampaignDetailPageContentProps {
+interface MarketingSystemPageContentProps {
   campaignId?: string | null;
 }
 
-const CampaignDetailPageContent: React.FC<CampaignDetailPageContentProps> = ({ campaignId = null }) => {
+const MarketingSystemPageContent: React.FC<MarketingSystemPageContentProps> = ({ campaignId = null }) => {
   const params = useParams<{ id: string }>();
   const id = campaignId ?? params.id;
   const [form] = Form.useForm();
@@ -238,9 +238,9 @@ const CampaignDetailPageContent: React.FC<CampaignDetailPageContentProps> = ({ c
 
 const CampaignDetailPage: React.FC = () => (
   <App>
-    <CampaignDetailPageContent />
+    <MarketingSystemPageContent />
   </App>
 );
 
-export { CampaignDetailPageContent };
+export { MarketingSystemPageContent };
 export default CampaignDetailPage;

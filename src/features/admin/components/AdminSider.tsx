@@ -30,6 +30,7 @@ const MENU_CONFIG = [
     children: [
       { key: 'product-all', label: 'Tất cả sản phẩm', path: '/admin/products' },
       { key: 'product-violation', label: 'Sản phẩm vi phạm', path: '/admin/products/violations' },
+      { key: 'order', label: 'Quản lý Đơn hàng', path: '/admin/orders' },
     ],
   },
   {
@@ -63,8 +64,8 @@ const MENU_CONFIG = [
   {
     key: 'marketing', label: 'Kênh Marketing', icon: TagsOutlined,
     children: [
-      { key: 'marketing-coupon', label: 'Khuyến mãi của tôi', path: '/admin/campaigns' },
       { key: 'marketing-system', label: 'Khuyến mãi hệ thống', path: '/admin/marketing/system' },
+      { key: 'marketing-segment', label: 'Khuyến mãi phân khúc', path: '/admin/marketing/segment' },
     ],
   },
   {
