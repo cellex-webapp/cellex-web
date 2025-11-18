@@ -1,72 +1,74 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, isPending, isRejectedWithValue } from '@reduxjs/toolkit';
 import { categoryService } from '@/services/category.service';
+import { getErrorMessage } from '@/helpers/errorHandler';
+
+type ThunkConfig = { rejectValue: string };
 
 interface CategoryState {
-  categories: ICategory[];
-  selectedCategory: ICategory | null;
+  categories: ICategory[]; 
+  pagination: {            
+    page: number;
+    limit: number;
+    total: number;
+  };
   isLoading: boolean;
   error: string | null;
 }
 
 const initialState: CategoryState = {
   categories: [],
-  selectedCategory: null,
+  pagination: { page: 1, limit: 10, total: 0 },
   isLoading: false,
   error: null,
 };
 
-export const fetchAllCategories = createAsyncThunk(
+export const fetchAllCategories = createAsyncThunk<
+  IPaginatedResult<ICategory>, 
+  IPaginationParams | undefined, 
+  { rejectValue: string }
+>(
   'category/fetchAll', 
-  async (_, { rejectWithValue }) => {
+  async (params, { rejectWithValue }) => {
     try {
-      const resp = await categoryService.getAllCategories();
-      return resp.result as ICategory[];
-
-    } catch (error: any) {
-      const message =
-        error?.response?.data?.message ?? error?.message ?? JSON.stringify(error);
-      return rejectWithValue(message);
+      const resp = await categoryService.getAllCategories(params);
+      return resp.result; 
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
     }
 });
 
-export const createCategory = createAsyncThunk(
+export const createCategory = createAsyncThunk<ICategory, ICreateCategoryPayload, ThunkConfig>(
   'category/create',
-  async (payload: ICreateCategoryPayload, { rejectWithValue }) => {
+  async (payload, { rejectWithValue }) => {
     try {
       const resp = await categoryService.createCategory(payload);
-      return resp.result as ICategory;
-    } catch (error: any) {
-      const message =
-        error?.response?.data?.message ?? error?.message ?? error?.data?.message ?? JSON.stringify(error);
-      return rejectWithValue(message);
+      return resp.result;
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
     }
   }
 );
 
-export const updateCategory = createAsyncThunk(
+export const updateCategory = createAsyncThunk<ICategory, IUpdateCategoryPayload, ThunkConfig>(
   'category/update',
-  async (payload: IUpdateCategoryPayload, { rejectWithValue }) => {
+  async (payload, { rejectWithValue }) => {
     try {
       const resp = await categoryService.updateCategory(payload);
-      return resp.result as ICategory;
-    } catch (error: any) {
-      const message =
-        error?.response?.data?.message ?? error?.message ?? error?.data?.message ?? JSON.stringify(error);
-      return rejectWithValue(message);
+      return resp.result;
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
     }
   }
 );
 
-export const deleteCategory = createAsyncThunk(
+export const deleteCategory = createAsyncThunk<string, string, ThunkConfig>(
   'category/delete',
-  async (id: string, { rejectWithValue }) => {
+  async (id, { rejectWithValue }) => {
     try {
       await categoryService.deleteCategory(id);
       return id;
-    } catch (error: any) {
-      const message =
-        error?.response?.data?.message ?? error?.message ?? error?.data?.message ?? JSON.stringify(error);
-      return rejectWithValue(message);
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
     }
   }
 );
@@ -79,38 +81,46 @@ const categorySlice = createSlice({
     builder
       .addCase(fetchAllCategories.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.categories = action.payload;
+        state.categories = action.payload.content || [];
+        state.pagination = {
+          page: action.payload.currentPage,
+          limit: action.payload.pageSize,
+          total: action.payload.totalElements,
+        };
       })
       .addCase(createCategory.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.categories.unshift(action.payload);
+        if (Array.isArray(state.categories)) {
+             state.categories.unshift(action.payload);
+        }
       })
       .addCase(updateCategory.fulfilled, (state, action) => {
         state.isLoading = false;
-        const index = state.categories.findIndex((cat) => cat.id === action.payload.id);
-        if (index !== -1) {
-          state.categories[index] = action.payload;
+        if (Array.isArray(state.categories)) {
+            const index = state.categories.findIndex((cat) => cat.id === action.payload.id);
+            if (index !== -1) {
+              state.categories[index] = action.payload;
+            }
         }
       })
       .addCase(deleteCategory.fulfilled, (state, action) => {
         state.isLoading = false;
         state.categories = state.categories.filter((cat) => cat.id !== action.payload);
       })
-      .addMatcher(
-        (action) => action.type.startsWith('category/') && action.type.endsWith('/pending'),
-        (state) => {
+      
+      .addMatcher(isPending, (state, action) => {
+        if (action.type.startsWith('category/')) {
           state.isLoading = true;
           state.error = null;
         }
-      )
-      .addMatcher(
-        (action) => action.type.startsWith('category/') && action.type.endsWith('/rejected'),
-        (state, action) => {
-          state.isLoading = false;
-          const a: any = action;
-          state.error = a.payload ?? a.error?.message ?? String(a.error) ?? 'Unknown error';
+      })
+      
+      .addMatcher(isRejectedWithValue, (state, action) => {
+        if (action.type.startsWith('category/')) {
+           state.isLoading = false;
+           state.error = (action.payload as string) || 'Unknown error';
         }
-      );
+      });
   },
 });
 

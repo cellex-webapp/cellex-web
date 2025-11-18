@@ -57,7 +57,7 @@ const VendorOrdersPage: React.FC = () => {
 
   useEffect(() => { load(); }, [load]);
 
-  const data = useMemo(() => shopOrders?.content || [], [shopOrders]);
+  const data = useMemo(() => (Array.isArray(shopOrders?.content) ? shopOrders!.content : []), [shopOrders]);
 
   const doConfirm = async (id: string) => {
     await vendorConfirmOrder(id).unwrap();

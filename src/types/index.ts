@@ -14,6 +14,32 @@ declare global {
     type OrderStatus = 'PENDING' | 'CONFIRMED' | 'SHIPPING' | 'DELIVERED' | 'CANCELLED';
     type PaymentMethod = 'COD';
 
+    interface IPaginatedResult<T> {
+        content: T[];
+        currentPage: number;
+        pageSize: number;
+        totalElements: number;
+        totalPages: number;
+        hasPrevious: boolean;
+        hasNext: boolean;
+        isFirst: boolean;
+        isLast: boolean;
+        isEmpty: boolean;
+        sort: {
+            sorted: boolean;
+            sortBy: string;
+            direction: string;
+        };
+    }
+
+    interface IPaginationParams {
+        page?: number;
+        limit?: number;
+        sortBy?: string;
+        sortType?: 'asc' | 'desc';
+        search?: string;
+    }
+
     interface IAddressDataUnit {
         code: string;
         name: string;
@@ -48,7 +74,7 @@ declare global {
 
     interface IApiResponse<T> {
         code: number;
-        message: string;
+        message?: string;
         result: T;
     }
 
@@ -528,7 +554,7 @@ declare global {
         error: string | null;
     }
 
-    
+
 
     interface CustomerSegmentResponse {
         id: string;
@@ -625,11 +651,11 @@ declare global {
         maxSpend?: number | null;
         level: number;
     }
-    
+
     type UpdateCustomerSegmentRequest = Partial<CreateCustomerSegmentRequest>;
 }
 
-export {}
+export { }
 
 
 

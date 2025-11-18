@@ -18,7 +18,9 @@ const initialState: UserState = {
 export const fetchAllUsers = createAsyncThunk('user/fetchAll', async (_, { rejectWithValue }) => {
   try {
   const resp = await userService.getAllUsers();
-  return resp.result as IUser[];
+  const res: any = resp.result as any;
+  // Normalize paginated or plain array responses
+  return Array.isArray(res?.content) ? (res.content as IUser[]) : (res as IUser[]);
   } catch (error: any) {
     const message =
       error?.response?.data?.message ?? error?.message ?? error?.data?.message ?? JSON.stringify(error);

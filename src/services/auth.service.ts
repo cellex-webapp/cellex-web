@@ -1,25 +1,29 @@
 import axiosInstance from "@/utils/axiosInstance";
 
 export const authService = {
-    login: async (payload: ILoginPayload): Promise<IApiResponse<ILoginResponse>> => {
-        const resp = await axiosInstance.post<IApiResponse<ILoginResponse>>('/auth/login', payload);
-        return (resp as unknown) as IApiResponse<ILoginResponse>;
-    },
-    logout: async (): Promise<IApiResponse<void>> => {
-        const resp = await axiosInstance.post<IApiResponse<void>>('/auth/logout');
-        return (resp as unknown) as IApiResponse<void>;
-    },
-    sendSignupCode: async (payload: ISendSignupCodePayload): Promise<IApiResponse<void>> => {
-        const resp = await axiosInstance.post<IApiResponse<void>>('/auth/send-signup-code', payload);
-        return (resp as unknown) as IApiResponse<void>;
-    },
-    verifySignupCode: async (payload: IVerifySignupCodePayload): Promise<IApiResponse<void>> => {
-        const resp = await axiosInstance.post<IApiResponse<void>>('/auth/verify-signup-code', payload);
-        return (resp as unknown) as IApiResponse<void>;
-    },
-    refreshToken: async (): Promise<IApiResponse<ILoginResponse>> => {
-        const refreshToken = localStorage.getItem('refreshToken');
-        const resp = await axiosInstance.post<IApiResponse<ILoginResponse>>('/auth/refresh-token', { refreshToken });
-        return (resp as unknown) as IApiResponse<ILoginResponse>;
-    },
+  login: async (payload: ILoginPayload) => {
+    const response = await axiosInstance.post<IApiResponse<ILoginResponse>>('/auth/login', payload);
+    return response.data; 
+  },
+
+  logout: async () => {
+    const response = await axiosInstance.post<IApiResponse<void>>('/auth/logout');
+    return response.data;
+  },
+
+  sendSignupCode: async (payload: ISendSignupCodePayload) => {
+    const response = await axiosInstance.post<IApiResponse<void>>('/auth/send-signup-code', payload);
+    return response.data;
+  },
+
+  verifySignupCode: async (payload: IVerifySignupCodePayload) => {
+    const response = await axiosInstance.post<IApiResponse<void>>('/auth/verify-signup-code', payload);
+    return response.data;
+  },
+
+  refreshToken: async () => {
+    const refreshToken = localStorage.getItem('refreshToken');
+    const response = await axiosInstance.post<IApiResponse<ILoginResponse>>('/auth/refresh-token', { refreshToken });
+    return response.data;
+  },
 };

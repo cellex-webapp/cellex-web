@@ -29,9 +29,9 @@ const MarketingSystemPageContent: React.FC<MarketingSystemPageContentProps> = ({
 
   const allSwitchOn = Form.useWatch('all', form);
 
-  const userOptions = (users || [])
-    .filter(u => u.role === 'USER')
-    .map(u => ({
+  const userOptions = (Array.isArray(users) ? users : [])
+    .filter((u) => u.role === 'USER')
+    .map((u) => ({
       label: (
         <div className="flex items-center gap-2">
           <Avatar size="small" src={u.avatarUrl}>
@@ -49,7 +49,7 @@ const MarketingSystemPageContent: React.FC<MarketingSystemPageContentProps> = ({
 
   const renderUserTag = (tagProps: any) => {
     const { value, closable, onClose } = tagProps;
-    const u = (users || []).find(uu => uu.id === value);
+    const u = (Array.isArray(users) ? users : []).find((uu) => uu.id === value);
     return (
       <Tag closable={closable} onClose={onClose} style={{ marginRight: 4 }}>
         {u?.fullName || value}
@@ -222,7 +222,7 @@ const MarketingSystemPageContent: React.FC<MarketingSystemPageContentProps> = ({
               <Table
                 rowKey="id"
                 columns={logColumns}
-                dataSource={logs}
+                dataSource={Array.isArray(logs) ? logs : []}
                 loading={isLoading}
                 pagination={false}
                 size="small"

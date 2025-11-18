@@ -47,7 +47,7 @@ const AdminOrdersPage: React.FC = () => {
 
   useEffect(() => { load(); }, [load]);
 
-  const data = useMemo(() => adminOrders?.content || [], [adminOrders]);
+  const data = useMemo(() => (Array.isArray(adminOrders?.content) ? adminOrders!.content : []), [adminOrders]);
 
   const columns = [
     { title: 'Mã đơn', dataIndex: 'id', key: 'id', width: 240 },

@@ -18,33 +18,43 @@ export const selectCategoryError = createSelector(
   (categoryState) => categoryState.error
 );
 
+export const selectCategoryPagination = createSelector(
+  [selectCategory],
+  (categoryState) => categoryState.pagination
+);
+
 export interface ICategoryTree extends ICategory {
   children: ICategoryTree[];
 }
 
-const buildCategoryTree = (categories: ICategory[]): ICategoryTree[] => {
-  const map: { [key: string]: ICategoryTree } = {};
-  const tree: ICategoryTree[] = [];
+const buildCategoryTree = (categories: ICategory[]) => {
+  const map = new Map<string, ICategory & { children: ICategory[] }>();
+  const roots: (ICategory & { children: ICategory[] })[] = [];
 
-  categories.forEach((category) => {
-    map[category.id] = { ...category, children: [] };
+  if (!Array.isArray(categories)) return [];
+
+  categories.forEach((cat) => {
+    map.set(cat.id, { ...cat, children: [] });
   });
 
-  Object.values(map).forEach((node) => {
-    if (node.parentId && map[node.parentId]) {
-      map[node.parentId].children.push(node);
-    } else {
-      tree.push(node);
+  categories.forEach((cat) => {
+    const node = map.get(cat.id);
+    if (node) {
+      if (node.parentId && map.has(node.parentId)) {
+        map.get(node.parentId)!.children.push(node);
+      } else {
+        roots.push(node);
+      }
     }
   });
 
-  return tree;
+  return roots;
 };
 
 export const selectCategoryTree = createSelector(
   [selectAllCategories],
   (categories) => {
-    if (!categories || categories.length === 0) {
+    if (!Array.isArray(categories) || categories.length === 0) {
       return [];
     }
     return buildCategoryTree(categories);
