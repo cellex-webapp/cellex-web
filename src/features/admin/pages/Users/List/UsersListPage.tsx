@@ -110,14 +110,7 @@ const UsersListPage: React.FC = () => {
       <UserTable
         data={users}
         loading={isLoading}
-        // pagination={{
-        //     current: pagination.page,
-        //     pageSize: pagination.limit,
-        //     total: pagination.total,
-        //     showSizeChanger: true,
-        //     showTotal: (total) => `Tổng ${total} người dùng`,
-        // }}
-        // onChange={handleTableChange}
+        // TODO: implement pagination in UserTable
         onRowClick={(id: string) => {
           setDetailId(id);
           setDetailOpen(true);
