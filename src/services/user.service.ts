@@ -2,19 +2,25 @@ import axiosInstance from '@/utils/axiosInstance';
 import toFormData, { isFormData } from '@/utils/formData';
 
 export const userService = {
-  getAllUsers: async (): Promise<IApiResponse<IUser[]>> => {
-    const resp = await axiosInstance.get<IApiResponse<IUser[]>>('/users');
-    return (resp as unknown) as IApiResponse<IUser[]>;
+  getAllUsers: async (params?: IPaginationParams) => {
+    const response = await axiosInstance.get<IApiResponse<IPaginatedResult<IUser>>>('/users', { params });
+    return response.data;
   },
-  getUserById: async (userId: string): Promise<IApiResponse<IUser>> => {
-    const resp = await axiosInstance.get<IApiResponse<IUser>>(`/users/${userId}`);
-    return (resp as unknown) as IApiResponse<IUser>;
+  
+  getUserById: async (userId: string) => {
+    const response = await axiosInstance.get<IApiResponse<IUser>>(`/users/${userId}`);
+    return response.data;
   },
-  getCurrentUserProfile: async (): Promise<IApiResponse<IUser>> => {
-    const resp = await axiosInstance.get<IApiResponse<IUser>>('/users/me');
-    return (resp as unknown) as IApiResponse<IUser>;
+  
+  getCurrentUserProfile: async () => {
+    const response = await axiosInstance.get<IApiResponse<IUser>>('/users/me');
+    return response.data;
   },
-  updateUserProfile: async (data: IUpdateProfilePayload): Promise<IApiResponse<IUser>> => {
+  getMyProfile: async () => {
+    return userService.getCurrentUserProfile();
+  },
+
+  updateUserProfile: async (data: IUpdateProfilePayload) => {
     const payload: Record<string, any> = {
       fullName: data.fullName,
       phoneNumber: data.phoneNumber,
@@ -23,33 +29,28 @@ export const userService = {
       detailAddress: data.detailAddress,
     };
 
-    if (data.avatar && data.avatar instanceof File) {
+    if (data.avatar instanceof File) {
       payload.avatar = data.avatar;
     }
 
     const form = toFormData(payload);
+    const response = await axiosInstance.put<IApiResponse<IUser>>('/users/me', form);
+    return response.data;
+  },
 
-    const resp = await axiosInstance.put<IApiResponse<IUser>>('/users/me', form);
-    return (resp as unknown) as IApiResponse<IUser>;
-  },
-  addUserAccount: async (data: IAddAccountPayload): Promise<IApiResponse<IUser>> => {
+  addUserAccount: async (data: IAddAccountPayload) => {
     const form = isFormData(data) ? data : toFormData(data as Record<string, any>);
-    const resp = await axiosInstance.post<IApiResponse<IUser>>('/users/add-account', form);
-    return (resp as unknown) as IApiResponse<IUser>;
+    const response = await axiosInstance.post<IApiResponse<IUser>>('/users/add-account', form);
+    return response.data;
   },
-  banUser: async (
-    userId: string,
-    payload?: { banReason?: string }
-  ): Promise<IApiResponse<IUser>> => {
-    const resp = await axiosInstance.post<IApiResponse<IUser>>(`/users/${userId}/ban`, payload ?? {});
-    return (resp as unknown) as IApiResponse<IUser>;
+
+  banUser: async (userId: string, payload?: { banReason?: string }) => {
+    const response = await axiosInstance.post<IApiResponse<IUser>>(`/users/${userId}/ban`, payload ?? {});
+    return response.data;
   },
-  unbanUser: async (userId: string): Promise<IApiResponse<IUser>> => {
-    const resp = await axiosInstance.post<IApiResponse<IUser>>(`/users/${userId}/unban`);
-    return (resp as unknown) as IApiResponse<IUser>;
+
+  unbanUser: async (userId: string) => {
+    const response = await axiosInstance.post<IApiResponse<IUser>>(`/users/${userId}/unban`);
+    return response.data;
   },
-  getMyProfile: async (): Promise<IApiResponse<IUser>> => {
-    const resp = await axiosInstance.get<IApiResponse<IUser>>('/users/me');
-    return (resp as unknown) as IApiResponse<IUser>;
-  }
 };

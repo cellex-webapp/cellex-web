@@ -10,29 +10,12 @@ const UserCreatePage: React.FC = () => {
 
   const handleSubmit = async (payload: IAddAccountPayload & { image?: File }) => {
     try {
-      // Always send as FormData to match API spec (avatar field)
-      const fd = new FormData();
-      fd.append('fullName', String(payload.fullName));
-      fd.append('email', String(payload.email));
-      fd.append('password', String(payload.password));
-      fd.append('phoneNumber', String(payload.phoneNumber));
-      fd.append('role', String(payload.role));
+      await addUserAccount(payload).unwrap(); 
       
-      // Optional fields
-      if (payload.provinceCode) fd.append('provinceCode', String(payload.provinceCode));
-      if (payload.communeCode) fd.append('communeCode', String(payload.communeCode));
-      if (payload.detailAddress) fd.append('detailAddress', String(payload.detailAddress));
-      
-      // Avatar field (matches API spec)
-      if (payload.image && payload.image instanceof File) {
-        fd.append('avatar', payload.image, payload.image.name || 'avatar');
-      }
-
-      await addUserAccount(fd as any).unwrap();
       message.success('Tạo tài khoản thành công');
       navigate('/admin/users');
     } catch (rejectedValue: any) {
-      const errMsg = rejectedValue?.message || String(rejectedValue) || 'Không thể tạo tài khoản';
+      const errMsg = typeof rejectedValue === 'string' ? rejectedValue : 'Không thể tạo tài khoản';
       message.error(errMsg);
     }
   };

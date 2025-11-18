@@ -2,63 +2,53 @@ import axiosInstance from "@/utils/axiosInstance";
 import toFormData, { isFormData } from '@/utils/formData';
 
 export const productService = {
-    getAllProducts: async (params?: { page?: number; limit?: number; sortType?: string; sortBy?: string }): Promise<IApiResponse<IPage<IProduct>>> => {
-        const resp = await axiosInstance.get<IApiResponse<IPage<IProduct>>>('/products', { params });
-        return (resp as unknown) as IApiResponse<IPage<IProduct>>;
-    },
-    getProductById: async (id: string): Promise<IApiResponse<IProduct>> => {
-        const resp = await axiosInstance.get<IApiResponse<IProduct>>(`/products/${id}`);
-        return (resp as unknown) as IApiResponse<IProduct>;
-    },
+  getAllProducts: async (params?: IPaginationParams) => {
+    const response = await axiosInstance.get<IApiResponse<IPaginatedResult<IProduct>>>('/products', { params });
+    return response.data;
+  },
 
-    updateProduct: async (productId: string, data: any): Promise<IApiResponse<IProduct>> => {
-        if (isFormData(data)) {
-            const resp = await axiosInstance.put<IApiResponse<IProduct>>(`/products/${productId}`, data);
-            return (resp as unknown) as IApiResponse<IProduct>;
-        }
+  getProductById: async (id: string) => {
+    const response = await axiosInstance.get<IApiResponse<IProduct>>(`/products/${id}`);
+    return response.data;
+  },
 
-        const fd = toFormData(data);
+  getProductsByShop: async (shopId: string, params?: IPaginationParams) => {
+    const response = await axiosInstance.get<IApiResponse<IPaginatedResult<IProduct>>>(`/products/shop/${shopId}`, { params });
+    return response.data;
+  },
 
-        const resp = await axiosInstance.put<IApiResponse<IProduct>>(`/products/${productId}`, fd);
-        return (resp as unknown) as IApiResponse<IProduct>;
-    },
+  getProductsByCategory: async (categoryId: string, params?: IPaginationParams) => {
+    const response = await axiosInstance.get<IApiResponse<IPaginatedResult<IProduct>>>(`/products/category/${categoryId}`, { params });
+    return response.data;
+  },
 
-    deleteProduct: async (productId: string): Promise<IApiResponse<string>> => {
-        const resp = await axiosInstance.delete<IApiResponse<string>>(`/products/${productId}`);
-        return (resp as unknown) as IApiResponse<string>;
-    },
+  searchProducts: async (keyword: string, params?: IPaginationParams) => {
+    const queryParams = { keyword, ...params };
+    const response = await axiosInstance.get<IApiResponse<IPaginatedResult<IProduct>>>('/products/search', { params: queryParams });
+    return response.data;
+  },
 
-    getProductsByShop: async (shopId: string, pageable?: IPageable): Promise<IApiResponse<IPage<IProduct>>> => {
-        const resp = await axiosInstance.get<IApiResponse<IPage<IProduct>>>(`/products/shop/${shopId}`, { params: pageable });
-        return (resp as unknown) as IApiResponse<IPage<IProduct>>;
-    },
+  getMyProduct: async (params?: IPaginationParams) => {
+    const response = await axiosInstance.get<IApiResponse<IPaginatedResult<IProduct>>>('/products/my-products', { params });
+    return response.data;
+  },
 
-    searchProducts: async (keyword: string, pageable?: IPageable): Promise<IApiResponse<IPage<IProduct>>> => {
-        const resp = await axiosInstance.get<IApiResponse<IPage<IProduct>>>('/products/search', { params: { keyword, ...(pageable || {}) } });
-        return (resp as unknown) as IApiResponse<IPage<IProduct>>;
-    },
+  createProduct: async (data: ICreateProductPayload | FormData) => {
+    const payload = isFormData(data) ? data : toFormData(data as Record<string, any>);
+    const response = await axiosInstance.post<IApiResponse<IProduct>>('/products', payload);
+    return response.data;
+  },
 
-    getProductsByCategory: async (categoryId: string, pageable?: IPageable): Promise<IApiResponse<IPage<IProduct>>> => {
-        const resp = await axiosInstance.get<IApiResponse<IPage<IProduct>>>(`/products/category/${categoryId}`, { params: pageable });
-        return (resp as unknown) as IApiResponse<IPage<IProduct>>;
-    },
+  updateProduct: async (productId: string, data: IUpdateProductPayload | FormData) => {
+    const payload = isFormData(data) ? data : toFormData(data as Record<string, any>);
+    const response = await axiosInstance.put<IApiResponse<IProduct>>(`/products/${productId}`, payload);
+    return response.data;
+  },
 
-    createProduct: async (data: any): Promise<IApiResponse<IProduct>> => {
-        if (isFormData(data)) {
-            const resp = await axiosInstance.post<IApiResponse<IProduct>>('/products', data);
-            return (resp as unknown) as IApiResponse<IProduct>;
-        }
-
-        const fd = toFormData(data);
-
-        const resp = await axiosInstance.post<IApiResponse<IProduct>>('/products', fd);
-        return (resp as unknown) as IApiResponse<IProduct>;
-    },
-
-    getMyProduct: async (pageable?: IPageable): Promise<IApiResponse<IPage<IProduct>>> => {
-        const resp = await axiosInstance.get<IApiResponse<IPage<IProduct>>>('/products/my-products', { params: pageable });
-        return (resp as unknown) as IApiResponse<IPage<IProduct>>;
-    }
+  deleteProduct: async (productId: string) => {
+    const response = await axiosInstance.delete<IApiResponse<string>>(`/products/${productId}`);
+    return response.data;
+  },
 };
 
 export default productService;

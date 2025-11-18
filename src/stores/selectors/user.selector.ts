@@ -5,7 +5,7 @@ const selectUser = (state: RootState) => state.user;
 
 export const selectAllUsers = createSelector(
   [selectUser],
-  (userState) => userState.users
+  (userState) => Array.isArray(userState.users) ? userState.users : []
 );
 
 export const selectSelectedUser = createSelector(
@@ -21,4 +21,9 @@ export const selectUserIsLoading = createSelector(
 export const selectUserError = createSelector(
   [selectUser],
   (userState) => userState.error
+);
+
+export const selectUserPagination = createSelector(
+  [selectUser],
+  (userState) => userState.pagination
 );

@@ -5,16 +5,21 @@ import { addressService } from '@/services/address.service';
 
 const { Option } = Select;
 
+interface IAddressItem {
+  code: string | number;
+  name: string;
+}
+
 interface UserFormProps {
   loading: boolean;
-  onSubmit: (values: IAddAccountPayload) => void;
+  onSubmit: (values: IAddAccountPayload & { image?: File }) => void; 
   initialValues?: Partial<IAddAccountPayload>;
 }
 
 const UserForm: React.FC<UserFormProps> = ({ loading, onSubmit, initialValues }) => {
   const [form] = Form.useForm();
-  const [provinces, setProvinces] = useState<Array<any>>([]);
-  const [communes, setCommunes] = useState<Array<any>>([]);
+  const [provinces, setProvinces] = useState<IAddressItem[]>([]);
+  const [communes, setCommunes] = useState<IAddressItem[]>([]);
   const [loadingProvinces, setLoadingProvinces] = useState(false);
   const [loadingCommunes, setLoadingCommunes] = useState(false);
 
@@ -22,32 +27,29 @@ const UserForm: React.FC<UserFormProps> = ({ loading, onSubmit, initialValues })
     const fetchProvinces = async () => {
       try {
         setLoadingProvinces(true);
-        const resp: any = await addressService.getProvinces();
-        const list = Array.isArray(resp) ? resp : resp.result ?? resp;
-        setProvinces(list || []);
-      } catch (err: any) {
+        const resp = await addressService.getProvinces(); 
+        setProvinces(resp.result || []);
+      } catch (err) {
         console.error('Failed to load provinces', err);
         message.error('Không tải được danh sách tỉnh/thành');
       } finally {
         setLoadingProvinces(false);
       }
     };
-
     fetchProvinces();
   }, []);
 
-  const handleProvinceChange = async (value: number | string) => {
-    if (!value) {
-      setCommunes([]);
-      form.setFieldsValue({ communeCode: undefined });
-      return;
-    }
+  const handleProvinceChange = async (value: string | number) => {
+    form.setFieldsValue({ communeCode: undefined });
+    setCommunes([]);
+
+    if (!value) return;
+
     try {
       setLoadingCommunes(true);
-      const resp: any = await addressService.getCommunesByProvinceCode(Number(value));
-      const list = Array.isArray(resp) ? resp : resp.result ?? resp;
-      setCommunes(list || []);
-    } catch (err: any) {
+      const resp = await addressService.getCommunesByProvinceCode(value.toString());
+      setCommunes(resp.result || []);
+    } catch (err) {
       message.error('Không tải được danh sách xã/phường');
     } finally {
       setLoadingCommunes(false);
@@ -55,35 +57,21 @@ const UserForm: React.FC<UserFormProps> = ({ loading, onSubmit, initialValues })
   };
 
   const handleUploadChange = (info: any) => {
-    if (info && Array.isArray(info.fileList) && info.fileList.length === 0) {
-      form.setFieldsValue({ image: null });
-      return;
-    }
-
-    const file = info?.file?.originFileObj || info?.file;
-    if (file) {
-      form.setFieldsValue({ image: file });
-    }
+    const file = info.fileList[0]?.originFileObj;
+    form.setFieldsValue({ image: file });
   };
 
   const handleFinish = (values: any) => {
     const payload: IAddAccountPayload & { image?: File } = {
-      fullName: values.fullName,
-      email: values.email,
-      password: values.password,
-      phoneNumber: values.phoneNumber,
-      provinceCode: values.provinceCode,     
-      communeCode: values.communeCode,       
-      detailAddress: values.detailAddress,   
+      ...values,
       role: values.role || 'USER',
     };
 
-    // Attach image file if exists
     if (values.image) {
-      (payload as any).image = values.image;
+       payload.image = values.image;
     }
 
-    onSubmit(payload as IAddAccountPayload);
+    onSubmit(payload);
   };
 
   return (
@@ -101,10 +89,7 @@ const UserForm: React.FC<UserFormProps> = ({ loading, onSubmit, initialValues })
                   accept="image/*" 
                   listType="picture-card"
                 >
-                  <div>
-                    <PictureOutlined style={{ fontSize: 24 }} />
-                    <div style={{ marginTop: 8 }}>Chọn ảnh</div>
-                  </div>
+                  <div><PictureOutlined style={{ fontSize: 24 }} /> <div style={{ marginTop: 8 }}>Chọn ảnh</div></div>
                 </Upload>
               </Form.Item>
             </Form.Item>
@@ -112,54 +97,18 @@ const UserForm: React.FC<UserFormProps> = ({ loading, onSubmit, initialValues })
         </Row>
         
         <Row gutter={16}>
-          <Col xs={24} sm={24} md={12}>
-            <Form.Item
-              name="fullName"
-              label={<span><UserOutlined /> Họ và Tên</span>}
-              rules={[{ required: true, message: 'Vui lòng nhập họ và tên!' }]}
-            >
-              <Input placeholder="Nguyễn Văn A" />
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={24} md={12}>
-            <Form.Item
-              name="email"
-              label={<span><MailOutlined /> Email</span>}
-              rules={[{ required: true, message: 'Email là bắt buộc!' }, { type: 'email' }]}
-            >
-              <Input placeholder="example@email.com" />
-            </Form.Item>
-          </Col>
+          <Col xs={24} sm={24} md={12}><Form.Item name="fullName" label={<span><UserOutlined /> Họ và Tên</span>} rules={[{ required: true }]}><Input placeholder="Nguyễn Văn A" /></Form.Item></Col>
+          <Col xs={24} sm={24} md={12}><Form.Item name="email" label={<span><MailOutlined /> Email</span>} rules={[{ required: true }, { type: 'email' }]}><Input placeholder="example@email.com" /></Form.Item></Col>
+        </Row>
+
+        <Row gutter={16}>
+          <Col xs={24} sm={24} md={12}><Form.Item name="password" label={<span><LockOutlined /> Mật khẩu</span>} rules={[{ required: true }, { min: 6 }]}><Input.Password placeholder="••••••" /></Form.Item></Col>
+          <Col xs={24} sm={24} md={12}><Form.Item name="phoneNumber" label={<span><PhoneOutlined /> Số điện thoại</span>} rules={[{ required: true }]}><Input placeholder="0912345678" /></Form.Item></Col>
         </Row>
 
         <Row gutter={16}>
           <Col xs={24} sm={24} md={12}>
-            <Form.Item
-              name="password"
-              label={<span><LockOutlined /> Mật khẩu</span>}
-              rules={[{ required: true, message: 'Mật khẩu là bắt buộc!' }, { min: 6, message: 'Mật khẩu tối thiểu 6 ký tự' }]}
-            >
-              <Input.Password placeholder="••••••" />
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={24} md={12}>
-            <Form.Item
-              name="phoneNumber"
-              label={<span><PhoneOutlined /> Số điện thoại</span>}
-              rules={[{ required: true, message: 'Số điện thoại là bắt buộc!' }]}
-            >
-              <Input placeholder="0912345678" />
-            </Form.Item>
-          </Col>
-        </Row>
-
-        <Row gutter={16}>
-          <Col xs={24} sm={24} md={12}>
-            <Form.Item
-              name="role"
-              label="Vai trò"
-              rules={[{ required: true, message: 'Vui lòng chọn vai trò!' }]}
-            >
+            <Form.Item name="role" label="Vai trò" rules={[{ required: true }]}>
               <Select placeholder="Chọn vai trò">
                 <Option value="USER">User (Khách hàng)</Option>
                 <Option value="VENDOR">Vendor (Nhà bán hàng)</Option>
@@ -172,15 +121,9 @@ const UserForm: React.FC<UserFormProps> = ({ loading, onSubmit, initialValues })
         <Row gutter={16}>
           <Col xs={24} sm={24} md={12}>
             <Form.Item name="provinceCode" label="Tỉnh/Thành">
-              {loadingProvinces ? (
-                <Spin />
-              ) : (
-                <Select placeholder="Chọn tỉnh/thành phố" allowClear onChange={handleProvinceChange}>
-                  {provinces.map((p: any) => (
-                    <Option key={p.code ?? p.id} value={p.code ?? p.provinceCode ?? p.id}>{p.name}</Option>
-                  ))}
-                </Select>
-              )}
+              <Select placeholder="Chọn tỉnh/thành phố" allowClear onChange={handleProvinceChange} loading={loadingProvinces}>
+                {provinces.map((p) => (<Option key={p.code} value={p.code}>{p.name}</Option>))}
+              </Select>
             </Form.Item>
           </Col>
 
@@ -190,11 +133,9 @@ const UserForm: React.FC<UserFormProps> = ({ loading, onSubmit, initialValues })
                 placeholder={form.getFieldValue('provinceCode') ? 'Chọn quận/huyện' : 'Chọn tỉnh trước'}
                 allowClear
                 disabled={!form.getFieldValue('provinceCode')}
-                notFoundContent={loadingCommunes ? <Spin size="small" /> : 'Chưa có dữ liệu'}
+                loading={loadingCommunes}
               >
-                {communes.map((c: any) => (
-                  <Option key={c.code ?? c.id} value={c.code ?? c.id}>{c.name}</Option>
-                ))}
+                {communes.map((c) => (<Option key={c.code} value={c.code}>{c.name}</Option>))}
               </Select>
             </Form.Item>
           </Col>
@@ -207,12 +148,8 @@ const UserForm: React.FC<UserFormProps> = ({ loading, onSubmit, initialValues })
       </Form>
       </Card>
       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 12 }}>
-      <Button onClick={() => form.resetFields()}>
-        Đặt lại
-      </Button>
-      <Button type="primary" onClick={() => form.submit()} loading={loading} className="!bg-indigo-600">
-        Tạo tài khoản
-      </Button>
+        <Button onClick={() => form.resetFields()}>Đặt lại</Button>
+        <Button type="primary" onClick={() => form.submit()} loading={loading} className="!bg-indigo-600">Tạo tài khoản</Button>
       </div>
     </>
   );
