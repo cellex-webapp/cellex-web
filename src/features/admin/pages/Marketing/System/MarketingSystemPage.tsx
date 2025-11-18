@@ -90,7 +90,7 @@ const MarketingSystemListPageContent: React.FC = () => {
       render: (_, record) => (
         <Space>
           <Tooltip title="Xem & Phát">
-            <Button icon={<EyeOutlined />} onClick={(e) => { e.stopPropagation(); navigate(`/admin/campaigns/${record.id}`); }} />
+            <Button icon={<EyeOutlined />} onClick={(e) => { e.stopPropagation(); navigate(`/admin/marketing/system/${record.id}`); }} />
           </Tooltip>
           <Tooltip title="Sửa">
             <Button icon={<EditOutlined />} onClick={(e) => { e.stopPropagation(); handleOpenModal(record); }} />
@@ -117,12 +117,12 @@ const MarketingSystemListPageContent: React.FC = () => {
         <Table
           rowKey="id"
           columns={columns}
-          dataSource={campaigns}
+          dataSource={Array.isArray(campaigns) ? campaigns : []}
           loading={listLoading}
           pagination={{ pageSize: 10 }}
           onRow={(record) => ({
             onClick: () => {
-              navigate(`/admin/campaigns/${record.id}`);
+              navigate(`/admin/marketing/system/${record.id}`);
             }
           })}
           scroll={{ x: 1000 }}

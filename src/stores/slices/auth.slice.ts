@@ -1,6 +1,9 @@
-import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, type PayloadAction, isPending, isRejectedWithValue } from '@reduxjs/toolkit';
 import { authService } from '@/services/auth.service';
 import { updateUserProfile } from './user.slice';
+import { getErrorMessage } from '@/helpers/errorHandler';
+
+type ThunkConfig = { rejectValue: string };
 
 interface AuthResult {
   user: IUser;
@@ -24,54 +27,47 @@ const initialState: AuthState = {
   error: null,
 };
 
-export const login = createAsyncThunk(
+export const login = createAsyncThunk<AuthResult, ILoginPayload, ThunkConfig>(
   'auth/login',
-  async (payload: ILoginPayload, { rejectWithValue }) => {
+  async (payload, { rejectWithValue }) => {
     try {
-  const resp: any = await authService.login(payload);
-  return resp.result as AuthResult;
-    } catch (error: any) {
-      const message =
-        error?.response?.data?.message ?? error?.message ?? error?.data?.message ?? JSON.stringify(error);
-      return rejectWithValue(message);
+      const resp = await authService.login(payload);
+      return resp.result
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
     }
   }
 );
 
-export const logout = createAsyncThunk('auth/logout', async (_, { rejectWithValue }) => {
-  try {
-    await authService.logout();
-    return;
-  } catch (error: any) {
-    const message =
-      error?.response?.data?.message ?? error?.message ?? error?.data?.message ?? JSON.stringify(error);
-    return rejectWithValue(message);
-  }
-});
+export const logout = createAsyncThunk<void, void, ThunkConfig>(
+  'auth/logout',
+  async (_, { rejectWithValue }) => {
+    try {
+      await authService.logout();
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
+    }
+  });
 
-export const sendSignupCode = createAsyncThunk(
+export const sendSignupCode = createAsyncThunk<void, ISendSignupCodePayload, ThunkConfig>(
   'auth/sendSignupCode',
-  async (payload: ISendSignupCodePayload, { rejectWithValue }) => {
+  async (payload, { rejectWithValue }) => {
     try {
       await authService.sendSignupCode(payload);
-    } catch (error: any) {
-      const message =
-        error?.response?.data?.message ?? error?.message ?? error?.data?.message ?? JSON.stringify(error);
-      return rejectWithValue(message);
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
     }
   }
 );
 
-export const verifySignupCode = createAsyncThunk(
+export const verifySignupCode = createAsyncThunk<void, IVerifySignupCodePayload, ThunkConfig>(
   'auth/verifySignupCode',
-  async (payload: IVerifySignupCodePayload, { rejectWithValue }) => {
+  async (payload, { rejectWithValue }) => {
     try {
-  const resp: any = await authService.verifySignupCode(payload);
-  return resp.result as AuthResult;
-    } catch (error: any) {
-      const message =
-        error?.response?.data?.message ?? error?.message ?? error?.data?.message ?? JSON.stringify(error);
-      return rejectWithValue(message);
+      await authService.verifySignupCode(payload);
+      return;
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
     }
   }
 );
@@ -87,57 +83,46 @@ const authSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(logout.fulfilled, (state) => {
-        state.isLoading = false;
         state.isAuthenticated = false;
         state.user = null;
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('user');
-        localStorage.removeItem('role');
+        state.isLoading = false;
+        ['accessToken', 'refreshToken', 'user', 'role'].forEach(k => localStorage.removeItem(k));
       })
+
       .addCase(updateUserProfile.fulfilled, (state, action) => {
         if (state.user && state.user.id === action.payload.id) {
-          const updatedUser = { ...state.user, ...action.payload } as IUser;
-          state.user = updatedUser;
-          try {
-            localStorage.setItem('user', JSON.stringify(updatedUser));
-          } catch {}
+          state.user = { ...state.user, ...action.payload };
+          localStorage.setItem('user', JSON.stringify(state.user));
         }
       })
+
       .addCase(login.fulfilled, (state, action: PayloadAction<AuthResult>) => {
         const userFromApi = action.payload.user;
-        if (!userFromApi.role) {
-          userFromApi.role = 'USER'; 
-        }
-        
+        if (!userFromApi.role) userFromApi.role = 'USER';
+
         state.isLoading = false;
         state.isAuthenticated = true;
         state.user = userFromApi;
-        
+
         localStorage.setItem('accessToken', action.payload.accessToken);
         localStorage.setItem('refreshToken', action.payload.refreshToken);
         localStorage.setItem('role', userFromApi.role);
         localStorage.setItem('user', JSON.stringify(userFromApi));
       })
-      .addCase(verifySignupCode.fulfilled, (state) => {
-        state.isLoading = false;
-      })
-      
-      .addMatcher(
-        (action) => action.type.startsWith('auth/') && action.type.endsWith('/pending'),
-        (state) => {
+
+      .addMatcher(isPending, (state, action) => {
+        if (action.type.startsWith('auth/')) {
           state.isLoading = true;
           state.error = null;
         }
-      )
-      .addMatcher(
-        (action) => action.type.startsWith('auth/') && action.type.endsWith('/rejected'),
-        (state, action) => {
+      })
+
+      .addMatcher(isRejectedWithValue, (state, action) => {
+        if (action.type.startsWith('auth/')) {
           state.isLoading = false;
-          const a: any = action;
-          state.error = a.payload ?? a.error?.message ?? String(a.error) ?? 'Unknown error';
+          state.error = (action.payload as string) || 'Unknown error';
         }
-      );
+      });
   },
 });
 

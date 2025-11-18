@@ -2,22 +2,24 @@ import axiosInstance from "@/utils/axiosInstance";
 import toFormData from '@/utils/formData';
 
 export const categoryService = {
-  getAllCategories: async (): Promise<IApiResponse<ICategory[]>> => {
-    const resp = await axiosInstance.get<IApiResponse<ICategory[]>>('/categories');
-    return (resp as unknown) as IApiResponse<ICategory[]>;
+  getAllCategories: async (params?: IPaginationParams) => {
+    const response = await axiosInstance.get<IApiResponse<IPaginatedResult<ICategory>>>('/categories', {
+      params,
+    });
+    return response.data; 
   },
 
-  getCategoryById: async (id: string): Promise<IApiResponse<ICategory>> => {
-    const resp = await axiosInstance.get<IApiResponse<ICategory>>(`/categories/${id}`);
-    return (resp as unknown) as IApiResponse<ICategory>;
+  getCategoryById: async (id: string) => {
+    const response = await axiosInstance.get<IApiResponse<ICategory>>(`/categories/${id}`);
+    return response.data;
   },
 
-  getCategoryBySlug: async (slug: string): Promise<IApiResponse<ICategory>> => {
-    const resp = await axiosInstance.get<IApiResponse<ICategory>>(`/categories/slug/${slug}`);
-    return (resp as unknown) as IApiResponse<ICategory>;
+  getCategoryBySlug: async (slug: string) => {
+    const response = await axiosInstance.get<IApiResponse<ICategory>>(`/categories/slug/${slug}`);
+    return response.data;
   },
 
-  createCategory: async (data: ICreateCategoryPayload): Promise<IApiResponse<ICategory>> => {
+  createCategory: async (data: ICreateCategoryPayload) => {
     const fd = toFormData({
       name: data.name,
       description: data.description,
@@ -26,13 +28,13 @@ export const categoryService = {
       image: data.image,
     });
 
-    const resp = await axiosInstance.post<IApiResponse<ICategory>>('/categories', fd);
-    return (resp as unknown) as IApiResponse<ICategory>;
+    const response = await axiosInstance.post<IApiResponse<ICategory>>('/categories', fd);
+    return response.data;
   },
 
-  updateCategory: async (payload: IUpdateCategoryPayload): Promise<IApiResponse<ICategory>> => {
+  updateCategory: async (payload: IUpdateCategoryPayload) => {
     const { id, ...data } = payload;
-
+    
     const fd = toFormData({
       name: data.name,
       description: data.description,
@@ -41,12 +43,12 @@ export const categoryService = {
       image: data.image,
     });
 
-    const resp = await axiosInstance.put<IApiResponse<ICategory>>(`/categories/${id}`, fd);
-    return (resp as unknown) as IApiResponse<ICategory>;
+    const response = await axiosInstance.put<IApiResponse<ICategory>>(`/categories/${id}`, fd);
+    return response.data;
   },
 
-  deleteCategory: async (id: string): Promise<IApiResponse<null>> => {
-    const resp = await axiosInstance.delete<IApiResponse<null>>(`/categories/${id}`);
-    return (resp as unknown) as IApiResponse<null>;
+  deleteCategory: async (id: string) => {
+    const response = await axiosInstance.delete<IApiResponse<null>>(`/categories/${id}`);
+    return response.data;
   },
 };

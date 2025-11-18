@@ -11,6 +11,7 @@ import {
   selectCategoryIsLoading,
   selectCategoryError,
   selectCategoryTree,
+  selectCategoryPagination,
 } from '@/stores/selectors/category.selector';
 
 export const useCategory = () => {
@@ -20,9 +21,10 @@ export const useCategory = () => {
   const categoryTree = useAppSelector(selectCategoryTree);
   const isLoading = useAppSelector(selectCategoryIsLoading);
   const error = useAppSelector(selectCategoryError);
+  const pagination = useAppSelector(selectCategoryPagination);
 
-  const handleFetchAll = useCallback(() => {
-    return dispatch(fetchAllCategories());
+  const handleFetchAll = useCallback((params?: IPaginationParams) => {
+    return dispatch(fetchAllCategories(params));
   }, [dispatch]);
 
   const handleCreate = useCallback((payload: ICreateCategoryPayload) => {
@@ -46,5 +48,6 @@ export const useCategory = () => {
     createCategory: handleCreate,
     updateCategory: handleUpdate,
     deleteCategory: handleDelete,
+    pagination,
   };
 };

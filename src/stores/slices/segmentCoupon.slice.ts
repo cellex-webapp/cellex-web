@@ -12,7 +12,8 @@ const initialState: SegmentCouponState = {
 export const fetchAllSegmentCoupons = createAsyncThunk('segmentCoupon/fetchAll', async (_, { rejectWithValue }) => {
   try {
     const resp = await couponService.getAllSegmentCoupons();
-    return resp.result as SegmentCouponResponse[];
+    const res: any = resp.result as any;
+    return Array.isArray(res?.content) ? (res.content as SegmentCouponResponse[]) : (res as SegmentCouponResponse[]);
   } catch (error: any) {
     const message = error?.response?.data?.message ?? error?.message ?? error?.data?.message ?? JSON.stringify(error);
     return rejectWithValue(message);
@@ -32,7 +33,9 @@ export const fetchSegmentCouponById = createAsyncThunk('segmentCoupon/fetchById'
 export const fetchSegmentCouponsBySegmentId = createAsyncThunk('segmentCoupon/fetchBySegmentId', async (segmentId: string, { rejectWithValue }) => {
   try {
     const resp = await couponService.getSegmentCouponsBySegmentId(segmentId);
-    return { segmentId, items: resp.result as SegmentCouponResponse[] };
+    const res: any = resp.result as any;
+    const items = Array.isArray(res?.content) ? (res.content as SegmentCouponResponse[]) : (res as SegmentCouponResponse[]);
+    return { segmentId, items };
   } catch (error: any) {
     const message = error?.response?.data?.message ?? error?.message ?? error?.data?.message ?? JSON.stringify(error);
     return rejectWithValue(message);

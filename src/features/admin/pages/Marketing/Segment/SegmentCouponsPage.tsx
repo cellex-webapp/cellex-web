@@ -166,7 +166,7 @@ const SegmentCouponsPage: React.FC = () => {
         <Table
           rowKey="id"
           columns={columns}
-          dataSource={filtered}
+          dataSource={Array.isArray(filtered) ? filtered : []}
           loading={isLoading}
           pagination={{ pageSize: 10 }}
           scroll={{ x: 900 }}

@@ -16,7 +16,8 @@ export const fetchCampaignsByStatus = createAsyncThunk(
   async (status: CampaignStatus, { rejectWithValue }) => {
     try {
       const response = await couponService.getCampaignsByStatus(status);
-      return response.result;
+      const res: any = response.result as any;
+      return Array.isArray(res?.content) ? (res.content as CouponCampaignResponse[]) : (res as CouponCampaignResponse[]);
     } catch (err: any) {
       return rejectWithValue(err.response?.data?.message || 'Không thể tải campaigns');
     }
@@ -88,7 +89,8 @@ export const fetchCampaignLogs = createAsyncThunk(
   async (id: string, { rejectWithValue }) => {
     try {
       const response = await couponService.getCampaignDistributionLogs(id);
-      return response.result;
+      const res: any = response.result as any;
+      return Array.isArray(res?.content) ? (res.content as CampaignDistributionResponse[]) : (res as CampaignDistributionResponse[]);
     } catch (err: any) {
       return rejectWithValue(err.response?.data?.message || 'Không thể tải logs');
     }
