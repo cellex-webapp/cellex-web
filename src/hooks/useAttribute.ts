@@ -1,54 +1,59 @@
-import { useCallback } from 'react';
 import { useAppSelector, useAppDispatch } from '@/hooks/redux';
-import { fetchAttributesOfCategory, fetchHighlightAttributesOfCategory, createAttributeOfCategory, updateAttributeOfCategory, deleteAttributeOfCategory } from '@/stores/slices/attribute.slice';
-import { selectAttributes, selectHighlightAttributes, selectAttributeLoading, selectAttributeError } from '@/stores/selectors/attribute.selector';
+import { useCallback } from 'react';
+import {
+  fetchAttributesOfCategory,
+  fetchHighlightAttributesOfCategory,
+  createAttributeOfCategory,
+  updateAttributeOfCategory,
+  deleteAttributeOfCategory,
+} from '@/stores/slices/attribute.slice';
+import {
+  selectAttributes,
+  selectHighlightAttributes,
+  selectAttributePagination,
+  selectAttributeIsLoading,
+  selectAttributeError,
+} from '@/stores/selectors/attribute.selector';
 
 export const useAttribute = () => {
   const dispatch = useAppDispatch();
+
   const attributes = useAppSelector(selectAttributes);
   const highlightAttributes = useAppSelector(selectHighlightAttributes);
-  const isLoading = useAppSelector(selectAttributeLoading);
+  const pagination = useAppSelector(selectAttributePagination);
+  const isLoading = useAppSelector(selectAttributeIsLoading);
   const error = useAppSelector(selectAttributeError);
 
-  const handleFetchAttributesOfCategory = useCallback(
-    (categoryId: string) => dispatch(fetchAttributesOfCategory(categoryId)),
-    [dispatch]
-  );
+  const getAttributes = useCallback((categoryId: string, params?: IPaginationParams) => {
+    return dispatch(fetchAttributesOfCategory({ categoryId, params }));
+  }, [dispatch]);
 
-  const handleFetchHighlightAttributesOfCategory = useCallback(
-    (categoryId: string) => dispatch(fetchHighlightAttributesOfCategory(categoryId)),
-    [dispatch]
-  );
+  const getHighlightAttributes = useCallback((categoryId: string) => {
+    return dispatch(fetchHighlightAttributesOfCategory(categoryId));
+  }, [dispatch]);
 
-  const handleCreateAttributeOfCategory = useCallback(
-    (categoryId: string, payload: ICreateUpdateAttributePayload) => 
-      dispatch(createAttributeOfCategory({ categoryId, payload })),
-    [dispatch]
-  );
+  const createAttribute = useCallback((categoryId: string, payload: ICreateUpdateAttributePayload) => {
+    return dispatch(createAttributeOfCategory({ categoryId, payload }));
+  }, [dispatch]);
 
-  const handleUpdateAttributeOfCategory = useCallback(
-    (categoryId: string, payload: ICreateUpdateAttributePayload & { id: string }) => 
-      dispatch(updateAttributeOfCategory({ categoryId, payload })),
-    [dispatch]
-  );
+  const updateAttribute = useCallback((categoryId: string, payload: ICreateUpdateAttributePayload & { id: string }) => {
+    return dispatch(updateAttributeOfCategory({ categoryId, payload }));
+  }, [dispatch]);
 
-  const handleDeleteAttributeOfCategory = useCallback(
-    (categoryId: string, attributeId: string) => 
-      dispatch(deleteAttributeOfCategory({ categoryId, attributeId })),
-    [dispatch]
-  );
+  const deleteAttribute = useCallback((categoryId: string, attributeId: string) => {
+    return dispatch(deleteAttributeOfCategory({ categoryId, attributeId }));
+  }, [dispatch]);
 
   return {
     attributes,
     highlightAttributes,
+    pagination,
     isLoading,
     error,
-    fetchAttributesOfCategory: handleFetchAttributesOfCategory,
-    fetchHighlightAttributesOfCategory: handleFetchHighlightAttributesOfCategory,
-    createAttributeOfCategory: handleCreateAttributeOfCategory,
-    updateAttributeOfCategory: handleUpdateAttributeOfCategory,
-    deleteAttributeOfCategory: handleDeleteAttributeOfCategory,
+    getAttributes,
+    getHighlightAttributes,
+    createAttribute,
+    updateAttribute,
+    deleteAttribute,
   };
 };
-
-export default useAttribute;

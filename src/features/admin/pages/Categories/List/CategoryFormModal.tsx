@@ -89,7 +89,7 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
       if (last.originFileObj && !last.thumbUrl && !last.url) {
         try {
           last.thumbUrl = await getBase64(last.originFileObj as File);
-        } catch { }
+        } catch {}
       }
       newList = [last];
     }
