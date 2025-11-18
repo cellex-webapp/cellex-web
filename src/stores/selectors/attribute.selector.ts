@@ -1,13 +1,31 @@
-import type { RootState } from '@/stores/store';
+import { createSelector } from '@reduxjs/toolkit';
+import { type RootState } from '@/stores/store';
 
-export const selectAttributes = (state: RootState) => (state as any).attribute?.attributes ?? [];
-export const selectHighlightAttributes = (state: RootState) => (state as any).attribute?.highlightAttributes ?? [];
-export const selectAttributeLoading = (state: RootState) => (state as any).attribute?.isLoading ?? false;
-export const selectAttributeError = (state: RootState) => (state as any).attribute?.error ?? null;
+const selectAttributeState = (state: RootState) => state.attribute;
 
-export default {
-  selectAttributes,
-  selectHighlightAttributes,
-  selectAttributeLoading,
-  selectAttributeError,
-};
+export const selectAttributes = createSelector(
+  [selectAttributeState],
+  (state) => {
+    return Array.isArray(state.attributes) ? state.attributes : [];
+  }
+);
+
+export const selectHighlightAttributes = createSelector(
+  [selectAttributeState],
+  (state) => state.highlightAttributes || []
+);
+
+export const selectAttributePagination = createSelector(
+  [selectAttributeState],
+  (state) => state.pagination
+);
+
+export const selectAttributeIsLoading = createSelector(
+  [selectAttributeState],
+  (state) => state.isLoading
+);
+
+export const selectAttributeError = createSelector(
+  [selectAttributeState],
+  (state) => state.error
+);
