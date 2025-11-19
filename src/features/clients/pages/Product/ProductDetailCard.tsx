@@ -47,13 +47,13 @@ const ProductDetailCard: React.FC = () => {
         return acc;
     }, {} as Record<string, typeof p.attributeValues>);
 
-    const { fetchHighlightAttributesOfCategory } = useAttribute();
+    const { getHighlightAttributes } = useAttribute();
 
     useEffect(() => {
         if (p?.categoryId) {
-            fetchHighlightAttributesOfCategory(p.categoryId);
+            getHighlightAttributes(p.categoryId);
         }
-    }, [p?.categoryId, fetchHighlightAttributesOfCategory]);
+    }, [p?.categoryId, getHighlightAttributes]);
 
     const canBuy = useMemo(() => {
         if (!p) return false;

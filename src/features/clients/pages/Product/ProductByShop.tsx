@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { Spin, Empty, Alert, Button, Pagination } from 'antd';
 import ProductCard from '@/features/clients/components/Product/ProductCard';
@@ -9,34 +9,29 @@ const ProductByShop: React.FC = () => {
   const params = useParams<Record<string, string | undefined>>();
   const shopIdParam = params.shopId ?? params.id ?? undefined;
 
-  const { products, isLoading: prodLoading, fetchProductsByShop } = useProduct();
-
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(50);
-  const [total, setTotal] = useState(0);
-  const [numberOfElements, setNumberOfElements] = useState(0);
-  const [error, setError] = useState<string | null>(null);
-
-  const load = useCallback(() => {
+  const { 
+    products, 
+    isLoading: prodLoading, 
+    fetchProductsByShop,
+    pagination, 
+    error, 
+  } = useProduct();
+  
+  const loadProducts = useCallback((page: number, limit: number) => {
     if (!shopIdParam) return;
-    setError(null);
-    fetchProductsByShop(String(shopIdParam), { page, size: pageSize })
-      .unwrap()
-      .then((res: IPage<IProduct>) => {
-        setTotal(res.totalElements || 0);
-        setNumberOfElements(res.numberOfElements || res.content?.length || 0);
-      })
-      .catch((err: any) => {
-        console.error('Failed to fetch products by shop:', err);
-        setError('Không thể tải sản phẩm của cửa hàng. Vui lòng thử lại.');
-      });
-  }, [shopIdParam, fetchProductsByShop, page, pageSize]);
+    
+    fetchProductsByShop(String(shopIdParam), { page, limit });
+  }, [shopIdParam, fetchProductsByShop]);
 
   useEffect(() => {
-    load();
-  }, [load]);
+    loadProducts(pagination.page, pagination.limit);
+  }, [loadProducts, pagination.page, pagination.limit]);
 
   const data = useMemo<IProduct[]>(() => (products || []) as IProduct[], [products]);
+
+  const handlePageChange = (p: number, size: number) => {
+    loadProducts(p, size);
+  };
 
   if (!shopIdParam) {
     return <div className="py-8 text-center text-gray-600">Không có cửa hàng được chọn</div>;
@@ -53,8 +48,8 @@ const ProductByShop: React.FC = () => {
           <Alert
             type="error"
             message="Đã xảy ra lỗi"
-            description={error}
-            action={<Button size="small" danger onClick={load}>Tải lại</Button>}
+            description={error} 
+            action={<Button size="small" danger onClick={() => loadProducts(pagination.page, pagination.limit)}>Tải lại</Button>}
             className="mb-4"
           />
         )}
@@ -72,21 +67,18 @@ const ProductByShop: React.FC = () => {
                 ))}
               </div>
 
-              {total > 0 && (
+              {pagination.total > 0 && (
                 <div className="flex items-center justify-between mt-4">
-                  <div className="text-sm text-gray-600">Hiển thị {numberOfElements} / {total} sản phẩm</div>
+                  <div className="text-sm text-gray-600">
+                    Hiển thị {data.length} / {pagination.total} sản phẩm
+                  </div>
                   <Pagination
-                    current={page}
-                    pageSize={pageSize}
-                    total={total}
+                    current={pagination.page}
+                    pageSize={pagination.limit}
+                    total={pagination.total}
                     showSizeChanger
-                    pageSizeOptions={[50, 100, 150, 200].map(String)}
-                    onChange={(p, size) => {
-                      if (size && size !== pageSize) {
-                        setPageSize(size);
-                        setPage(1);
-                      } else setPage(p);
-                    }}
+                    pageSizeOptions={['50', '100', '150', '200']}
+                    onChange={handlePageChange} 
                   />
                 </div>
               )}
