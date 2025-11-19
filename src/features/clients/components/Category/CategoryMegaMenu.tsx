@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Drawer, Menu, Popover, Spin } from 'antd';
-import type { MenuProps } from 'antd';
+import { Drawer, Popover, Spin } from 'antd';
 import { MenuOutlined } from '@ant-design/icons';
 import { useCategory } from '@/hooks/useCategory';
 import { type ICategoryTree } from '@/stores/selectors/category.selector';
+import { CategoryMenuItem } from './CategoryMenuItem';
 
 export const CategoryMegaMenu: React.FC = () => {
   const { categoryTree, isLoading, fetchAllCategories } = useCategory();
@@ -12,8 +12,10 @@ export const CategoryMegaMenu: React.FC = () => {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    fetchAllCategories();
-  }, [fetchAllCategories]);
+    if (categoryTree.length === 0) {
+      fetchAllCategories();
+    }
+  }, [categoryTree.length, fetchAllCategories]);
 
   useEffect(() => {
     const onResize = () => setIsMobile(window.innerWidth < 1024);
@@ -29,6 +31,7 @@ export const CategoryMegaMenu: React.FC = () => {
   }, [open, isMobile]);
 
   const chunked = useMemo(() => {
+    if (!categoryTree || categoryTree.length === 0) return [];
     const cols = 3;
     const res: ICategoryTree[][] = Array.from({ length: cols }, () => []);
     categoryTree.forEach((c, i) => res[i % cols].push(c));
@@ -40,38 +43,31 @@ export const CategoryMegaMenu: React.FC = () => {
     setOpen(false);
   };
 
-  const toMenuItems = (cats: ICategoryTree[]): MenuProps['items'] =>
-    cats.map((cat) => ({
-      key: String(cat.id),
-      label: (
-        <a href={`/categories/${cat.slug}`} onClick={handleNavigate} className="text-gray-800">
-          {cat.name}
-        </a>
-      ),
-      children: cat.children && cat.children.length > 0 ? (toMenuItems(cat.children) as any) : undefined,
-    }));
-
   const onTriggerClick = () => {
-    if (pinned) {
-      setPinned(false);
-      setOpen(false);
-    } else {
-      setPinned(true);
-      setOpen(true);
-    }
+    setPinned((p) => !p);
+    setOpen((o) => !o);
   };
 
-  const content = (
+  const MobileMenuContent: React.FC<{ data: ICategoryTree[] }> = ({ data }) => (
+    <ul className="space-y-1 py-2">
+      {data.map((cat) => (
+        <CategoryMenuItem
+          key={cat.id}
+          category={cat}
+          level={0}
+          onNavigate={handleNavigate}
+        />
+      ))}
+    </ul>
+  );
+
+  const DesktopContent = (
     <div
       className="w-[960px] bg-white rounded-xl shadow-2xl border border-gray-100"
       onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => {
-        if (!pinned) setOpen(false);
-      }}
+      onMouseLeave={() => { if (!pinned) setOpen(false); }}
     >
-      <div className="flex items-center justify-between px-4 py-2 border-b border-gray-100">
-        <div className="font-semibold text-gray-800 text-xl p-4">Danh mục sản phẩm</div>
-      </div>
+      <div className="font-semibold text-gray-800 text-xl p-4 border-b border-gray-100">Danh mục sản phẩm</div>
       <div className="p-6">
         {isLoading ? (
           <div className="flex items-center justify-center py-10"><Spin /></div>
@@ -81,10 +77,10 @@ export const CategoryMegaMenu: React.FC = () => {
               <div key={colIdx} className="flex-1 min-w-0">
                 <div className="space-y-4">
                   {col.map((cat) => (
-                    <div key={cat.id} className="">
+                    <div key={cat.id} className="border-b border-gray-50 pb-3 last:border-b-0">
                       <a
                         href={`/categories/${cat.slug}`}
-                        className="block text-gray-900 font-semibold hover:text-blue-600 transition-colors truncate"
+                        className="block text-gray-900 font-semibold hover:text-blue-600 transition-colors truncate text-base"
                         onClick={handleNavigate}
                         title={cat.name}
                       >
@@ -103,22 +99,6 @@ export const CategoryMegaMenu: React.FC = () => {
                               >
                                 {child.name}
                               </a>
-                              {child.children && child.children.length > 0 && (
-                                <ul className="mt-1 pl-3 border-l border-gray-100">
-                                  {child.children.map((grand) => (
-                                    <li key={grand.id}>
-                                      <a
-                                        href={`/categories/${grand.slug}`}
-                                        className="block text-xs text-gray-500 hover:text-blue-600 py-0.5 transition-colors truncate"
-                                        onClick={handleNavigate}
-                                        title={grand.name}
-                                      >
-                                        {grand.name}
-                                      </a>
-                                    </li>
-                                  ))}
-                                </ul>
-                              )}
                             </li>
                           ))}
                         </ul>
@@ -136,43 +116,38 @@ export const CategoryMegaMenu: React.FC = () => {
 
   return (
     <>
-      {/* Desktop trigger + controlled Popover */}
       <div className="hidden lg:block">
         <Popover
           placement="bottomLeft"
           open={open && !isMobile}
-          onOpenChange={(next) => {
-            if (pinned && !next) return; // ignore hover-out when pinned
-            setOpen(next);
-          }}
+          onOpenChange={(next) => { if (pinned && !next) return; setOpen(next); }}
           trigger={["hover", "click"]}
           overlayInnerStyle={{ padding: 0 }}
-          content={content}
+          content={DesktopContent}
         >
           <button
             onMouseEnter={() => { if (!pinned) setOpen(true); }}
             onClick={onTriggerClick}
-            className="flex items-center gap-2 px-4 md:px-6 h-9 md:h-10 text-sm md:text-base font-semibold rounded-full bg-indigo-600 !text-white hover:bg-indigo-700 no-underline min-w-fit cursor-pointer"
+            className="flex items-center gap-2 px-6 h-10 font-semibold rounded-full bg-indigo-600 !text-white hover:bg-indigo-700 min-w-fit cursor-pointer transition-colors"
             type="button"
           >
-            <MenuOutlined className="text-base md:text-lg" />
-            <span className="hidden sm:inline">Danh mục</span>
+            <MenuOutlined className="text-lg" />
+            <span>Danh mục</span>
           </button>
         </Popover>
       </div>
 
-      {/* Mobile drawer */}
       <div className="lg:hidden">
         <button
           onClick={() => setOpen(true)}
-          className="flex items-center gap-2 px-4 md:px-6 h-9 md:h-10 text-sm md:text-base font-semibold rounded-full bg-indigo-600 text-white hover:bg-indigo-700 no-underline min-w-fit"
+          className="flex items-center gap-2 px-4 h-9 font-semibold rounded-full bg-indigo-600 text-white hover:bg-indigo-700 min-w-fit transition-colors"
           type="button"
         >
-          <MenuOutlined className="text-base md:text-lg" />
-          <span className="hidden sm:inline">Danh mục</span>
+          <MenuOutlined className="text-base" />
+          <span>Danh mục</span>
         </button>
         <Drawer
-          width={320}
+          width={300}
           title="Danh mục sản phẩm"
           placement="left"
           open={open && isMobile}
@@ -181,7 +156,7 @@ export const CategoryMegaMenu: React.FC = () => {
           {isLoading ? (
             <div className="flex items-center justify-center py-10"><Spin /></div>
           ) : (
-            <Menu mode="inline" items={toMenuItems(categoryTree)} />
+            <MobileMenuContent data={categoryTree} />
           )}
         </Drawer>
       </div>

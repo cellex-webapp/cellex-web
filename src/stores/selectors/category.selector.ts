@@ -27,14 +27,16 @@ export interface ICategoryTree extends ICategory {
   children: ICategoryTree[];
 }
 
-const buildCategoryTree = (categories: ICategory[]) => {
-  const map = new Map<string, ICategory & { children: ICategory[] }>();
-  const roots: (ICategory & { children: ICategory[] })[] = [];
-
+const buildCategoryTree = (categories: ICategory[]): ICategoryTree[] => {
+  const map = new Map<string, ICategoryTree>();
+  const roots: ICategoryTree[] = [];
   if (!Array.isArray(categories)) return [];
 
   categories.forEach((cat) => {
-    map.set(cat.id, { ...cat, children: [] });
+    map.set(cat.id, { 
+      ...cat, 
+      children: [] 
+    } as ICategoryTree); 
   });
 
   categories.forEach((cat) => {
