@@ -1,57 +1,79 @@
 import { useAppSelector, useAppDispatch } from '@/hooks/redux';
 import { useCallback } from 'react';
 import {
-    fetchProductById,
-    fetchAllProducts,
-    updateProduct,
-    createProduct,
-    deleteProductById,
-    fetchProductsByShop,
-    fetchMyProducts,
-    searchProducts,
-    fetchProductsByCategory,
+  fetchProductById,
+  fetchAllProducts,
+  updateProduct,
+  createProduct,
+  deleteProductById,
+  fetchProductsByShop,
+  fetchMyProducts,
+  searchProducts,
+  fetchProductsByCategory,
+  clearSelectedProduct,
 } from '@/stores/slices/product.slice';
 import {
-    selectAllProducts,
-    selectSelectedProduct,
-    selectProductIsLoading,
-    selectProductError,
+  selectAllProducts,
+  selectSelectedProduct,
+  selectProductIsLoading,
+  selectProductError,
+  selectProductPagination,
 } from '@/stores/selectors/product.selector';
 
 export const useProduct = () => {
-    const dispatch = useAppDispatch();
+  const dispatch = useAppDispatch();
 
-    const products = useAppSelector(selectAllProducts);
-    const selectedProduct = useAppSelector(selectSelectedProduct);
-    const isLoading = useAppSelector(selectProductIsLoading);
-    const error = useAppSelector(selectProductError);
+  const products = useAppSelector(selectAllProducts);
+  const selectedProduct = useAppSelector(selectSelectedProduct);
+  const pagination = useAppSelector(selectProductPagination); 
+  const isLoading = useAppSelector(selectProductIsLoading);
+  const error = useAppSelector(selectProductError);
 
-    const handleFetchById = useCallback((id: string) => dispatch(fetchProductById(id)), [dispatch]);
-    const handleFetchAll = useCallback((params?: { page?: number; limit?: number; sortType?: string; sortBy?: string }) => dispatch(fetchAllProducts(params)), [dispatch]);
+  const handleFetchById = useCallback((id: string) => 
+    dispatch(fetchProductById(id)), [dispatch]);
 
-    const handleUpdate = useCallback((id: string, data: IUpdateProductPayload) => dispatch(updateProduct({ id, data })), [dispatch]);
+  const handleFetchAll = useCallback((params?: IPaginationParams) => 
+    dispatch(fetchAllProducts(params)), [dispatch]);
 
-    const handleCreate = useCallback((data: ICreateProductPayload) => dispatch(createProduct(data)), [dispatch]);
+  const handleUpdate = useCallback((id: string, data: IUpdateProductPayload | FormData) => 
+    dispatch(updateProduct({ id, data })), [dispatch]);
 
-    const handleDelete = useCallback((id: string) => dispatch(deleteProductById(id)), [dispatch]);
-    const handleFetchByShop = useCallback((shopId: string, pageable?: IPageable) => dispatch(fetchProductsByShop({ shopId, pageable })), [dispatch]);
-    const handleFetchMyProducts = useCallback((pageable?: IPageable) => dispatch(fetchMyProducts(pageable)), [dispatch]);
-    const handleSearch = useCallback((keyword: string, pageable?: IPageable) => dispatch(searchProducts({ keyword, pageable })), [dispatch]);
-    const handleFetchByCategory = useCallback((categoryId: string, pageable?: IPageable) => dispatch(fetchProductsByCategory({ categoryId, pageable })), [dispatch]);
+  const handleCreate = useCallback((data: ICreateProductPayload | FormData) => 
+    dispatch(createProduct(data)), [dispatch]);
 
-    return {
-        products,
-        selectedProduct,
-        isLoading,
-        error,
-        fetchProductById: handleFetchById,
-        fetchAllProducts: handleFetchAll,
-        updateProduct: handleUpdate,
-        createProduct: handleCreate,
-        deleteProduct: handleDelete,
-        fetchProductsByShop: handleFetchByShop,
-        fetchMyProducts: handleFetchMyProducts,
-        searchProducts: handleSearch,
-        fetchProductsByCategory: handleFetchByCategory,
-    };
+  const handleDelete = useCallback((id: string) => 
+    dispatch(deleteProductById(id)), [dispatch]);
+
+  const handleFetchByShop = useCallback((shopId: string, params?: IPaginationParams) => 
+    dispatch(fetchProductsByShop({ shopId, params })), [dispatch]);
+
+  const handleFetchMyProducts = useCallback((params?: IPaginationParams) => 
+    dispatch(fetchMyProducts(params)), [dispatch]);
+
+  const handleSearch = useCallback((keyword: string, params?: IPaginationParams) => 
+    dispatch(searchProducts({ keyword, params })), [dispatch]);
+
+  const handleFetchByCategory = useCallback((categoryId: string, params?: IPaginationParams) => 
+    dispatch(fetchProductsByCategory({ categoryId, params })), [dispatch]);
+
+  const handleClearSelected = useCallback(() => 
+    dispatch(clearSelectedProduct()), [dispatch]);
+
+  return {
+    products,
+    selectedProduct,
+    pagination,
+    isLoading,
+    error,
+    fetchProductById: handleFetchById,
+    fetchAllProducts: handleFetchAll,
+    updateProduct: handleUpdate,
+    createProduct: handleCreate,
+    deleteProduct: handleDelete,
+    fetchProductsByShop: handleFetchByShop,
+    fetchMyProducts: handleFetchMyProducts,
+    searchProducts: handleSearch,
+    fetchProductsByCategory: handleFetchByCategory,
+    clearSelectedProduct: handleClearSelected,
+  };
 };

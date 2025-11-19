@@ -13,6 +13,7 @@ import {
   selectSelectedUser,
   selectUserIsLoading,
   selectUserError,
+  selectUserPagination,
 } from '@/stores/selectors/user.selector';
 
 export const useUser = () => {
@@ -20,6 +21,7 @@ export const useUser = () => {
 
   const users = useAppSelector(selectAllUsers);
   const selectedUser = useAppSelector(selectSelectedUser);
+  const pagination = useAppSelector(selectUserPagination); 
   const isLoading = useAppSelector(selectUserIsLoading);
   const error = useAppSelector(selectUserError);
 
@@ -27,8 +29,8 @@ export const useUser = () => {
     return dispatch(addUserAccount(payload));
   }, [dispatch]);
 
-  const handleFetchAllUsers = useCallback(() => {
-    return dispatch(fetchAllUsers());
+  const handleFetchAllUsers = useCallback((params?: IPaginationParams) => {
+    return dispatch(fetchAllUsers(params));
   }, [dispatch]);
 
   const handleFetchUserById = useCallback((userId: string) => {
@@ -50,6 +52,7 @@ export const useUser = () => {
   return {
     users,
     selectedUser,
+    pagination, 
     isLoading,
     error,
     addUserAccount: handleAddUser,
