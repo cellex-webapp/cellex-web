@@ -4,36 +4,52 @@ import { SearchOutlined, StarOutlined } from '@ant-design/icons';
 import { useParams } from 'react-router-dom';
 import { useAttribute } from '@/hooks/useAttribute';
 import { useCategory } from '@/hooks/useCategory';
+import { useDebounce } from '@/hooks/useDebounce'; 
+import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
 
 const VendorAttributesPage: React.FC = () => {
   const { slug } = useParams();
   const [q, setQ] = useState('');
+  const debouncedQ = useDebounce(q, 350);
 
-  const { attributes, isLoading, fetchAttributesOfCategory, fetchHighlightAttributesOfCategory } = useAttribute();
+  const { 
+    attributes, 
+    pagination, 
+    isLoading, 
+    getAttributes, 
+    getHighlightAttributes 
+  } = useAttribute();
+  
   const { categories, fetchAllCategories } = useCategory();
 
   useEffect(() => {
-    fetchAllCategories();
-  }, [fetchAllCategories]);
+    if (categories.length === 0) fetchAllCategories();
+  }, [categories.length, fetchAllCategories]);
 
-  const currentCategory = useMemo(() => categories.find((c) => (c as any).slug === slug), [categories, slug]);
-  const categoryId = currentCategory?.id as string | undefined;
+  const currentCategory = useMemo(() => categories.find((c) => c.slug === slug), [categories, slug]);
+  const categoryId = currentCategory?.id;
 
   useEffect(() => {
     if (!categoryId) return;
-    fetchAttributesOfCategory(categoryId);
-    fetchHighlightAttributesOfCategory(categoryId);
-  }, [categoryId, fetchAttributesOfCategory, fetchHighlightAttributesOfCategory]);
+    
+    getAttributes(categoryId, { 
+      page: 1, 
+      limit: pagination.limit, 
+      search: debouncedQ 
+    });
+    getHighlightAttributes(categoryId);
+  }, [categoryId, debouncedQ, getAttributes, getHighlightAttributes]); 
 
-  const attrs = (attributes || []) as IAttribute[];
+  const handleTableChange = (newPagination: TablePaginationConfig) => {
+    if (!categoryId) return;
+    getAttributes(categoryId, {
+      page: newPagination.current,
+      limit: newPagination.pageSize,
+      search: debouncedQ,
+    });
+  };
 
-  const filtered = useMemo(() => {
-    const kw = q.trim().toLowerCase();
-    if (!kw) return attrs;
-    return attrs.filter((a: IAttribute) => a.attributeName.toLowerCase().includes(kw) || a.attributeKey.toLowerCase().includes(kw));
-  }, [q, attrs]);
-
-  const columns = [
+  const columns: ColumnsType<IAttribute> = [
     { 
       title: 'Tên thuộc tính', 
       dataIndex: 'attributeName', 
@@ -55,59 +71,24 @@ const VendorAttributesPage: React.FC = () => {
       title: 'Loại dữ liệu', 
       dataIndex: 'dataType', 
       key: 'dataType',
-      render: (type: DataType) => {
-        const colorMap: Record<DataType, string> = {
-          TEXT: 'blue',
-          NUMBER: 'green',
-          BOOLEAN: 'orange',
-          SELECT: 'purple',
-          MULTI_SELECT: 'magenta',
-        };
-        return <Tag color={colorMap[type] || 'default'}>{type}</Tag>;
-      },
+      render: (type: string) => (
+        <Tag color="blue">{type}</Tag>
+      ),
     },
-    { 
-      title: 'Đơn vị', 
-      dataIndex: 'unit', 
-      key: 'unit',
-      render: (unit: string) => unit ? <Tag>{unit}</Tag> : '—',
-    },
-    { 
-      title: 'Mô tả',
-      dataIndex: 'description',
-      key: 'description',
-      ellipsis: true,
-      render: (desc: string) => desc || '—',
-    },
+    { title: 'Đơn vị', dataIndex: 'unit', key: 'unit', render: (u) => u || '—' },
     { 
       title: 'Bắt buộc', 
       dataIndex: 'isRequired', 
       key: 'isRequired', 
-      render: (v: boolean) => (
-        <Badge 
-          status={v ? 'success' : 'default'} 
-          text={v ? 'Có' : 'Không'} 
-        />
-      ),
+      render: (v: boolean) => <Badge status={v ? 'success' : 'default'} text={v ? 'Có' : 'Không'} />,
     },
     { 
       title: 'Nổi bật', 
       dataIndex: 'isHighlight', 
       key: 'isHighlight', 
-      render: (v: boolean) => (
-        <Badge 
-          status={v ? 'warning' : 'default'} 
-          text={v ? 'Có' : 'Không'} 
-        />
-      ),
+      render: (v: boolean) => <Badge status={v ? 'warning' : 'default'} text={v ? 'Có' : 'Không'} />,
     },
-    {
-      title: 'Thứ tự',
-      dataIndex: 'sortOrder',
-      key: 'sortOrder',
-      width: 100,
-      align: 'center' as const,
-    },
+    { title: 'Thứ tự', dataIndex: 'sortOrder', key: 'sortOrder', width: 80, align: 'center' },
   ];
 
   return (
@@ -124,11 +105,18 @@ const VendorAttributesPage: React.FC = () => {
       </div>
 
       <Table
-        dataSource={filtered}
-        columns={columns as any}
+        dataSource={attributes}
+        columns={columns}
         rowKey="id"
         loading={isLoading}
-        pagination={{ pageSize: 10, showSizeChanger: true, showTotal: (total) => `Tổng ${total} thuộc tính` }}
+        pagination={{
+            current: pagination.page,
+            pageSize: pagination.limit,
+            total: pagination.total,
+            showSizeChanger: true,
+            showTotal: (t) => `Tổng ${t} thuộc tính`
+        }}
+        onChange={handleTableChange}
       />
     </div>
   );

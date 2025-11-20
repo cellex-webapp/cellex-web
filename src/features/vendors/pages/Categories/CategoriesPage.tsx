@@ -1,47 +1,39 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Input, Table, Tag, Avatar } from 'antd';
 import { SearchOutlined, AppstoreOutlined } from '@ant-design/icons';
 import { useCategory } from '@/hooks/useCategory';
+import { useDebounce } from '@/hooks/useDebounce';
 import CategoryDetailModal from '@/features/admin/pages/Categories/List/CategoryDetailModal';
+import type { ColumnsType } from 'antd/es/table';
 
 const VendorCategoriesPage: React.FC = () => {
   const [detailId, setDetailId] = useState<string | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [q, setQ] = useState('');
+  const debouncedQ = useDebounce(q, 350);
 
   const { categories, isLoading, fetchAllCategories } = useCategory();
 
   useEffect(() => {
-    fetchAllCategories();
-  }, [fetchAllCategories]);
-
-  const filteredCategories = useMemo(() => {
-    const kw = q.trim().toLowerCase();
-    if (!kw) return categories;
-    return categories.filter((c) => c.name.toLowerCase().includes(kw));
-  }, [q, categories]);
+    fetchAllCategories({ search: debouncedQ });
+  }, [fetchAllCategories, debouncedQ]);
 
   const handleOpenDetail = (id: string) => {
     setDetailId(id);
     setDetailOpen(true);
   };
 
-  const handleCloseDetail = () => {
-    setDetailId(null);
-    setDetailOpen(false);
-  };
-
-  const columns = [
+  const columns: ColumnsType<ICategory> = [
     {
       title: 'Hình ảnh',
       dataIndex: 'imageUrl',
       key: 'imageUrl',
-      width: 100,
+      width: 80,
       render: (imageUrl: string) => (
         imageUrl ? (
-          <Avatar size={64} src={imageUrl} shape="square" />
+          <Avatar size={48} src={imageUrl} shape="square" />
         ) : (
-          <Avatar size={64} icon={<AppstoreOutlined />} shape="square" style={{ backgroundColor: '#1890ff' }} />
+          <Avatar size={48} icon={<AppstoreOutlined />} shape="square" className="bg-blue-500" />
         )
       ),
     },
@@ -59,24 +51,13 @@ const VendorCategoriesPage: React.FC = () => {
       render: (desc: string) => desc || '—',
     },
     {
-      title: 'Danh mục cha',
-      dataIndex: 'parent',
-      key: 'parent',
-      render: (parent: ICategory | null) => (
-        parent ? (
-          <Tag color="blue">{parent.name}</Tag>
-        ) : (
-          <Tag>Danh mục gốc</Tag>
-        )
-      ),
-    },
-    {
       title: 'Trạng thái',
       dataIndex: 'isActive',
       key: 'isActive',
+      width: 120,
       render: (isActive: boolean) => (
         <Tag color={isActive ? 'success' : 'default'}>
-          {isActive ? 'Hoạt động' : 'Không hoạt động'}
+          {isActive ? 'Hoạt động' : 'Ẩn'}
         </Tag>
       ),
     },
@@ -86,7 +67,7 @@ const VendorCategoriesPage: React.FC = () => {
     <div className="p-4">
       <div className="mb-4">
         <Input
-          placeholder="Tìm theo tên danh mục..."
+          placeholder="Tìm danh mục..."
           prefix={<SearchOutlined />}
           value={q}
           onChange={(e) => setQ(e.target.value)}
@@ -98,13 +79,20 @@ const VendorCategoriesPage: React.FC = () => {
       <Table
         rowKey="id"
         loading={isLoading}
-        dataSource={filteredCategories}
+        dataSource={categories}
         columns={columns}
-        onRow={(record) => ({ onClick: () => handleOpenDetail(record.id), className: 'cursor-pointer hover:bg-gray-50' })}
-        pagination={{ pageSize: 10, showSizeChanger: true, showTotal: (total) => `Tổng ${total} danh mục` }}
+        onRow={(record) => ({ 
+          onClick: () => handleOpenDetail(record.id), 
+          className: 'cursor-pointer hover:bg-gray-50' 
+        })}
+        pagination={{ pageSize: 10 }} 
       />
 
-      <CategoryDetailModal categoryId={detailId} open={detailOpen} onClose={handleCloseDetail} />
+      <CategoryDetailModal 
+        categoryId={detailId} 
+        open={detailOpen} 
+        onClose={() => { setDetailId(null); setDetailOpen(false); }} 
+      />
     </div>
   );
 };

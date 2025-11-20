@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Modal, Form, Input, Button, message, Select, Spin, Row, Col, Card, Space, Upload } from 'antd';
 import { ShopOutlined, EnvironmentOutlined, PhoneOutlined, MailOutlined, UploadOutlined, PictureOutlined } from '@ant-design/icons';
 import type { UploadFile } from 'antd/es/upload/interface';
 import { shopService } from '@/services/shop.service';
 import { addressService } from '@/services/address.service';
+// import { IAddressDataUnit } from '@/types'; // Assuming types are defined
 
 interface Props {
   visible: boolean;
@@ -20,135 +21,127 @@ const ShopFormModal: React.FC<Props> = ({ visible, shopId, onClose, onSuccess })
 
   const [provinces, setProvinces] = useState<IAddressDataUnit[]>([]);
   const [communes, setCommunes] = useState<IAddressDataUnit[]>([]);
-  const [selectedProvince, setSelectedProvince] = useState<string | undefined>();
+  
+  // Use watch to react to form changes
+  const selectedProvince = Form.useWatch('provinceCode', form);
 
+  // --- 1. Helper Functions ---
+  
+  // Define filterOption inside component or move outside if generic
+  const filterOption = (input: string, option: any) => {
+    return (option?.children ?? '').toString().toLowerCase().includes(input.toLowerCase());
+  };
+
+  const handleCancel = () => {
+    form.resetFields();
+    setFileList([]);
+    setCommunes([]); // Clear communes on close
+    onClose();
+  };
+
+  // --- 2. Data Loading Effects ---
+
+  // Load Shop Data
   useEffect(() => {
     if (!visible || !shopId) return;
 
-    setFetching(true);
-    shopService
-      .getShopById(shopId)
-      .then((resp: any) => {
+    const fetchShop = async () => {
+      setFetching(true);
+      try {
+        const resp = await shopService.getShopById(shopId);
         const shop = resp.result;
+        
         if (shop) {
           form.setFieldsValue({
             shopName: shop.shop_name,
             description: shop.description,
-            provinceCode: shop.address?.province_code,
-            communeCode: shop.address?.commune_code,
-            detailAddress: shop.address?.detail_address,
+            provinceCode: shop.address?.province, 
+            communeCode: shop.address?.commune,   
+            detailAddress: shop.address?.street,
             phoneNumber: shop.phone_number,
             email: shop.email,
           });
 
           if (shop.logo_url) {
-            setFileList([
-              {
-                uid: '-1',
-                name: 'logo.png',
-                status: 'done',
-                url: shop.logo_url,
-              },
-            ]);
-          }
-
-          if (shop.address?.province_code) {
-            setSelectedProvince(shop.address.province_code);
+            setFileList([{
+              uid: '-1',
+              name: 'logo.png',
+              status: 'done',
+              url: shop.logo_url,
+            }]);
           }
         }
-      })
-      .catch((err) => {
-        console.error('Failed to fetch shop', err);
+      } catch (error) {
         message.error('Không thể tải thông tin cửa hàng');
-      })
-      .finally(() => {
+      } finally {
         setFetching(false);
-      });
+      }
+    };
+
+    fetchShop();
   }, [visible, shopId, form]);
 
+  // Load Provinces (Once when modal opens)
   useEffect(() => {
-    if (!visible) return;
-
-    addressService
-      .getProvinces()
-      .then((resp: any) => {
-        setProvinces(resp.result || []);
-      })
-      .catch((err) => {
-        console.error('Failed to fetch provinces', err);
+    if (visible && provinces.length === 0) {
+      addressService.getProvinces().then((resp: any) => {
+          // Handle potential different response structures
+          const list = Array.isArray(resp) ? resp : resp.result || [];
+          setProvinces(list);
       });
-  }, [visible]);
+    }
+  }, [visible, provinces.length]);
 
+  // Load Communes when Province changes
   useEffect(() => {
     if (!selectedProvince) {
       setCommunes([]);
       return;
     }
 
-    addressService
-      .getCommunesByProvinceCode(selectedProvince)
-      .then((resp: any) => {
-        setCommunes(resp.result || []);
-      })
-      .catch((err: any) => {
-        console.error('Failed to fetch communes', err);
-      });
+    // Only fetch if we have a province code
+    addressService.getCommunesByProvinceCode(selectedProvince).then((resp: any) => {
+        const list = Array.isArray(resp) ? resp : resp.result || [];
+        setCommunes(list);
+    });
   }, [selectedProvince]);
 
-  const handleProvinceChange = (value: string) => {
-    setSelectedProvince(value);
-    form.setFieldValue('communeCode', undefined);
+  // --- 3. Handlers ---
+
+  const handleProvinceChange = () => {
+     // Reset commune when province changes
+     form.setFieldValue('communeCode', undefined);
   };
 
   const handleSubmit = async (values: any) => {
     if (!shopId) return;
-
     setLoading(true);
-    const formData = new FormData();
 
-    formData.append('shopName', values.shopName);
-    formData.append('description', values.description || '');
-    formData.append('provinceCode', values.provinceCode);
-    formData.append('communeCode', values.communeCode);
-    formData.append('detailAddress', values.detailAddress);
-    formData.append('phoneNumber', values.phoneNumber);
-    formData.append('email', values.email);
-
+    const payload: any = { ...values };
+    
+    // Handle File Upload
     if (fileList.length > 0 && fileList[0].originFileObj) {
-      formData.append('logo', fileList[0].originFileObj);
+      payload.logo = fileList[0].originFileObj;
     }
 
     try {
-      await shopService.updateShop(shopId, formData as any);
+      await shopService.updateShop(shopId, payload);
       message.success('Cập nhật cửa hàng thành công');
       onSuccess?.();
-      onClose();
-      form.resetFields();
-      setFileList([]);
+      handleCancel();
     } catch (error: any) {
-      console.error('Failed to update shop', error);
-      const errorMsg = error?.response?.data?.message || 'Cập nhật cửa hàng thất bại';
+      const errorMsg = error?.message || 'Cập nhật thất bại';
       message.error(errorMsg);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleCancel = () => {
-    form.resetFields();
-    setFileList([]);
-    setSelectedProvince(undefined);
-    onClose();
-  };
-
-  const filterOption = (input: string, option: any) =>
-    (option?.children ?? '').toString().toLowerCase().includes(input.toLowerCase());
-
   return (
     <Modal
       title={
         <Space>
-          <ShopOutlined style={{ fontSize: 18, color: '#1890ff' }} />
+          <ShopOutlined className="text-blue-500" />
           <span className="font-semibold">Cập nhật thông tin cửa hàng</span>
         </Space>
       }
@@ -158,6 +151,7 @@ const ShopFormModal: React.FC<Props> = ({ visible, shopId, onClose, onSuccess })
       width={800}
       destroyOnClose
       style={{ top: 20 }}
+      maskClosable={false}
     >
       {fetching ? (
         <div className="text-center py-12">
@@ -170,6 +164,7 @@ const ShopFormModal: React.FC<Props> = ({ visible, shopId, onClose, onSuccess })
           onFinish={handleSubmit}
           autoComplete="off"
         >
+          {/* LOGO UPLOAD */}
           <Card size="small" className="mb-4" title={<Space><PictureOutlined />Logo cửa hàng</Space>}>
             <Form.Item className="mb-0">
               <Upload
@@ -190,6 +185,7 @@ const ShopFormModal: React.FC<Props> = ({ visible, shopId, onClose, onSuccess })
             </Form.Item>
           </Card>
 
+          {/* BASIC INFO */}
           <Card size="small" className="mb-4" title={<Space><ShopOutlined />Thông tin cơ bản</Space>}>
             <Form.Item
               label="Tên cửa hàng"
@@ -208,6 +204,8 @@ const ShopFormModal: React.FC<Props> = ({ visible, shopId, onClose, onSuccess })
               />
             </Form.Item>
           </Card>
+
+          {/* ADDRESS */}
           <Card size="small" className="mb-4" title={<Space><EnvironmentOutlined />Địa chỉ</Space>}>
             <Row gutter={12}>
               <Col span={12}>
@@ -221,7 +219,7 @@ const ShopFormModal: React.FC<Props> = ({ visible, shopId, onClose, onSuccess })
                     onChange={handleProvinceChange}
                     showSearch
                     optionFilterProp="children"
-                    filterOption={filterOption}
+                    filterOption={filterOption} // Now correctly defined
                   >
                     {provinces.map((p) => (
                       <Select.Option key={p.code} value={p.code}>
@@ -243,7 +241,7 @@ const ShopFormModal: React.FC<Props> = ({ visible, shopId, onClose, onSuccess })
                     disabled={!selectedProvince}
                     showSearch
                     optionFilterProp="children"
-                    filterOption={filterOption}
+                    filterOption={filterOption} // Now correctly defined
                   >
                     {communes.map((c) => (
                       <Select.Option key={c.code} value={c.code}>
@@ -268,6 +266,7 @@ const ShopFormModal: React.FC<Props> = ({ visible, shopId, onClose, onSuccess })
             </Form.Item>
           </Card>
 
+          {/* CONTACT */}
           <Card size="small" className="mb-4" title={<Space><PhoneOutlined />Thông tin liên hệ</Space>}>
             <Row gutter={12}>
               <Col span={12}>
@@ -298,6 +297,7 @@ const ShopFormModal: React.FC<Props> = ({ visible, shopId, onClose, onSuccess })
             </Row>
           </Card>
 
+          {/* ACTIONS */}
           <Form.Item className="mb-0">
             <div className="flex justify-end gap-2 pt-2">
               <Button onClick={handleCancel} size="large">

@@ -6,6 +6,7 @@ import { useProduct } from '@/hooks/useProduct';
 import ProductFormModal from './ProductFormModal';
 import ProductDetailModal from './ProductDetailModal';
 import { shopService } from '@/services/shop.service';
+import { useDebounce } from '@/hooks/useDebounce';
 
 const ProductPageContent: React.FC = () => {
     const { message, modal } = App.useApp();
@@ -14,8 +15,9 @@ const ProductPageContent: React.FC = () => {
     const [detailId, setDetailId] = useState<string | null>(null);
     const [detailOpen, setDetailOpen] = useState(false);
     const [q, setQ] = useState('');
+    const debouncedQ = useDebounce(q, 350);
 
-    const { products, isLoading, error, fetchMyProducts, updateProduct, createProduct, deleteProduct } = useProduct();
+    const { products, isLoading, pagination, fetchMyProducts, updateProduct, createProduct, deleteProduct } = useProduct();
 
     const [shopId, setShopId] = useState<string | null>(null);
     const [shopVerified, setShopVerified] = useState<boolean>(false);
@@ -24,32 +26,29 @@ const ProductPageContent: React.FC = () => {
     const [total, setTotal] = useState(0);
 
     useEffect(() => {
-        (async () => {
-            try {
-                const resp = await shopService.getMyShop();
-                setShopId(resp.result?.id || null);
-                setShopVerified((resp.result as any)?.status === 'APPROVED');
-            } catch (e) {
-                setShopId(null);
-                setShopVerified(false);
-            }
-        })();
-    }, []);
+    (async () => {
+      try {
+        const resp = await shopService.getMyShop();
+        setShopVerified((resp.result as any)?.status === 'APPROVED');
+      } catch (e) {
+        setShopVerified(false);
+      }
+    })();
+  }, []);
 
     const loadData = useCallback(() => {
-        fetchMyProducts({ page, size: pageSize })
-            .unwrap()
-            .then((res: IPage<IProduct>) => {
-                setTotal(res.totalElements);
-            })
-            .catch(() => { });
-    }, [fetchMyProducts, page, pageSize]);
+    fetchMyProducts({ 
+      page: pagination.page, // Use current page from Redux (or controlled by Table)
+      limit: pagination.limit, 
+      search: debouncedQ 
+    });
+  }, [fetchMyProducts, pagination.page, pagination.limit, debouncedQ]);
 
     useEffect(() => {
-        if (shopId) {
-            loadData();
-        }
-    }, [loadData, shopId]);
+    fetchMyProducts({ page: 1, limit: 10, search: debouncedQ });
+  }, [debouncedQ, fetchMyProducts]);
+
+  
 
     const filtered = useMemo(() => {
         const kw = q.trim().toLowerCase();

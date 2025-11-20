@@ -1,27 +1,63 @@
-import React, { useEffect, useState } from 'react';
-import { Table, Tag, Input, Select, Button, Avatar } from 'antd';
-import { SearchOutlined, ShopOutlined, FilterOutlined, EditOutlined } from '@ant-design/icons';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Table, Tag, Input, Select, Button, Avatar, message } from 'antd';
+import { SearchOutlined, ShopOutlined, EditOutlined, EyeOutlined } from '@ant-design/icons';
 import useShop from '@/hooks/useShop';
+import { useDebounce } from '@/hooks/useDebounce';
 import ShopFormModal from './ShopFormModal';
 import ShopDetailModal from './ShopDetailModal';
+import type { TablePaginationConfig } from 'antd/es/table';
 
 const { Option } = Select;
 
 const ShopsPage: React.FC = () => {
-  const { allShops, fetchAllShops, isLoading } = useShop();
+  const { 
+    shops: allShops, 
+    pagination, 
+    isLoading, 
+    error,
+    fetchShops 
+  } = useShop();
+
   const [detailVisible, setDetailVisible] = useState(false);
   const [formVisible, setFormVisible] = useState(false);
   const [selectedShopId, setSelectedShopId] = useState<string | null>(null);
+  
   const [searchText, setSearchText] = useState('');
-  const [statusFilter, setStatusFilter] = useState<StatusVerification | 'ALL'>('ALL');
+  const debouncedSearchText = useDebounce(searchText, 350);
+  const [statusFilter, setStatusFilter] = useState<StatusVerification | undefined>(undefined);
+
+  const loadShops = useCallback(() => {
+    fetchShops({
+      page: pagination.page, 
+      limit: pagination.limit,
+      status: statusFilter,
+      search: debouncedSearchText,
+      sortBy: 'createdAt',
+      sortType: 'desc'
+    });
+  }, [fetchShops, pagination.page, pagination.limit, statusFilter, debouncedSearchText]);
 
   useEffect(() => {
-    if (statusFilter === 'ALL') {
-      fetchAllShops();
-    } else {
-      fetchAllShops(statusFilter);
-    }
-  }, [statusFilter]);
+    fetchShops({
+        page: 1,
+        limit: pagination.limit,
+        status: statusFilter,
+        search: debouncedSearchText
+    });
+  }, [statusFilter, debouncedSearchText, fetchShops]); 
+
+  useEffect(() => {
+    if (error) message.error(error);
+  }, [error]);
+
+  const handleTableChange = (newPagination: TablePaginationConfig) => {
+    fetchShops({
+        page: newPagination.current,
+        limit: newPagination.pageSize,
+        status: statusFilter,
+        search: debouncedSearchText
+    });
+  };
 
   const openDetailModal = (shopId: string) => {
     setSelectedShopId(shopId);
@@ -33,42 +69,23 @@ const ShopsPage: React.FC = () => {
     setFormVisible(true);
   };
 
-  const filteredShops = (allShops || []).filter((shop) => {
-    const keyword = searchText.toLowerCase();
-    return (
-      shop.shop_name.toLowerCase().includes(keyword) ||
-      shop.email.toLowerCase().includes(keyword) ||
-      shop.phone_number.toLowerCase().includes(keyword)
-    );
-  });
-
-  const getStatusText = (status: StatusVerification): string => {
-    const statusMap: Record<StatusVerification, string> = {
-      PENDING: 'Chờ duyệt',
-      APPROVED: 'Đã duyệt',
-      REJECTED: 'Từ chối',
+  const getStatusTag = (status: StatusVerification) => {
+    const config = {
+      PENDING: { color: 'orange', text: 'Chờ duyệt' },
+      APPROVED: { color: 'green', text: 'Đã duyệt' },
+      REJECTED: { color: 'red', text: 'Từ chối' },
     };
-    return statusMap[status] || status;
+    const { color, text } = config[status] || { color: 'default', text: status };
+    return <Tag color={color}>{text}</Tag>;
   };
 
-  const statusConfig = {
-    PENDING: { color: 'warning' as const },
-    APPROVED: { color: 'success' as const },
-    REJECTED: { color: 'error' as const },
-  };
-
-  const columns = [
+  const columns: any = [
     {
       title: 'Logo',
       dataIndex: 'logo_url',
       key: 'logo_url',
       width: 80,
-      render: (logo: string) =>
-        logo ? (
-          <Avatar size={48} src={logo} />
-        ) : (
-          <Avatar size={48} icon={<ShopOutlined />} style={{ backgroundColor: '#1890ff' }} />
-        ),
+      render: (logo: string) => logo ? <Avatar src={logo} size={40} /> : <Avatar icon={<ShopOutlined />} size={40} />,
     },
     {
       title: 'Cửa hàng',
@@ -76,64 +93,51 @@ const ShopsPage: React.FC = () => {
       key: 'shop_name',
       render: (name: string) => <span className="font-medium">{name}</span>,
     },
-    { 
-      title: 'Email', 
-      dataIndex: 'email', 
-      key: 'email' 
-    },
-    { 
-      title: 'Số điện thoại', 
-      dataIndex: 'phone_number', 
-      key: 'phone_number' 
-    },
+    { title: 'Email', dataIndex: 'email', key: 'email' },
+    { title: 'SĐT', dataIndex: 'phone_number', key: 'phone_number' },
     {
       title: 'Đánh giá',
       dataIndex: 'rating',
       key: 'rating',
-      render: (rating: number) => (
-        <span className="text-yellow-600 font-medium">⭐ {rating?.toFixed(1) || '0.0'}</span>
-      ),
+      render: (rating: number) => <span className="text-yellow-600">⭐ {rating?.toFixed(1) || '0.0'}</span>,
     },
     {
       title: 'Trạng thái',
       dataIndex: 'status',
       key: 'status',
-      render: (status: StatusVerification) => {
-        const config = statusConfig[status];
-        return <Tag color={config.color}>{getStatusText(status)}</Tag>;
-      },
+      render: (status: StatusVerification) => getStatusTag(status),
     },
     {
       title: 'Hành động',
       key: 'action',
-      align: 'center' as const,
+      align: 'center',
       render: (_: any, record: IShop) => (
-        <Button
-          type="link"
-          size="small"
-          icon={<EditOutlined />}
-          onClick={(e) => {
-            e.stopPropagation();
-            openFormModal(record.id);
-          }}
-        />
+        <div className="flex justify-center gap-2">
+            <Button type="text" size="small" icon={<EyeOutlined />} onClick={(e) => { e.stopPropagation(); openDetailModal(record.id); }} />
+            <Button type="text" size="small" icon={<EditOutlined className="text-blue-500"/>} onClick={(e) => { e.stopPropagation(); openFormModal(record.id); }} />
+        </div>
       ),
     },
   ];
 
   return (
     <div className="p-4">
-      <div className="mb-4 flex gap-3 items-center">
+      <div className="mb-4 flex gap-3 items-center flex-wrap">
         <Input
-          placeholder="Tìm kiếm theo tên, email, SĐT..."
+          placeholder="Tìm kiếm..."
           prefix={<SearchOutlined />}
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
-          style={{ maxWidth: 400 }}
+          style={{ maxWidth: 300 }}
           allowClear
         />
-        <Select value={statusFilter} onChange={setStatusFilter} style={{ width: 180 }} suffixIcon={<FilterOutlined />}>
-          <Option value="ALL">Tất cả</Option>
+        <Select 
+            value={statusFilter} 
+            onChange={setStatusFilter} 
+            style={{ width: 180 }} 
+            placeholder="Lọc theo trạng thái"
+            allowClear
+        >
           <Option value="PENDING">Chờ duyệt</Option>
           <Option value="APPROVED">Đã duyệt</Option>
           <Option value="REJECTED">Từ chối</Option>
@@ -143,25 +147,33 @@ const ShopsPage: React.FC = () => {
       <Table
         rowKey="id"
         loading={isLoading}
-        dataSource={filteredShops}
+        dataSource={allShops}
         columns={columns}
-        onRow={(record) => ({ onClick: () => openDetailModal(record.id), className: 'cursor-pointer hover:bg-gray-50' })}
-        pagination={{ pageSize: 10, showSizeChanger: true, showTotal: (total) => `Tổng ${total} cửa hàng` }}
+        onRow={(record) => ({ 
+            onClick: () => openDetailModal(record.id), 
+            className: 'cursor-pointer hover:bg-gray-50' 
+        })}
+        pagination={{
+            current: pagination.page,
+            pageSize: pagination.limit,
+            total: pagination.total,
+            showSizeChanger: true,
+            showTotal: (total) => `Tổng ${total} cửa hàng`
+        }}
+        onChange={handleTableChange}
       />
 
-      <ShopDetailModal visible={detailVisible} shopId={selectedShopId} onClose={() => setDetailVisible(false)} />
+      <ShopDetailModal 
+        visible={detailVisible} 
+        shopId={selectedShopId} 
+        onClose={() => setDetailVisible(false)} 
+      />
 
       <ShopFormModal
         visible={formVisible}
         shopId={selectedShopId}
         onClose={() => setFormVisible(false)}
-        onSuccess={() => {
-          if (statusFilter === 'ALL') {
-            fetchAllShops();
-          } else {
-            fetchAllShops(statusFilter);
-          }
-        }}
+        onSuccess={() => loadShops()} 
       />
     </div>
   );

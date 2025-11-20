@@ -1,20 +1,43 @@
-import React, { useEffect, useState } from 'react';
-import { Table, Tag, Space, Input, Button } from 'antd';
+import React, { useEffect, useCallback, useState } from 'react';
+import { Table, Tag, Space, Input, Button, Avatar } from 'antd';
 import { SearchOutlined, ShopOutlined } from '@ant-design/icons';
 import useShop from '@/hooks/useShop';
+import { useDebounce } from '@/hooks/useDebounce';
 import VerifyShopModal from './VerifyShopModal';
+import type { TablePaginationConfig } from 'antd/es/table';
 
 const PendingShopsPage: React.FC = () => {
-  const { pendingShops, fetchPendingShops, isLoading } = useShop();
+  const { shops, pagination, isLoading, fetchShops } = useShop();
   const [visible, setVisible] = useState(false);
   const [selectedShopId, setSelectedShopId] = useState<string | null>(null);
   const [defaultAction, setDefaultAction] = useState<'approve' | 'reject' | null>(null);
+  
   const [searchText, setSearchText] = useState('');
+  const debouncedSearch = useDebounce(searchText, 350);
+
+  const loadPendingShops = useCallback(() => {
+      fetchShops({
+          status: 'PENDING',
+          page: pagination.page,
+          limit: pagination.limit,
+          search: debouncedSearch,
+          sortBy: 'createdAt',
+          sortType: 'desc'
+      });
+  }, [fetchShops, pagination.page, pagination.limit, debouncedSearch]);
 
   useEffect(() => {
-    fetchPendingShops();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+      fetchShops({ status: 'PENDING', page: 1, limit: pagination.limit, search: debouncedSearch });
+  }, [debouncedSearch, fetchShops]); 
+
+  const handleTableChange = (newPagination: TablePaginationConfig) => {
+      fetchShops({
+          status: 'PENDING',
+          page: newPagination.current,
+          limit: newPagination.pageSize,
+          search: debouncedSearch
+      });
+  };
 
   const openModal = (shopId: string, action: 'approve' | 'reject' | null = null) => {
     setSelectedShopId(shopId);
@@ -22,55 +45,28 @@ const PendingShopsPage: React.FC = () => {
     setVisible(true);
   };
 
-  const filteredShops = (pendingShops || []).filter((shop) => {
-    const keyword = searchText.toLowerCase();
-    return (
-      shop.shop_name.toLowerCase().includes(keyword) ||
-      shop.email.toLowerCase().includes(keyword) ||
-      shop.phone_number.toLowerCase().includes(keyword)
-    );
-  });
-
-  const columns = [
+  const columns: any = [
     {
       title: 'Logo',
       dataIndex: 'logo_url',
-      key: 'logo_url',
       width: 80,
-      render: (logo: string, record: IShop) => (
-        logo ? (
-          <img src={logo} alt={record.shop_name} className="w-12 h-12 object-cover rounded" />
-        ) : (
-          <div className="w-12 h-12 bg-indigo-100 rounded flex items-center justify-center">
-            <ShopOutlined className="text-indigo-600 text-xl" />
-          </div>
-        )
-      ),
+      render: (logo: string) => logo ? <Avatar src={logo} shape="square" size={48}/> : <Avatar icon={<ShopOutlined />} shape="square" size={48} className="bg-orange-200 text-orange-600" />,
     },
-    { title: 'Tên cửa hàng', dataIndex: 'shop_name', key: 'shop_name' },
+    { title: 'Tên cửa hàng', dataIndex: 'shop_name', key: 'shop_name', render: (t: string) => <span className="font-medium">{t}</span> },
     { title: 'Email', dataIndex: 'email', key: 'email' },
-    { title: 'Số điện thoại', dataIndex: 'phone_number', key: 'phone_number' },
+    { title: 'SĐT', dataIndex: 'phone_number', key: 'phone_number' },
     {
       title: 'Trạng thái',
-      key: 'status',
-      render: (_: any, record: IShop) => {
-        const statusConfig = {
-          PENDING: { color: 'orange', text: 'Chờ duyệt' },
-          APPROVED: { color: 'green', text: 'Đã duyệt' },
-          REJECTED: { color: 'red', text: 'Từ chối' },
-        };
-        const config = statusConfig[record.status] || { color: 'default', text: record.status };
-        return <Tag color={config.color}>{config.text}</Tag>;
-      },
+      dataIndex: 'status',
+      render: () => <Tag color="orange">Chờ duyệt</Tag>,
     },
     {
       title: 'Hành động',
       key: 'action',
       render: (_: any, record: IShop) => (
         <Space>
-          <Button type="link" size="small" onClick={(e) => { e.stopPropagation(); openModal(record.id, null); }}>
-            Chi tiết
-          </Button>
+          <Button type="primary" size="small" ghost onClick={(e) => { e.stopPropagation(); openModal(record.id, 'approve'); }}>Duyệt</Button>
+          <Button type="text" size="small" onClick={(e) => { e.stopPropagation(); openModal(record.id, null); }}>Chi tiết</Button>
         </Space>
       ),
     },
@@ -78,28 +74,44 @@ const PendingShopsPage: React.FC = () => {
 
   return (
     <div className="p-4">
-      <div className="mb-4 flex items-center gap-3">
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <div className="text-lg font-semibold">Yêu cầu mở gian hàng</div>
         <Input
-          placeholder="Tìm kiếm theo tên, email, SĐT..."
+          placeholder="Tìm kiếm..."
           prefix={<SearchOutlined />}
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
-          style={{ maxWidth: 400 }}
+          style={{ maxWidth: 300 }}
           allowClear
         />
-        <div className="ml-auto text-sm text-gray-500">{filteredShops.length} cửa hàng</div>
       </div>
 
       <Table
         rowKey="id"
         loading={isLoading}
-        dataSource={filteredShops}
+        dataSource={shops}
         columns={columns}
-        onRow={(record) => ({ onClick: () => openModal(record.id, null), className: 'cursor-pointer hover:bg-gray-50' })}
-        pagination={{ pageSize: 10, showSizeChanger: true, showTotal: (total) => `Tổng ${total} cửa hàng` }}
+        onRow={(record) => ({ 
+            onClick: () => openModal(record.id, null), 
+            className: 'cursor-pointer hover:bg-gray-50' 
+        })}
+        pagination={{
+            current: pagination.page,
+            pageSize: pagination.limit,
+            total: pagination.total,
+            showSizeChanger: true,
+            showTotal: (t) => `Tổng ${t} yêu cầu`
+        }}
+        onChange={handleTableChange}
       />
 
-      <VerifyShopModal visible={visible} shopId={selectedShopId} defaultAction={defaultAction} onClose={() => setVisible(false)} onSuccess={() => fetchPendingShops()} />
+      <VerifyShopModal 
+        visible={visible} 
+        shopId={selectedShopId} 
+        defaultAction={defaultAction} 
+        onClose={() => setVisible(false)} 
+        onSuccess={() => loadPendingShops()} 
+      />
     </div>
   );
 };

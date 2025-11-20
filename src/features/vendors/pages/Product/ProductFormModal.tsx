@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo } from 'react';
-import { Modal, Form, Input, InputNumber, Button, Upload, Switch, Select, Row, Col, Divider, Card, Space } from 'antd';
-import { PlusOutlined, AppstoreAddOutlined, DollarCircleOutlined, FileTextOutlined, PictureOutlined } from '@ant-design/icons';
+import { Modal, Form, Input, InputNumber, Button, Upload, Switch, Select, Row, Col, Card, Space } from 'antd';
+import { PlusOutlined, AppstoreAddOutlined, DollarCircleOutlined, PictureOutlined } from '@ant-design/icons';
 import { useCategory } from '@/hooks/useCategory';
 import AttributeEditor from './AttributeEditor';
+import type { UploadFile } from 'antd/es/upload/interface';
 
 interface Props {
   open: boolean;
@@ -13,29 +14,30 @@ interface Props {
 }
 
 const ProductFormModal: React.FC<Props> = ({ open, onClose, onSubmit, editingProduct, loading }) => {
-  const [form] = Form.useForm<any>();
+  const [form] = Form.useForm();
   const { categories, fetchAllCategories } = useCategory();
 
   useEffect(() => {
-    if (!categories || categories.length === 0) {
-      fetchAllCategories();
-    }
-  }, []);
+    if (categories.length === 0) fetchAllCategories();
+  }, [categories.length, fetchAllCategories]);
 
   useEffect(() => {
     if (editingProduct) {
+      const attributeItems = editingProduct.attributeValues?.map(av => ({
+        attributeId: av.attributeId,
+        value: av.value
+      })) || [];
+
       form.setFieldsValue({
-        id: editingProduct.id,
-        name: editingProduct.name,
-        description: editingProduct.description,
-        price: editingProduct.price,
-        saleOff: editingProduct.saleOff,
-        stockQuantity: editingProduct.stockQuantity,
-        isPublished: editingProduct.isPublished,
-        categoryId: (editingProduct as any)?.categoryId,
-        attributeItems: Array.isArray((editingProduct as any)?.attributeValues)
-          ? ((editingProduct as any)?.attributeValues as IAttributeValue[]).map(av => ({ attributeId: av.attributeId, value: av.value }))
-          : [],
+        ...editingProduct,
+        categoryId: editingProduct.categoryInfo?.id || editingProduct.categoryId,
+        attributeItems,
+        images: editingProduct.images?.map((url, idx) => ({
+          uid: `-${idx}`,
+          name: `Image ${idx}`,
+          status: 'done',
+          url: url,
+        })) || [],
       });
     } else {
       form.resetFields();
@@ -43,217 +45,116 @@ const ProductFormModal: React.FC<Props> = ({ open, onClose, onSubmit, editingPro
     }
   }, [editingProduct, form]);
 
-  const handleUploadChange = (info: any) => {
-    const files = (info?.fileList || []).map(
-      (f: any) => f.originFileObj || f.file || f
-    );
-    form.setFieldsValue({ images: files.length > 0 ? files : null });
-  };
-
   const handleFinish = (values: any) => {
-    if (editingProduct) values.id = editingProduct.id;
-    if (values.price !== undefined) values.price = Number(values.price);
-    if (values.saleOff !== undefined) values.saleOff = Number(values.saleOff);
-    if (values.stockQuantity !== undefined)
-      values.stockQuantity = Number(values.stockQuantity);
+    const attributeValues = (values.attributeItems || [])
+      .filter((i: any) => i?.attributeId && i?.value)
+      .map((i: any) => ({ attributeId: String(i.attributeId), value: String(i.value) }));
 
-    if (Array.isArray(values.attributeItems)) {
-      const cleaned = (values.attributeItems as Array<{ attributeId?: string; value?: string }>).
-        filter(i => i && i.attributeId && (i.value ?? '') !== '').
-        map(i => ({ attributeId: String(i.attributeId), value: String(i.value) }));
-      if (cleaned.length > 0) {
-        values.attributeValues = cleaned;
-      }
-      delete values.attributeItems;
-    }
+    const images = (values.images || []).map((f: UploadFile) => f.originFileObj || f.url || f);
 
-    if (Array.isArray(values.images)) {
-      values.images = values.images.map((f: any) => f?.originFileObj || f);
-    }
+    const payload = {
+      ...values,
+      id: editingProduct?.id, 
+      price: Number(values.price),
+      saleOff: Number(values.saleOff),
+      stockQuantity: Number(values.stockQuantity),
+      attributeValues,
+      images, 
+    };
 
-    if (typeof values.attributeValues === 'string' && values.attributeValues.trim()) {
-      try {
-        const parsed = JSON.parse(values.attributeValues.trim());
-        if (Array.isArray(parsed)) {
-          values.attributeValues = parsed;
-        } else if (parsed && typeof parsed === 'object') {
-          values.attributeValues = Object.entries(parsed).map(
-            ([attributeId, value]) => ({ attributeId, value })
-          );
-        }
-      } catch (e) { }
-    }
-
-    onSubmit(values);
+    delete payload.attributeItems; 
+    onSubmit(payload);
   };
 
-  const uploadButton = (
-    <div>
-      <PlusOutlined />
-      <div style={{ marginTop: 8 }}>Chọn ảnh</div>
-    </div>
-  );
-
-  const price = Form.useWatch('price', form) as number | undefined;
-  const saleOff = Form.useWatch('saleOff', form) as number | undefined;
+  const price = Form.useWatch('price', form);
+  const saleOff = Form.useWatch('saleOff', form);
+  
   const finalPrice = useMemo(() => {
     const p = Number(price || 0);
     const s = Number(saleOff || 0);
-    const discount = Math.max(0, Math.min(100, isNaN(s) ? 0 : s));
-    return Math.round(p * (1 - discount / 100));
+    if (p <= 0) return 0;
+    return Math.round(p * (1 - s / 100));
   }, [price, saleOff]);
-
 
   return (
     <Modal
       open={open}
       onCancel={onClose}
       footer={null}
-      title={
-        <Space>
-          <AppstoreAddOutlined style={{ color: '#1890ff' }} />
-          <span className="font-semibold">
-            {editingProduct ? 'Chỉnh sửa sản phẩm' : 'Tạo sản phẩm mới'}
-          </span>
-        </Space>
-      }
-      width={850} 
-      style={{ top: 20 }} 
+      title={<span className="font-semibold">{editingProduct ? 'Chỉnh sửa sản phẩm' : 'Tạo sản phẩm mới'}</span>}
+      width={850}
+      style={{ top: 20 }}
       maskClosable={false}
-      destroyOnClose 
+      destroyOnClose
     >
-      <Form 
-        form={form} 
-        layout="vertical" 
-        onFinish={handleFinish} 
-        initialValues={{ isPublished: true, saleOff: 0, stockQuantity: 0 }}
-      >
-
+      <Form form={form} layout="vertical" onFinish={handleFinish}>
         <Card size="small" className="mb-4" title={<Space><AppstoreAddOutlined />Thông tin cơ bản</Space>}>
           <Row gutter={16}>
-            <Col xs={24} md={12}>
-              <Form.Item
-                name="categoryId"
-                label="Danh mục"
-                rules={[{ required: true, message: 'Vui lòng chọn danh mục' }]} 
-              >
-                <Select
-                  placeholder="Chọn danh mục"
-                  options={(categories || []).map((c: any) => ({
-                    value: c.id,
-                    label: c.name,
-                  }))}
-                  showSearch
+            <Col span={12}>
+              <Form.Item name="categoryId" label="Danh mục" rules={[{ required: true }]}>
+                <Select 
+                  showSearch 
                   optionFilterProp="label"
+                  placeholder="Chọn danh mục" 
+                  options={categories.map(c => ({ value: c.id, label: c.name }))} 
                 />
               </Form.Item>
             </Col>
-            <Col xs={24} md={12}>
-              <Form.Item
-                name="name"
-                label="Tên sản phẩm"
-                rules={[{ required: true, message: 'Nhập tên sản phẩm' }]}
-              >
-                <Input placeholder="VD: iPhone 15 Pro" showCount maxLength={150} />
+            <Col span={12}>
+              <Form.Item name="name" label="Tên sản phẩm" rules={[{ required: true }]}>
+                <Input placeholder="Nhập tên sản phẩm" count={{ show: true, max: 150 }} />
               </Form.Item>
             </Col>
           </Row>
-        </Card>
-
-        <Card size="small" className="mb-4" title={<Space><DollarCircleOutlined />Giá & Kho hàng</Space>}>
-          <Row gutter={16}>
-            <Col xs={12} md={6}>
-              <Form.Item
-                name="price"
-                label="Giá (VND)"
-                rules={[{ required: true, message: 'Nhập giá' }]}
-              >
-                <InputNumber
-                  style={{ width: '100%' }}
-                  min={0}
-                  step={1000}
-                  formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                  parser={((value: string | undefined) => value ? value.replace(/\$\s?|(,*)/g, '') : '') as any}
-                />
-              </Form.Item>
-            </Col>
-            <Col xs={12} md={6}>
-              <Form.Item name="saleOff" label="Giảm giá (%)">
-                <InputNumber style={{ width: '100%' }} min={0} max={100} step={1} />
-              </Form.Item>
-            </Col>
-            <Col xs={12} md={6}>
-              <Form.Item label="Giá cuối (VND)">
-                <InputNumber
-                  style={{ width: '100%' }}
-                  value={finalPrice}
-                  readOnly
-                  disabled
-                  formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                />
-              </Form.Item>
-            </Col>
-            <Col xs={12} md={6}>
-              <Form.Item
-                name="stockQuantity"
-                label="Tồn kho"
-                rules={[{ required: true, message: 'Nhập tồn kho' }]}
-              >
-                <InputNumber style={{ width: '100%' }} min={0} />
-              </Form.Item>
-            </Col>
-          </Row>
-        </Card>
-
-        <Card size="small" className="mb-4" title={<Space><FileTextOutlined />Mô tả & Thuộc tính</Space>}>
           <Form.Item name="description" label="Mô tả">
-            <Input.TextArea rows={4} placeholder="Mô tả chi tiết về sản phẩm..." showCount maxLength={2000} />
+             <Input.TextArea rows={4} showCount maxLength={2000} />
           </Form.Item>
-
-          <AttributeEditor form={form} />
         </Card>
 
-        <Card size="small" className="mb-4" title={<Space><PictureOutlined />Hình ảnh sản phẩm</Space>}>
-          <Form.Item 
-            label="Ảnh (tối đa 8 ảnh, ảnh đầu tiên là ảnh bìa)" 
-            tooltip="Ảnh đầu tiên bạn tải lên sẽ được dùng làm ảnh bìa cho sản phẩm."
-            className="mb-0"
-          >
-            <Form.Item
-              name="images"
-              valuePropName="fileList"
-              getValueFromEvent={(e) => e?.fileList}
-              noStyle
-            >
-              <Upload
-                beforeUpload={() => false}
-                onChange={handleUploadChange}
-                accept="image/*"
-                multiple
-                maxCount={8}
-                listType="picture-card"
-              >
-                {uploadButton}
+        <Card size="small" className="mb-4" title={<Space><DollarCircleOutlined />Giá & Kho</Space>}>
+          <Row gutter={16}>
+             <Col span={8}>
+                <Form.Item name="price" label="Giá gốc" rules={[{ required: true }]}>
+                   <InputNumber style={{ width: '100%' }} min={0} formatter={v => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} />
+                </Form.Item>
+             </Col>
+             <Col span={8}>
+                <Form.Item name="saleOff" label="Giảm giá (%)">
+                   <InputNumber style={{ width: '100%' }} min={0} max={100} />
+                </Form.Item>
+             </Col>
+             <Col span={8}>
+                <Form.Item label="Giá sau giảm">
+                   <InputNumber style={{ width: '100%' }} value={finalPrice} disabled formatter={v => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} />
+                </Form.Item>
+             </Col>
+             <Col span={8}>
+                <Form.Item name="stockQuantity" label="Tồn kho" rules={[{ required: true }]}>
+                   <InputNumber style={{ width: '100%' }} min={0} />
+                </Form.Item>
+             </Col>
+          </Row>
+        </Card>
+
+        <Card size="small" className="mb-4">
+           <AttributeEditor form={form} />
+        </Card>
+
+        <Card size="small" className="mb-4" title={<Space><PictureOutlined />Hình ảnh</Space>}>
+           <Form.Item name="images" valuePropName="fileList" getValueFromEvent={(e) => Array.isArray(e) ? e : e?.fileList} noStyle>
+              <Upload listType="picture-card" beforeUpload={() => false} maxCount={8} multiple accept="image/*">
+                 <div><PlusOutlined /><div style={{ marginTop: 8 }}>Upload</div></div>
               </Upload>
-            </Form.Item>
-          </Form.Item>
+           </Form.Item>
         </Card>
 
-        <Form.Item
-          name="isPublished"
-          label="Trạng thái"
-          valuePropName="checked"
-        >
-          <Switch checkedChildren="Xuất bản" unCheckedChildren="Nháp" />
+        <Form.Item name="isPublished" label="Trạng thái" valuePropName="checked">
+           <Switch checkedChildren="Xuất bản" unCheckedChildren="Nháp" />
         </Form.Item>
 
-        <Divider style={{ margin: '12px 0' }} />
-
-        <div className="flex justify-end gap-2">
-          <Button onClick={onClose} size="large">Hủy</Button>
-          <Button type="primary" htmlType="submit" loading={loading} size="large">
-            {editingProduct ? 'Cập nhật' : 'Lưu sản phẩm'}
-          </Button>
+        <div className="flex justify-end gap-3 pt-4 border-t">
+           <Button onClick={onClose}>Hủy</Button>
+           <Button type="primary" htmlType="submit" loading={loading}>Lưu sản phẩm</Button>
         </div>
       </Form>
     </Modal>
