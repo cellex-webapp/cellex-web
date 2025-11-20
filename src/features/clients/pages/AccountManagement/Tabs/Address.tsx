@@ -100,7 +100,7 @@ const Address: React.FC = () => {
     const load = async () => {
       setCommunesLoading(true);
       try {
-        const resp = await addressService.getCommunesByProvinceCode(provinceSelected);
+        const resp = await addressService.getCommunesByProvinceCode(Number(provinceSelected));
         if (mounted) setCommunes(resp.result || []);
       } catch (err) {
         console.error('Failed to load communes', err);

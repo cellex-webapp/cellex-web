@@ -34,13 +34,21 @@ export const userService = {
     }
 
     const form = toFormData(payload);
-    const response = await axiosInstance.put<IApiResponse<IUser>>('/users/me', form);
+    const response = await axiosInstance.put<IApiResponse<IUser>>('/users/me', form, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
     return response.data;
   },
 
   addUserAccount: async (data: IAddAccountPayload) => {
     const form = isFormData(data) ? data : toFormData(data as Record<string, any>);
-    const response = await axiosInstance.post<IApiResponse<IUser>>('/users/add-account', form);
+    const response = await axiosInstance.post<IApiResponse<IUser>>('/users/add-account', form, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
     return response.data;
   },
 
