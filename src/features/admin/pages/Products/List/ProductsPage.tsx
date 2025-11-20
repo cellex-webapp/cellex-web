@@ -43,7 +43,7 @@ const AdminProductsPage: React.FC = () => {
     (async () => {
       try {
         const resp = await shopService.getShopList(); 
-        setShops(resp.result || []);
+        setShops(resp.result.content);
       } catch (e) {
         console.error("Failed to load shops:", e);
       }

@@ -1,16 +1,35 @@
 import { useAppSelector, useAppDispatch } from '@/hooks/redux';
 import { useCallback } from 'react';
-import { fetchMyShop, fetchShopById, createShop, updateShop, fetchPendingShops, fetchAllShops, verifyRegisterShop, clearShopState, updateMyShop } from '@/stores/slices/shop.slice';
+import {
+  fetchShops,        
+  fetchMyShop,
+  fetchShopById,
+  createShop,
+  updateShop,
+  updateMyShop,
+  verifyRegisterShop,
+  clearShopState
+} from '@/stores/slices/shop.slice';
+import {
+  selectCurrentShop,
+  selectAllShops,
+  selectShopPagination,
+  selectShopIsLoading,
+  selectShopError,
+} from '@/stores/selectors/shop.selector';
 
 export const useShop = () => {
   const dispatch = useAppDispatch();
 
-  const shop = useAppSelector((state) => state.shop.shop);
-  
-  const allShops = useAppSelector((state) => state.shop.allShops);
-  const pendingShops = useAppSelector((state) => state.shop.pendingShops);
-  const isLoading = useAppSelector((state) => state.shop.isLoading);
-  const error = useAppSelector((state) => state.shop.error);
+  const shop = useAppSelector(selectCurrentShop);
+  const shops = useAppSelector(selectAllShops); 
+  const pagination = useAppSelector(selectShopPagination);
+  const isLoading = useAppSelector(selectShopIsLoading);
+  const error = useAppSelector(selectShopError);
+
+  const handleFetchShops = useCallback((params?: IPaginationParams) => {
+    return dispatch(fetchShops(params));
+  }, [dispatch]);
 
   const handleFetchMyShop = useCallback(() => {
     return dispatch(fetchMyShop());
@@ -28,12 +47,8 @@ export const useShop = () => {
     return dispatch(updateShop({ id, payload }));
   }, [dispatch]);
 
-  const handleFetchPendingShops = useCallback(() => {
-    return dispatch(fetchPendingShops());
-  }, [dispatch]);
-
-  const handleFetchAllShops = useCallback((status?: StatusVerification) => {
-    return dispatch(fetchAllShops(status));
+  const handleUpdateMyShop = useCallback((payload: IUpdateMyShopPayload) => {
+    return dispatch(updateMyShop(payload));
   }, [dispatch]);
 
   const handleVerifyRegisterShop = useCallback((payload: IVerifyShopPayload) => {
@@ -44,25 +59,21 @@ export const useShop = () => {
     return dispatch(clearShopState());
   }, [dispatch]);
 
-  const handleUpdateMyShop = useCallback((payload: IUpdateMyShopPayload) => {
-    return dispatch(updateMyShop(payload));
-  }, [dispatch]);
-
   return {
     shop,
-    allShops,
-    pendingShops,
+    shops,            
+    pagination,       
     isLoading,
     error,
+
+    fetchShops: handleFetchShops,
     fetchMyShop: handleFetchMyShop,
     fetchShopById: handleFetchShopById,
     createShop: handleCreateShop,
     updateShop: handleUpdateShop,
-    fetchPendingShops: handleFetchPendingShops,
-    fetchAllShops: handleFetchAllShops,
+    updateMyShop: handleUpdateMyShop,
     verifyRegisterShop: handleVerifyRegisterShop,
     clearShopState: handleClearShopState,
-    updateMyShop: handleUpdateMyShop,
   };
 };
 

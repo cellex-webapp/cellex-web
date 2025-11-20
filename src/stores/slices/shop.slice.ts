@@ -1,101 +1,114 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, isPending, isRejectedWithValue } from '@reduxjs/toolkit';
 import { shopService } from '@/services/shop.service';
+import { getErrorMessage } from '@/helpers/errorHandler'; 
 
 interface ShopState {
-  shop: IShop | null;
-  allShops: IShop[];
-  pendingShops: IShop[];
+  shop: IShop | null;       
+  shops: IShop[];           
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+  };
   isLoading: boolean;
   error: string | null;
 }
 
 const initialState: ShopState = {
   shop: null,
-  allShops: [],
-  pendingShops: [],
+  shops: [],
+  pagination: { page: 1, limit: 10, total: 0 },
   isLoading: false,
   error: null,
 };
 
-export const fetchMyShop = createAsyncThunk('shop/fetchMyShop', async (_, { rejectWithValue }) => {
-  try {
-    const resp = await shopService.getMyShop();
-    return resp.result as IShop;
-  } catch (error: any) {
-    const message = error?.response?.data?.message ?? error?.message ?? error?.data?.message ?? JSON.stringify(error);
-    return rejectWithValue(message);
+export const fetchShops = createAsyncThunk<
+  IPaginatedResult<IShop>, 
+  IPaginationParams | undefined,
+  { rejectValue: string }
+>(
+  'shop/fetchAll', 
+  async (params, { rejectWithValue }) => {
+    try {
+      const resp = await shopService.getShopList(params);
+      return resp.result;
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
+    }
   }
-});
+);
 
-export const fetchShopById = createAsyncThunk('shop/fetchById', async (id: string, { rejectWithValue }) => {
-  try {
-    const resp = await shopService.getShopById(id);
-    return resp.result as IShop;
-  } catch (error: any) {
-    const message = error?.response?.data?.message ?? error?.message ?? error?.data?.message ?? JSON.stringify(error);
-    return rejectWithValue(message);
+export const fetchMyShop = createAsyncThunk<IShop, void, { rejectValue: string }>(
+  'shop/fetchMyShop', 
+  async (_, { rejectWithValue }) => {
+    try {
+      const resp = await shopService.getMyShop();
+      return resp.result;
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
+    }
   }
-});
+);
 
-export const updateMyShop = createAsyncThunk('shop/updateMyShop', async (payload: IUpdateMyShopPayload, { rejectWithValue }) => {
-  try {
-    const resp = await shopService.updateMyShop(payload);
-    return resp.result as IShop;
-  } catch (error: any) {
-    const message = error?.response?.data?.message ?? error?.message ?? error?.data?.message ?? JSON.stringify(error);
-    return rejectWithValue(message);
+export const fetchShopById = createAsyncThunk<IShop, string, { rejectValue: string }>(
+  'shop/fetchById', 
+  async (id, { rejectWithValue }) => {
+    try {
+      const resp = await shopService.getShopById(id);
+      return resp.result;
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
+    }
   }
-});
+);
 
-export const createShop = createAsyncThunk('shop/create', async (payload: ICreateUpdateShopPayload, { rejectWithValue }) => {
-  try {
-    const resp = await shopService.createShop(payload);
-    return resp.result as IShop;
-  } catch (error: any) {
-    const message = error?.response?.data?.message ?? error?.message ?? error?.data?.message ?? JSON.stringify(error);
-    return rejectWithValue(message);
+export const createShop = createAsyncThunk<IShop, ICreateUpdateShopPayload, { rejectValue: string }>(
+  'shop/create', 
+  async (payload, { rejectWithValue }) => {
+    try {
+      const resp = await shopService.createShop(payload);
+      return resp.result;
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
+    }
   }
-});
+);
 
-export const updateShop = createAsyncThunk('shop/update', async ({ id, payload }: { id: string; payload: ICreateUpdateShopPayload }, { rejectWithValue }) => {
-  try {
-    const resp = await shopService.updateShop(id, payload);
-    return resp.result as IShop;
-  } catch (error: any) {
-    const message = error?.response?.data?.message ?? error?.message ?? error?.data?.message ?? JSON.stringify(error);
-    return rejectWithValue(message);
+export const updateShop = createAsyncThunk<IShop, { id: string; payload: ICreateUpdateShopPayload }, { rejectValue: string }>(
+  'shop/update', 
+  async ({ id, payload }, { rejectWithValue }) => {
+    try {
+      const resp = await shopService.updateShop(id, payload);
+      return resp.result;
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
+    }
   }
-});
+);
 
-export const fetchPendingShops = createAsyncThunk('shop/fetchPending', async (_, { rejectWithValue }) => {
-  try {
-    const resp = await shopService.getShopList('PENDING');
-    return resp.result as IShop[];
-  } catch (error: any) {
-    const message = error?.response?.data?.message ?? error?.message ?? error?.data?.message ?? JSON.stringify(error);
-    return rejectWithValue(message);
+export const updateMyShop = createAsyncThunk<IShop, IUpdateMyShopPayload, { rejectValue: string }>(
+  'shop/updateMyShop', 
+  async (payload, { rejectWithValue }) => {
+    try {
+      const resp = await shopService.updateMyShop(payload);
+      return resp.result;
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
+    }
   }
-});
+);
 
-export const fetchAllShops = createAsyncThunk('shop/fetchAll', async (status: StatusVerification | undefined, { rejectWithValue }) => {
-  try {
-    const resp = await shopService.getShopList(status);
-    return resp.result as IShop[];
-  } catch (error: any) {
-    const message = error?.response?.data?.message ?? error?.message ?? error?.data?.message ?? JSON.stringify(error);
-    return rejectWithValue(message);
+export const verifyRegisterShop = createAsyncThunk<string, IVerifyShopPayload, { rejectValue: string }>(
+  'shop/verify', 
+  async (payload, { rejectWithValue }) => {
+    try {
+      await shopService.verifyRegisterShop(payload);
+      return payload.shopId;
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
+    }
   }
-});
-
-export const verifyRegisterShop = createAsyncThunk('shop/verify', async (payload: IVerifyShopPayload, { rejectWithValue }) => {
-  try {
-    const resp = await shopService.verifyRegisterShop(payload);
-    return resp.result as void;
-  } catch (error: any) {
-    const message = error?.response?.data?.message ?? error?.message ?? error?.data?.message ?? JSON.stringify(error);
-    return rejectWithValue(message);
-  }
-});
+);
 
 const shopSlice = createSlice({
   name: 'shop',
@@ -103,14 +116,23 @@ const shopSlice = createSlice({
   reducers: {
     clearShopState: (state) => {
       state.shop = null;
-      state.allShops = [];
-      state.pendingShops = [];
+      state.shops = [];
       state.error = null;
       state.isLoading = false;
     },
   },
   extraReducers: (builder) => {
     builder
+      .addCase(fetchShops.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.shops = action.payload.content || [];
+        state.pagination = {
+          page: action.payload.currentPage,
+          limit: action.payload.pageSize,
+          total: action.payload.totalElements,
+        };
+      })
+
       .addCase(fetchMyShop.fulfilled, (state, action) => {
         state.isLoading = false;
         state.shop = action.payload;
@@ -119,53 +141,39 @@ const shopSlice = createSlice({
         state.isLoading = false;
         state.shop = action.payload;
       })
-      .addCase(updateMyShop.fulfilled, (state, action) => {
-        state.isLoading = false;
-        if (state.shop?.id === action.payload.id) state.shop = { ...state.shop, ...action.payload };
-      })
-      .addCase(updateMyShop.pending, (state) => {
-        state.isLoading = true;
-        state.error = null;
-      })
-      .addCase(updateMyShop.rejected, (state, action) => {
-        state.isLoading = false;
-        const a: any = action;
-        state.error = a.payload ?? a.error?.message ?? String(a.error) ?? 'Unknown error';
-      })
       .addCase(createShop.fulfilled, (state, action) => {
         state.isLoading = false;
         state.shop = action.payload;
       })
+
+      .addCase(updateMyShop.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.shop = { ...state.shop, ...action.payload };
+      })
       .addCase(updateShop.fulfilled, (state, action) => {
         state.isLoading = false;
-        if (state.shop?.id === action.payload.id) state.shop = { ...state.shop, ...action.payload };
+        const index = state.shops.findIndex(s => s.id === action.payload.id);
+        if (index !== -1) state.shops[index] = action.payload;
+        if (state.shop?.id === action.payload.id) state.shop = action.payload;
       })
-      .addCase(fetchPendingShops.fulfilled, (state, action) => {
+
+      .addCase(verifyRegisterShop.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.pendingShops = action.payload;
+        state.shops = state.shops.filter(s => s.id !== action.payload);
       })
-      .addCase(fetchAllShops.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.allShops = action.payload;
-      })
-      .addCase(verifyRegisterShop.fulfilled, (state) => {
-        state.isLoading = false;
-      })
-      .addMatcher(
-        (action) => action.type.startsWith('shop/') && action.type.endsWith('/pending'),
-        (state) => {
+
+      .addMatcher(isPending, (state, action) => {
+        if (action.type.startsWith('shop/')) {
           state.isLoading = true;
           state.error = null;
         }
-      )
-      .addMatcher(
-        (action) => action.type.startsWith('shop/') && action.type.endsWith('/rejected'),
-        (state, action) => {
+      })
+      .addMatcher(isRejectedWithValue, (state, action) => {
+        if (action.type.startsWith('shop/')) {
           state.isLoading = false;
-          const a: any = action;
-          state.error = a.payload ?? a.error?.message ?? String(a.error) ?? 'Unknown error';
+          state.error = (action.payload as string) || 'Unknown error';
         }
-      );
+      });
   },
 });
 

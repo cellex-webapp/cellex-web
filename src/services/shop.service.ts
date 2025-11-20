@@ -2,24 +2,24 @@ import axiosInstance from '@/utils/axiosInstance';
 import toFormData from '@/utils/formData';
 
 export const shopService = {
-  //admin
-  getShopList: async (status?: StatusVerification): Promise<IApiResponse<IShop[]>> => {
-    const resp = await axiosInstance.get<IApiResponse<IShop[]>>('/shops', {
-      params: status ? { status } : {},
+  getShopList: async (params?: IPaginationParams) => {
+    const response = await axiosInstance.get<IApiResponse<IPaginatedResult<IShop>>>('/shops', {
+      params,
     });
-    return (resp as unknown) as IApiResponse<IShop[]>;
-  },
-  getShopById: async (id: string): Promise<IApiResponse<IShop>> => {
-    const resp = await axiosInstance.get<IApiResponse<IShop>>(`/shops/${id}`);
-    return (resp as unknown) as IApiResponse<IShop>;
-  },
-  verifyRegisterShop: async (payload: IVerifyShopPayload): Promise<IApiResponse<void>> => {
-    const resp = await axiosInstance.post<IApiResponse<void>>(`/shops/verify`, payload);
-    return (resp as unknown) as IApiResponse<void>;
+    return response.data;
   },
 
-  //vendor
-  createShop: async (payload: ICreateUpdateShopPayload): Promise<IApiResponse<IShop>> => {
+  getShopById: async (id: string) => {
+    const response = await axiosInstance.get<IApiResponse<IShop>>(`/shops/${id}`);
+    return response.data;
+  },
+
+  verifyRegisterShop: async (payload: IVerifyShopPayload) => {
+    const response = await axiosInstance.post<IApiResponse<void>>(`/shops/verify`, payload);
+    return response.data;
+  },
+
+  createShop: async (payload: ICreateUpdateShopPayload) => {
     const fd = toFormData({
       shopName: payload.shopName,
       description: payload.description,
@@ -31,21 +31,24 @@ export const shopService = {
       logo: payload.logo,
     });
 
-    const resp = await axiosInstance.post<IApiResponse<IShop>>(`/shops/register-vendor`, fd);
-    return (resp as unknown) as IApiResponse<IShop>;
+    const response = await axiosInstance.post<IApiResponse<IShop>>(`/shops/register-vendor`, fd);
+    return response.data;
   },
-  updateShop: async (id: string, payload: ICreateUpdateShopPayload): Promise<IApiResponse<IShop>> => {
-    const fd = toFormData(payload as any);
-    const resp = await axiosInstance.put<IApiResponse<IShop>>(`/shops/${id}`, fd);
-    return (resp as unknown) as IApiResponse<IShop>;
+
+  updateShop: async (id: string, payload: ICreateUpdateShopPayload) => {
+    const fd = toFormData(payload as Record<string, any>);
+    const response = await axiosInstance.put<IApiResponse<IShop>>(`/shops/${id}`, fd);
+    return response.data;
   },
-  getMyShop: async (): Promise<IApiResponse<IShop>> => {
-    const resp = await axiosInstance.get<IApiResponse<IShop>>(`/shops/my-shop`);
-    return (resp as unknown) as IApiResponse<IShop>;
+
+  getMyShop: async () => {
+    const response = await axiosInstance.get<IApiResponse<IShop>>(`/shops/my-shop`);
+    return response.data;
   },
-  updateMyShop: async (payload: IUpdateMyShopPayload): Promise<IApiResponse<IShop>> => {
-    const fd = toFormData(payload as any);
-    const resp = await axiosInstance.put<IApiResponse<IShop>>(`/shops/my-shop`, fd);
-    return (resp as unknown) as IApiResponse<IShop>;
+
+  updateMyShop: async (payload: IUpdateMyShopPayload) => {
+    const fd = toFormData(payload as Record<string, any>);
+    const response = await axiosInstance.put<IApiResponse<IShop>>(`/shops/my-shop`, fd);
+    return response.data;
   },
 };

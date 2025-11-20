@@ -33,6 +33,7 @@ declare global {
     }
 
     interface IPaginationParams {
+        status?: string;
         page?: number;
         limit?: number;
         sortBy?: string;

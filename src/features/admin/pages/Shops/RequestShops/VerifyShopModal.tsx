@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Radio, Input, Descriptions, Spin, message, Space, Tag, Avatar, Divider } from 'antd';
-import { CheckCircleOutlined, CloseCircleOutlined, ShopOutlined, MailOutlined, PhoneOutlined, HomeOutlined } from '@ant-design/icons';
+import { Modal, Radio, Input, Descriptions, Spin, message, Space, Tag, Avatar } from 'antd';
+import { CheckCircleOutlined, CloseCircleOutlined, ShopOutlined } from '@ant-design/icons';
 import { shopService } from '@/services/shop.service';
 import useShop from '@/hooks/useShop';
 
@@ -19,51 +19,48 @@ const VerifyShopModal: React.FC<Props> = ({ visible, shopId, defaultAction = nul
   const [shop, setShop] = useState<IShop | null>(null);
   const [action, setAction] = useState<'approve' | 'reject' | null>(defaultAction);
   const [reason, setReason] = useState('');
+  
   const { verifyRegisterShop } = useShop();
 
   useEffect(() => {
-    setAction(defaultAction ?? null);
+    if (visible) {
+        setAction(defaultAction);
+        setReason('');
+    }
   }, [defaultAction, visible]);
 
   useEffect(() => {
     if (!visible || !shopId) return;
-    let mounted = true;
     setLoading(true);
     shopService.getShopById(shopId)
-      .then((resp: any) => {
-        if (!mounted) return;
-        setShop(resp.result ?? null);
-      })
-      .catch((err) => {
-        console.error('Failed to fetch shop', err);
-        message.error('Không thể tải thông tin cửa hàng');
-      })
-      .finally(() => {
-        if (mounted) setLoading(false);
-      });
-    return () => { mounted = false; };
+      .then((resp) => setShop(resp.result))
+      .catch(() => message.error('Lỗi tải thông tin shop'))
+      .finally(() => setLoading(false));
   }, [visible, shopId]);
 
   const handleConfirm = async () => {
     if (!shopId || !action) {
-      message.warning('Vui lòng chọn hành động');
+      message.warning('Vui lòng chọn hành động (Duyệt/Từ chối)');
       return;
+    }
+    if (action === 'reject' && !reason.trim()) {
+        message.error('Vui lòng nhập lý do từ chối');
+        return;
     }
 
     try {
       setLoading(true);
-      const payload: IVerifyShopPayload = {
+      await verifyRegisterShop({
         shopId,
         status: action === 'approve' ? 'APPROVED' : 'REJECTED',
         rejectionReason: action === 'reject' ? reason : undefined,
-      };
-      const res: any = await verifyRegisterShop(payload);
-      if (res?.error) throw new Error(res.error?.message ?? 'Failed');
-      message.success('Thao tác thành công');
+      }).unwrap();
+      
+      message.success('Xử lý thành công');
       onSuccess?.();
       onClose();
     } catch (err: any) {
-      message.error(err?.message ?? 'Có lỗi xảy ra');
+      message.error(typeof err === 'string' ? err : 'Có lỗi xảy ra');
     } finally {
       setLoading(false);
     }
@@ -71,100 +68,62 @@ const VerifyShopModal: React.FC<Props> = ({ visible, shopId, defaultAction = nul
 
   return (
     <Modal
-      title={
-        <Space>
-          <ShopOutlined />
-          <span>Chi tiết cửa hàng & Duyệt</span>
-        </Space>
-      }
+      title={<span className="font-semibold">Duyệt yêu cầu mở Shop</span>}
       open={visible}
       onCancel={onClose}
       onOk={handleConfirm}
       okText="Xác nhận"
-      cancelText="Hủy"
+      okButtonProps={{ disabled: !action }}
       confirmLoading={loading}
       width={700}
       centered
     >
       {loading && !shop ? (
-        <div className="text-center p-8">
-          <Spin size="large" />
-        </div>
+        <div className="py-10 text-center"><Spin /></div>
       ) : shop ? (
-        <div>
-          {/* Shop Header */}
-          <div className="flex items-center gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
-            {shop.logo_url ? (
-              <Avatar size={80} src={shop.logo_url} />
-            ) : (
-              <Avatar size={80} icon={<ShopOutlined />} style={{ backgroundColor: '#1890ff' }} />
-            )}
-            <div className="flex-1">
-              <h3 className="text-xl font-semibold mb-1">{shop.shop_name}</h3>
-              <Tag color={shop.status === 'PENDING' ? 'orange' : shop.status === 'APPROVED' ? 'green' : 'red'}>
-                {shop.status === 'PENDING' ? 'Chờ duyệt' : shop.status === 'APPROVED' ? 'Đã duyệt' : 'Từ chối'}
-              </Tag>
-            </div>
-          </div>
+        <div className="space-y-6">
+           {/* Header Info */}
+           <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg border border-gray-100">
+              <Avatar src={shop.logo_url} size={64} icon={<ShopOutlined />} shape="square" className="bg-white border"/>
+              <div>
+                 <div className="text-lg font-bold">{shop.shop_name}</div>
+                 <div className="text-gray-500">{shop.email}</div>
+                 <div className="mt-1"><Tag color="orange">PENDING</Tag></div>
+              </div>
+           </div>
 
-          {/* Shop Details */}
-          <Divider orientation="left">Thông tin chi tiết</Divider>
-          <Descriptions column={1} bordered size="small">
-            <Descriptions.Item label={<span><MailOutlined /> Email</span>}>
-              {shop.email}
-            </Descriptions.Item>
-            <Descriptions.Item label={<span><PhoneOutlined /> Số điện thoại</span>}>
-              {shop.phone_number}
-            </Descriptions.Item>
-            <Descriptions.Item label={<span><HomeOutlined /> Địa chỉ</span>}>
-              {shop.address.fullAddress}
-            </Descriptions.Item>
-            <Descriptions.Item label="Mô tả">
-              {shop.description || '—'}
-            </Descriptions.Item>
-            {shop.rejection_reason && (
-              <Descriptions.Item label="Lý do từ chối">
-                <span className="text-red-600">{shop.rejection_reason}</span>
-              </Descriptions.Item>
-            )}
-          </Descriptions>
+           <Descriptions title="Thông tin chi tiết" column={1} size="small" bordered>
+              <Descriptions.Item label="SĐT">{shop.phone_number}</Descriptions.Item>
+              <Descriptions.Item label="Địa chỉ">{shop.address?.fullAddress || `${shop.address?.street}...`}</Descriptions.Item>
+              <Descriptions.Item label="Mô tả">{shop.description}</Descriptions.Item>
+           </Descriptions>
 
-          {/* Verification Actions */}
-          <Divider orientation="left">Hành động duyệt</Divider>
-          <div className="space-y-3">
-            <Radio.Group value={action ?? undefined} onChange={(e) => setAction(e.target.value)}>
-              <Space direction="vertical" className="w-full">
-                <Radio value="approve" className="w-full">
-                  <Space>
-                    <CheckCircleOutlined style={{ color: 'green' }} />
-                    <span className="font-medium">Duyệt cửa hàng</span>
-                  </Space>
-                </Radio>
-                <Radio value="reject" className="w-full">
-                  <Space>
-                    <CloseCircleOutlined style={{ color: 'red' }} />
-                    <span className="font-medium">Từ chối đăng ký</span>
-                  </Space>
-                </Radio>
-              </Space>
-            </Radio.Group>
+           <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
+              <div className="font-semibold mb-3 text-blue-800">Hành động của Admin:</div>
+              <Radio.Group value={action} onChange={e => setAction(e.target.value)}className="w-full">
+                 <Space direction="vertical" className="w-full">
+                    <Radio value="approve" className="font-medium text-green-700">
+                        <Space><CheckCircleOutlined /> Duyệt yêu cầu</Space>
+                    </Radio>
+                    <Radio value="reject" className="font-medium text-red-700">
+                        <Space><CloseCircleOutlined /> Từ chối yêu cầu</Space>
+                    </Radio>
+                 </Space>
+              </Radio.Group>
 
-            {action === 'reject' && (
-              <TextArea
-                placeholder="Nhập lý do từ chối (bắt buộc khi từ chối)"
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-                rows={3}
-                className="mt-2"
-              />
-            )}
-          </div>
+              {action === 'reject' && (
+                  <TextArea 
+                    className="mt-3" 
+                    placeholder="Nhập lý do từ chối..." 
+                    rows={3} 
+                    value={reason} 
+                    onChange={e => setReason(e.target.value)}
+                  />
+              )}
+           </div>
         </div>
       ) : (
-        <div className="text-center p-8 text-gray-400">
-          <ShopOutlined style={{ fontSize: 48, marginBottom: 16 }} />
-          <p>Không tìm thấy thông tin cửa hàng</p>
-        </div>
+         <div className="text-center text-gray-400">Không có dữ liệu</div>
       )}
     </Modal>
   );
