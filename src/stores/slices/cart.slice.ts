@@ -1,5 +1,14 @@
-import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, isPending, isRejectedWithValue } from '@reduxjs/toolkit';
 import { cartService } from '@/services/cart.service';
+import { getErrorMessage } from '@/helpers/errorHandler';
+
+type ThunkConfig = { rejectValue: string };
+
+interface ICartState {
+  cart: ICart | null;
+  isLoading: boolean;
+  error: string | null;
+}
 
 const initialState: ICartState = {
   cart: null,
@@ -7,74 +16,74 @@ const initialState: ICartState = {
   error: null,
 };
 
-export const fetchMyCart = createAsyncThunk(
+export const fetchMyCart = createAsyncThunk<ICart, void, ThunkConfig>(
   'cart/fetchMyCart', 
   async (_, { rejectWithValue }) => {
     try {
       const response = await cartService.getMyCart();
       return response.result; 
-    } catch (err: any) {
-      return rejectWithValue(err.response?.data?.message || 'Không thể tải giỏ hàng');
+    } catch (err) {
+      return rejectWithValue(getErrorMessage(err));
     }
   }
 );
 
-export const addToCart = createAsyncThunk(
+export const addToCart = createAsyncThunk<ICart, IAddToCartRequest, ThunkConfig>(
   'cart/addToCart', 
-  async (payload: IAddToCartRequest, { rejectWithValue }) => {
+  async (payload, { rejectWithValue }) => {
     try {
       const response = await cartService.addToCart(payload);
       return response.result;
-    } catch (err: any) {
-      return rejectWithValue(err.response?.data?.message || 'Không thể thêm vào giỏ hàng');
+    } catch (err) {
+      return rejectWithValue(getErrorMessage(err));
     }
   }
 );
 
-export const updateCartQuantity = createAsyncThunk(
+export const updateCartQuantity = createAsyncThunk<ICart, IUpdateCartItemQuantityRequest, ThunkConfig>(
   'cart/updateQuantity', 
-  async (payload: IUpdateCartItemQuantityRequest, { rejectWithValue }) => {
+  async (payload, { rejectWithValue }) => {
     try {
       const response = await cartService.updateQuantity(payload);
       return response.result;
-    } catch (err: any) {
-      return rejectWithValue(err.response?.data?.message || 'Không thể cập nhật số lượng');
+    } catch (err) {
+      return rejectWithValue(getErrorMessage(err));
     }
   }
 );
 
-export const setCartQuantity = createAsyncThunk(
+export const setCartQuantity = createAsyncThunk<ICart, ISetCartItemQuantityRequest, ThunkConfig>(
   'cart/setQuantity', 
-  async (payload: ISetCartItemQuantityRequest, { rejectWithValue }) => {
+  async (payload, { rejectWithValue }) => {
     try {
       const response = await cartService.setQuantity(payload);
       return response.result;
-    } catch (err: any) {
-      return rejectWithValue(err.response?.data?.message || 'Không thể đặt số lượng');
+    } catch (err) {
+      return rejectWithValue(getErrorMessage(err));
     }
   }
 );
 
-export const removeFromCart = createAsyncThunk(
+export const removeFromCart = createAsyncThunk<ICart, IRemoveFromCartRequest, ThunkConfig>(
   'cart/removeFromCart', 
-  async (payload: IRemoveFromCartRequest, { rejectWithValue }) => {
+  async (payload, { rejectWithValue }) => {
     try {
       const response = await cartService.removeFromCart(payload);
       return response.result;
-    } catch (err: any) {
-      return rejectWithValue(err.response?.data?.message || 'Không thể xóa sản phẩm');
+    } catch (err) {
+      return rejectWithValue(getErrorMessage(err));
     }
   }
 );
 
-export const clearCart = createAsyncThunk(
+export const clearCart = createAsyncThunk<ICart, void, ThunkConfig>(
   'cart/clearCart', 
   async (_, { rejectWithValue }) => {
     try {
       const response = await cartService.clearCart();
       return response.result;
-    } catch (err: any) {
-      return rejectWithValue(err.response?.data?.message || 'Không thể làm trống giỏ hàng');
+    } catch (err) {
+      return rejectWithValue(getErrorMessage(err));
     }
   }
 );
@@ -90,39 +99,30 @@ const cartSlice = createSlice({
     }
   },
   extraReducers: (builder) => {
-    const handlePending = (state: ICartState) => {
-      state.isLoading = true;
-      state.error = null;
-    };
-    const handleRejected = (state: ICartState, action: PayloadAction<any>) => {
-      state.isLoading = false;
-      state.error = action.payload;
-    };
-    const handleFulfilled = (state: ICartState, action: PayloadAction<ICart>) => {
-      state.isLoading = false;
-      state.cart = action.payload;
-      state.error = null;
-    };
-
     builder
-      .addCase(fetchMyCart.pending, handlePending)
-      .addCase(fetchMyCart.fulfilled, handleFulfilled)
-      .addCase(fetchMyCart.rejected, handleRejected)
-      .addCase(addToCart.pending, handlePending)
-      .addCase(addToCart.fulfilled, handleFulfilled)
-      .addCase(addToCart.rejected, handleRejected)
-      .addCase(updateCartQuantity.pending, handlePending)
-      .addCase(updateCartQuantity.fulfilled, handleFulfilled)
-      .addCase(updateCartQuantity.rejected, handleRejected)
-      .addCase(setCartQuantity.pending, handlePending)
-      .addCase(setCartQuantity.fulfilled, handleFulfilled)
-      .addCase(setCartQuantity.rejected, handleRejected)
-      .addCase(removeFromCart.pending, handlePending)
-      .addCase(removeFromCart.fulfilled, handleFulfilled)
-      .addCase(removeFromCart.rejected, handleRejected)
-      .addCase(clearCart.pending, handlePending)
-      .addCase(clearCart.fulfilled, handleFulfilled)
-      .addCase(clearCart.rejected, handleRejected);
+      .addMatcher(
+        (action): action is { payload: ICart; type: string } => 
+           action.type.startsWith('cart/') && action.type.endsWith('/fulfilled'),
+        (state, action) => {
+          state.isLoading = false;
+          state.cart = action.payload;
+          state.error = null;
+        }
+      )
+      
+      .addMatcher(isPending, (state, action) => {
+        if (action.type.startsWith('cart/')) {
+          state.isLoading = true;
+          state.error = null;
+        }
+      })
+      
+      .addMatcher(isRejectedWithValue, (state, action) => {
+        if (action.type.startsWith('cart/')) {
+          state.isLoading = false;
+          state.error = (action.payload as string) || 'Unknown error';
+        }
+      });
   },
 });
 

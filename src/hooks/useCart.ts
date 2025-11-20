@@ -18,7 +18,6 @@ import {
   selectCartTotalPrice,
 } from '@/stores/selectors/cart.selector';
 
-
 export const useCart = () => {
   const dispatch = useAppDispatch();
 
