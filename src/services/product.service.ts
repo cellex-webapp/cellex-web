@@ -35,13 +35,21 @@ export const productService = {
 
   createProduct: async (data: ICreateProductPayload | FormData) => {
     const payload = isFormData(data) ? data : toFormData(data as Record<string, any>);
-    const response = await axiosInstance.post<IApiResponse<IProduct>>('/products', payload);
+    const response = await axiosInstance.post<IApiResponse<IProduct>>('/products', payload, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
     return response.data;
   },
 
   updateProduct: async (productId: string, data: IUpdateProductPayload | FormData) => {
     const payload = isFormData(data) ? data : toFormData(data as Record<string, any>);
-    const response = await axiosInstance.put<IApiResponse<IProduct>>(`/products/${productId}`, payload);
+    const response = await axiosInstance.put<IApiResponse<IProduct>>(`/products/${productId}`, payload, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
     return response.data;
   },
 

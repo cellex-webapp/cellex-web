@@ -1,5 +1,6 @@
-import { createSlice, createAsyncThunk, isAnyOf, type PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, type PayloadAction, isPending, isRejectedWithValue } from '@reduxjs/toolkit';
 import { customerSegmentService } from '@/services/segment.service';
+import { getErrorMessage } from '@/helpers/errorHandler';
 
 const initialState: ICustomerSegmentState = {
   segments: [],
@@ -8,62 +9,65 @@ const initialState: ICustomerSegmentState = {
   error: null,
 };
 
-export const fetchAllSegments = createAsyncThunk(
+type ThunkConfig = { rejectValue: string };
+
+export const fetchAllSegments = createAsyncThunk<CustomerSegmentResponse[], void, ThunkConfig>(
   'segment/fetchAll',
   async (_, { rejectWithValue }) => {
     try {
       const response = await customerSegmentService.getAllSegments();
-      return (response.result || []).sort((a, b) => a.level - b.level);
-    } catch (err: any) {
-      return rejectWithValue(err.response?.data?.message || 'Không thể tải danh sách');
+      const list = response.result || [];
+      return list.sort((a, b) => a.level - b.level);
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
     }
   }
 );
 
-export const fetchSegmentById = createAsyncThunk(
+export const fetchSegmentById = createAsyncThunk<CustomerSegmentResponse, string, ThunkConfig>(
   'segment/fetchById',
-  async (id: string, { rejectWithValue }) => {
+  async (id, { rejectWithValue }) => {
     try {
       const response = await customerSegmentService.getSegmentById(id);
-      return response.result;
-    } catch (err: any) {
-      return rejectWithValue(err.response?.data?.message || 'Không tìm thấy phân khúc');
+      return response.result as CustomerSegmentResponse;
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
     }
   }
 );
 
-export const createSegment = createAsyncThunk(
+export const createSegment = createAsyncThunk<CustomerSegmentResponse, CreateCustomerSegmentRequest, ThunkConfig>(
   'segment/create',
-  async (payload: CreateCustomerSegmentRequest, { rejectWithValue }) => {
+  async (payload, { rejectWithValue }) => {
     try {
       const response = await customerSegmentService.createSegment(payload);
-      return response.result;
-    } catch (err: any) {
-      return rejectWithValue(err.response?.data?.message || 'Tạo thất bại');
+      return response.result as CustomerSegmentResponse;
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
     }
   }
 );
 
-export const updateSegment = createAsyncThunk(
+export const updateSegment = createAsyncThunk<CustomerSegmentResponse, { id: string; payload: UpdateCustomerSegmentRequest }, ThunkConfig>(
   'segment/update',
-  async ({ id, payload }: { id: string, payload: UpdateCustomerSegmentRequest }, { rejectWithValue }) => {
+  async ({ id, payload }, { rejectWithValue }) => {
     try {
       const response = await customerSegmentService.updateSegment(id, payload);
-      return response.result;
-    } catch (err: any) {
-      return rejectWithValue(err.response?.data?.message || 'Cập nhật thất bại');
+      return response.result as CustomerSegmentResponse;
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
     }
   }
 );
 
-export const deleteSegment = createAsyncThunk(
+export const deleteSegment = createAsyncThunk<string, string, ThunkConfig>(
   'segment/delete',
-  async (id: string, { rejectWithValue }) => {
+  async (id, { rejectWithValue }) => {
     try {
       await customerSegmentService.deleteSegment(id);
-      return id; 
-    } catch (err: any) {
-      return rejectWithValue(err.response?.data?.message || 'Xóa thất bại');
+      return id;
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
     }
   }
 );
@@ -78,24 +82,13 @@ const customerSegmentSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchAllSegments.pending, (state) => { state.isLoading = true; })
       .addCase(fetchAllSegments.fulfilled, (state, action: PayloadAction<CustomerSegmentResponse[]>) => {
         state.isLoading = false;
-        state.segments = action.payload; 
+        state.segments = action.payload;
       })
-      .addCase(fetchAllSegments.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.payload as string;
-      })
-
-      .addCase(fetchSegmentById.pending, (state) => { state.isLoading = true; })
       .addCase(fetchSegmentById.fulfilled, (state, action: PayloadAction<CustomerSegmentResponse>) => {
         state.isLoading = false;
         state.selectedSegment = action.payload;
-      })
-      .addCase(fetchSegmentById.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.payload as string;
       })
       
       .addCase(createSegment.fulfilled, (state, action: PayloadAction<CustomerSegmentResponse>) => {
@@ -116,20 +109,18 @@ const customerSegmentSlice = createSlice({
         state.isLoading = false;
       })
       
-      .addMatcher(
-        isAnyOf(createSegment.rejected, updateSegment.rejected, deleteSegment.rejected),
-        (state, action) => {
-          state.isLoading = false;
-          state.error = action.payload as string;
-        }
-      )
-      .addMatcher(
-        isAnyOf(createSegment.pending, updateSegment.pending, deleteSegment.pending),
-        (state) => {
+      .addMatcher(isPending, (state, action) => {
+        if (action.type.startsWith('segment/')) {
           state.isLoading = true;
           state.error = null;
         }
-      );
+      })
+      .addMatcher(isRejectedWithValue, (state, action) => {
+        if (action.type.startsWith('segment/')) {
+          state.isLoading = false;
+          state.error = action.payload as string;
+        }
+      });
   },
 });
 

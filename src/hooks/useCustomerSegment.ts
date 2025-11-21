@@ -23,23 +23,23 @@ export const useCustomerSegment = () => {
   const isLoading = useAppSelector(selectCustomerSegmentIsLoading);
   const error = useAppSelector(selectCustomerSegmentError);
 
-  const handleFetchAll = useCallback(() => dispatch(fetchAllSegments()), [dispatch]);
-  const handleFetchById = useCallback((id: string) => dispatch(fetchSegmentById(id)), [dispatch]);
-  const handleCreate = useCallback((payload: CreateCustomerSegmentRequest) => dispatch(createSegment(payload)), [dispatch]);
-  const handleUpdate = useCallback((id: string, payload: UpdateCustomerSegmentRequest) => dispatch(updateSegment({ id, payload })), [dispatch]);
-  const handleDelete = useCallback((id: string) => dispatch(deleteSegment(id)), [dispatch]);
-  const handleClearSelected = useCallback(() => dispatch(clearSelectedSegment()), [dispatch]);
+  const fetchAll = useCallback(() => dispatch(fetchAllSegments()), [dispatch]);
+  const fetchById = useCallback((id: string) => dispatch(fetchSegmentById(id)), [dispatch]);
+  const create = useCallback((payload: CreateCustomerSegmentRequest) => dispatch(createSegment(payload)), [dispatch]);
+  const update = useCallback((id: string, payload: UpdateCustomerSegmentRequest) => dispatch(updateSegment({ id, payload })), [dispatch]);
+  const remove = useCallback((id: string) => dispatch(deleteSegment(id)), [dispatch]);
+  const clearSelected = useCallback(() => dispatch(clearSelectedSegment()), [dispatch]);
 
   return {
     segments,
     selectedSegment,
     isLoading,
     error,
-    fetchAllSegments: handleFetchAll,
-    fetchSegmentById: handleFetchById,
-    createSegment: handleCreate,
-    updateSegment: handleUpdate,
-    deleteSegment: handleDelete,
-    clearSelectedSegment: handleClearSelected,
+    fetchAllSegments: fetchAll,
+    fetchSegmentById: fetchById,
+    createSegment: create,
+    updateSegment: update,
+    deleteSegment: remove,
+    clearSelectedSegment: clearSelected,
   };
 };

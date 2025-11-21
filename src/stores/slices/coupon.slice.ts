@@ -1,6 +1,7 @@
-import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, type PayloadAction, isPending, isRejectedWithValue } from '@reduxjs/toolkit';
 import { couponService } from '@/services/coupon.service';
 import { message } from 'antd';
+import { getErrorMessage } from '@/helpers/errorHandler';
 
 const initialState: ICouponState = {
   campaigns: [],
@@ -11,100 +12,102 @@ const initialState: ICouponState = {
   error: null,
 };
 
-export const fetchCampaignsByStatus = createAsyncThunk(
+type ThunkConfig = { rejectValue: string };
+
+export const fetchCampaignsByStatus = createAsyncThunk<CouponCampaignResponse[], CampaignStatus, ThunkConfig>(
   'coupon/fetchByStatus',
-  async (status: CampaignStatus, { rejectWithValue }) => {
+  async (status, { rejectWithValue }) => {
     try {
       const response = await couponService.getCampaignsByStatus(status);
       const res: any = response.result as any;
       return Array.isArray(res?.content) ? (res.content as CouponCampaignResponse[]) : (res as CouponCampaignResponse[]);
-    } catch (err: any) {
-      return rejectWithValue(err.response?.data?.message || 'Không thể tải campaigns');
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
     }
   }
 );
 
-export const fetchCampaignById = createAsyncThunk(
+export const fetchCampaignById = createAsyncThunk<CouponCampaignResponse, string, ThunkConfig>(
   'coupon/fetchById',
-  async (id: string, { rejectWithValue }) => {
+  async (id, { rejectWithValue }) => {
     try {
       const response = await couponService.getCampaignById(id);
-      return response.result;
-    } catch (err: any) {
-      return rejectWithValue(err.response?.data?.message || 'Không tìm thấy campaign');
+      return response.result as CouponCampaignResponse;
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
     }
   }
 );
 
-export const createCampaign = createAsyncThunk(
+export const createCampaign = createAsyncThunk<CouponCampaignResponse, CreateCampaignRequest, ThunkConfig>(
   'coupon/create',
-  async (payload: CreateCampaignRequest, { rejectWithValue }) => {
+  async (payload, { rejectWithValue }) => {
     try {
       const response = await couponService.createCampaign(payload);
-      return response.result;
-    } catch (err: any) {
-      return rejectWithValue(err.response?.data?.message || 'Tạo campaign thất bại');
+      return response.result as CouponCampaignResponse;
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
     }
   }
 );
 
-export const updateCampaign = createAsyncThunk(
+export const updateCampaign = createAsyncThunk<CouponCampaignResponse, { id: string; payload: UpdateCampaignRequest }, ThunkConfig>(
   'coupon/update',
-  async ({ id, payload }: { id: string, payload: UpdateCampaignRequest }, { rejectWithValue }) => {
+  async ({ id, payload }, { rejectWithValue }) => {
     try {
       const response = await couponService.updateCampaign(id, payload);
-      return response.result;
-    } catch (err: any) {
-      return rejectWithValue(err.response?.data?.message || 'Cập nhật thất bại');
+      return response.result as CouponCampaignResponse;
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
     }
   }
 );
 
-export const deleteCampaign = createAsyncThunk(
+export const deleteCampaign = createAsyncThunk<string, string, ThunkConfig>(
   'coupon/delete',
-  async (id: string, { rejectWithValue }) => {
+  async (id, { rejectWithValue }) => {
     try {
       await couponService.deleteCampaign(id);
-      return id; // Trả về ID để xóa khỏi state
-    } catch (err: any) {
-      return rejectWithValue(err.response?.data?.message || 'Xóa thất bại');
+      return id;
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
     }
   }
 );
 
-export const distributeCampaign = createAsyncThunk(
+export const distributeCampaign = createAsyncThunk<CampaignDistributionResponse, DistributeCampaignRequest, ThunkConfig>(
   'coupon/distribute',
-  async (payload: DistributeCampaignRequest, { rejectWithValue }) => {
+  async (payload, { rejectWithValue }) => {
     try {
       const response = await couponService.distributeCampaign(payload);
-      return response.result; 
-    } catch (err: any) {
-      return rejectWithValue(err.response?.data?.message || 'Phát coupon thất bại');
+      return response.result as CampaignDistributionResponse;
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
     }
   }
 );
 
-export const fetchCampaignLogs = createAsyncThunk(
+export const fetchCampaignLogs = createAsyncThunk<CampaignDistributionResponse[], string, ThunkConfig>(
   'coupon/fetchLogs',
-  async (id: string, { rejectWithValue }) => {
+  async (id, { rejectWithValue }) => {
     try {
       const response = await couponService.getCampaignDistributionLogs(id);
       const res: any = response.result as any;
       return Array.isArray(res?.content) ? (res.content as CampaignDistributionResponse[]) : (res as CampaignDistributionResponse[]);
-    } catch (err: any) {
-      return rejectWithValue(err.response?.data?.message || 'Không thể tải logs');
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
     }
   }
 );
 
-export const fetchMyCoupons = createAsyncThunk(
+export const fetchMyCoupons = createAsyncThunk<IUserCoupon[], void, ThunkConfig>(
   'coupon/fetchMyCoupons',
   async (_, { rejectWithValue }) => {
     try {
       const response = await couponService.getMyCoupons();
-      return response.result;
-    } catch (err: any) {
-      return rejectWithValue(err.response?.data?.message || 'Không thể tải phiếu giảm giá của bạn');
+      return (response.result || []) as IUserCoupon[];
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
     }
   }
 );
@@ -121,28 +124,14 @@ const couponSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchCampaignsByStatus.pending, (state) => {
-        state.isLoading = true;
-      })
       .addCase(fetchCampaignsByStatus.fulfilled, (state, action: PayloadAction<CouponCampaignResponse[]>) => {
         state.isLoading = false;
         state.campaigns = action.payload;
       })
-      .addCase(fetchCampaignsByStatus.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.payload as string;
-      })
 
-      .addCase(fetchCampaignById.pending, (state) => {
-        state.isLoading = true;
-      })
       .addCase(fetchCampaignById.fulfilled, (state, action: PayloadAction<CouponCampaignResponse>) => {
         state.isLoading = false;
         state.selectedCampaign = action.payload;
-      })
-      .addCase(fetchCampaignById.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.payload as string;
       })
       
       .addCase(createCampaign.fulfilled, (state, action: PayloadAction<CouponCampaignResponse>) => {
@@ -171,34 +160,24 @@ const couponSlice = createSlice({
         state.logs = [action.payload, ...(state.logs || [])];
         message.success('Phát coupon thành công!');
       })
-      .addCase(fetchMyCoupons.pending, (state) => {
-        state.isLoading = true;
-        state.error = null;
-      })
       .addCase(fetchMyCoupons.fulfilled, (state, action: PayloadAction<IUserCoupon[]>) => {
         state.isLoading = false;
         state.myCoupons = action.payload;
       })
-      .addCase(fetchMyCoupons.rejected, (state, action: PayloadAction<any>) => {
-        state.isLoading = false;
-        state.error = action.payload as string;
-      })
       
-      .addMatcher(
-        (action) => [createCampaign.rejected.type, updateCampaign.rejected.type, deleteCampaign.rejected.type, distributeCampaign.rejected.type].includes(action.type),
-        (state, action: PayloadAction<string>) => {
-          state.isLoading = false;
-          state.error = action.payload as string;
-          message.error(action.payload as string); 
-        }
-      )
-      .addMatcher(
-        (action) => [createCampaign.pending.type, updateCampaign.pending.type, deleteCampaign.pending.type, distributeCampaign.pending.type].includes(action.type),
-        (state) => {
+      .addMatcher(isPending, (state, action) => {
+        if (action.type.startsWith('coupon/')) {
           state.isLoading = true;
           state.error = null;
         }
-      );
+      })
+      .addMatcher(isRejectedWithValue, (state, action) => {
+        if (action.type.startsWith('coupon/')) {
+          state.isLoading = false;
+          state.error = action.payload as string;
+          if (action.payload) message.error(action.payload as string);
+        }
+      });
     },
 });
 

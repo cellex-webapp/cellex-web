@@ -5,7 +5,7 @@ const selectCustomerSegmentState = (state: RootState) => state.segment;
 
 export const selectAllSegments = createSelector(
   [selectCustomerSegmentState],
-  (state) => state.segments
+  (state) => Array.isArray(state.segments) ? state.segments : []
 );
 
 export const selectSelectedSegment = createSelector(
