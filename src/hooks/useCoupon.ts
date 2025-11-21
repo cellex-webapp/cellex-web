@@ -30,15 +30,15 @@ export const useCoupon = () => {
   const isLoading = useAppSelector(selectCouponIsLoading);
   const error = useAppSelector(selectCouponError);
 
-  const handleFetchByStatus = useCallback((status: CampaignStatus) => dispatch(fetchCampaignsByStatus(status)), [dispatch]);
-  const handleFetchById = useCallback((id: string) => dispatch(fetchCampaignById(id)), [dispatch]);
-  const handleCreate = useCallback((payload: CreateCampaignRequest) => dispatch(createCampaign(payload)), [dispatch]);
-  const handleUpdate = useCallback((id: string, payload: UpdateCampaignRequest) => dispatch(updateCampaign({ id, payload })), [dispatch]);
-  const handleDelete = useCallback((id: string) => dispatch(deleteCampaign(id)), [dispatch]);
-  const handleDistribute = useCallback((payload: DistributeCampaignRequest) => dispatch(distributeCampaign(payload)), [dispatch]);
-  const handleFetchLogs = useCallback((id: string) => dispatch(fetchCampaignLogs(id)), [dispatch]);
-  const handleFetchMyCoupons = useCallback(() => dispatch(fetchMyCoupons()), [dispatch]);
-  const handleClearSelected = useCallback(() => dispatch(clearSelectedCampaign()), [dispatch]);
+  const fetchByStatus = useCallback((status: CampaignStatus) => dispatch(fetchCampaignsByStatus(status)), [dispatch]);
+  const fetchById = useCallback((id: string) => dispatch(fetchCampaignById(id)), [dispatch]);
+  const create = useCallback((payload: CreateCampaignRequest) => dispatch(createCampaign(payload)), [dispatch]);
+  const update = useCallback((id: string, payload: UpdateCampaignRequest) => dispatch(updateCampaign({ id, payload })), [dispatch]);
+  const remove = useCallback((id: string) => dispatch(deleteCampaign(id)), [dispatch]);
+  const distribute = useCallback((payload: DistributeCampaignRequest) => dispatch(distributeCampaign(payload)), [dispatch]);
+  const fetchLogs = useCallback((id: string) => dispatch(fetchCampaignLogs(id)), [dispatch]);
+  const fetchMy = useCallback(() => dispatch(fetchMyCoupons()), [dispatch]);
+  const clearSelected = useCallback(() => dispatch(clearSelectedCampaign()), [dispatch]);
 
   return {
     campaigns,
@@ -47,14 +47,14 @@ export const useCoupon = () => {
   myCoupons,
     isLoading,
     error,
-    fetchCampaignsByStatus: handleFetchByStatus,
-    fetchCampaignById: handleFetchById,
-    createCampaign: handleCreate,
-    updateCampaign: handleUpdate,
-    deleteCampaign: handleDelete,
-    distributeCampaign: handleDistribute,
-    fetchCampaignLogs: handleFetchLogs,
-    fetchMyCoupons: handleFetchMyCoupons,
-    clearSelectedCampaign: handleClearSelected,
+    fetchCampaignsByStatus: fetchByStatus,
+    fetchCampaignById: fetchById,
+    createCampaign: create,
+    updateCampaign: update,
+    deleteCampaign: remove,
+    distributeCampaign: distribute,
+    fetchCampaignLogs: fetchLogs,
+    fetchMyCoupons: fetchMy,
+    clearSelectedCampaign: clearSelected,
   };
 };

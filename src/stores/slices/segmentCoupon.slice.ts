@@ -1,5 +1,6 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice, isPending, isRejectedWithValue } from '@reduxjs/toolkit';
 import { couponService } from '@/services/coupon.service';
+import { getErrorMessage } from '@/helpers/errorHandler';
 
 const initialState: SegmentCouponState = {
   items: [],
@@ -9,71 +10,82 @@ const initialState: SegmentCouponState = {
   error: null,
 };
 
-export const fetchAllSegmentCoupons = createAsyncThunk('segmentCoupon/fetchAll', async (_, { rejectWithValue }) => {
-  try {
-    const resp = await couponService.getAllSegmentCoupons();
-    const res: any = resp.result as any;
-    return Array.isArray(res?.content) ? (res.content as SegmentCouponResponse[]) : (res as SegmentCouponResponse[]);
-  } catch (error: any) {
-    const message = error?.response?.data?.message ?? error?.message ?? error?.data?.message ?? JSON.stringify(error);
-    return rejectWithValue(message);
-  }
-});
+type ThunkConfig = { rejectValue: string };
 
-export const fetchSegmentCouponById = createAsyncThunk('segmentCoupon/fetchById', async (id: string, { rejectWithValue }) => {
-  try {
-    const resp = await couponService.getSegmentCouponById(id);
-    return resp.result as SegmentCouponResponse;
-  } catch (error: any) {
-    const message = error?.response?.data?.message ?? error?.message ?? error?.data?.message ?? JSON.stringify(error);
-    return rejectWithValue(message);
-  }
-});
-
-export const fetchSegmentCouponsBySegmentId = createAsyncThunk('segmentCoupon/fetchBySegmentId', async (segmentId: string, { rejectWithValue }) => {
-  try {
-    const resp = await couponService.getSegmentCouponsBySegmentId(segmentId);
-    const res: any = resp.result as any;
-    const items = Array.isArray(res?.content) ? (res.content as SegmentCouponResponse[]) : (res as SegmentCouponResponse[]);
-    return { segmentId, items };
-  } catch (error: any) {
-    const message = error?.response?.data?.message ?? error?.message ?? error?.data?.message ?? JSON.stringify(error);
-    return rejectWithValue(message);
-  }
-});
-
-export const createSegmentCoupon = createAsyncThunk('segmentCoupon/create', async (payload: CreateSegmentCouponRequest, { rejectWithValue }) => {
-  try {
-    const resp = await couponService.createSegmentCoupon(payload);
-    return resp.result as SegmentCouponResponse;
-  } catch (error: any) {
-    const message = error?.response?.data?.message ?? error?.message ?? error?.data?.message ?? JSON.stringify(error);
-    return rejectWithValue(message);
-  }
-});
-
-export const updateSegmentCoupon = createAsyncThunk(
-  'segmentCoupon/update',
-  async ({ id, payload }: { id: string; payload: UpdateSegmentCouponRequest }, { rejectWithValue }) => {
+export const fetchAllSegmentCoupons = createAsyncThunk<SegmentCouponResponse[], void, ThunkConfig>(
+  'segmentCoupon/fetchAll',
+  async (_, { rejectWithValue }) => {
     try {
-      const resp = await couponService.updateSegmentCoupon(id, payload);
-      return resp.result as SegmentCouponResponse;
-    } catch (error: any) {
-      const message = error?.response?.data?.message ?? error?.message ?? error?.data?.message ?? JSON.stringify(error);
-      return rejectWithValue(message);
+      const resp = await couponService.getAllSegmentCoupons();
+      const res: any = resp.result as any;
+      return Array.isArray(res?.content) ? (res.content as SegmentCouponResponse[]) : (res as SegmentCouponResponse[]);
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
     }
   }
 );
 
-export const deleteSegmentCoupon = createAsyncThunk('segmentCoupon/delete', async (id: string, { rejectWithValue }) => {
-  try {
-    await couponService.deleteSegmentCoupon(id);
-    return id;
-  } catch (error: any) {
-    const message = error?.response?.data?.message ?? error?.message ?? error?.data?.message ?? JSON.stringify(error);
-    return rejectWithValue(message);
+export const fetchSegmentCouponById = createAsyncThunk<SegmentCouponResponse, string, ThunkConfig>(
+  'segmentCoupon/fetchById',
+  async (id, { rejectWithValue }) => {
+    try {
+      const resp = await couponService.getSegmentCouponById(id);
+      return resp.result as SegmentCouponResponse;
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
+    }
   }
-});
+);
+
+export const fetchSegmentCouponsBySegmentId = createAsyncThunk<{ segmentId: string; items: SegmentCouponResponse[] }, string, ThunkConfig>(
+  'segmentCoupon/fetchBySegmentId',
+  async (segmentId, { rejectWithValue }) => {
+    try {
+      const resp = await couponService.getSegmentCouponsBySegmentId(segmentId);
+      const res: any = resp.result as any;
+      const items = Array.isArray(res?.content) ? (res.content as SegmentCouponResponse[]) : (res as SegmentCouponResponse[]);
+      return { segmentId, items };
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
+    }
+  }
+);
+
+export const createSegmentCoupon = createAsyncThunk<SegmentCouponResponse, CreateSegmentCouponRequest, ThunkConfig>(
+  'segmentCoupon/create',
+  async (payload, { rejectWithValue }) => {
+    try {
+      const resp = await couponService.createSegmentCoupon(payload);
+      return resp.result as SegmentCouponResponse;
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
+    }
+  }
+);
+
+export const updateSegmentCoupon = createAsyncThunk<SegmentCouponResponse, { id: string; payload: UpdateSegmentCouponRequest }, ThunkConfig>(
+  'segmentCoupon/update',
+  async ({ id, payload }, { rejectWithValue }) => {
+    try {
+      const resp = await couponService.updateSegmentCoupon(id, payload);
+      return resp.result as SegmentCouponResponse;
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
+    }
+  }
+);
+
+export const deleteSegmentCoupon = createAsyncThunk<string, string, ThunkConfig>(
+  'segmentCoupon/delete',
+  async (id, { rejectWithValue }) => {
+    try {
+      await couponService.deleteSegmentCoupon(id);
+      return id;
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
+    }
+  }
+);
 
 const segmentCouponSlice = createSlice({
   name: 'segmentCoupon',
@@ -117,20 +129,18 @@ const segmentCouponSlice = createSlice({
         state.items = state.items.filter((x) => x.id !== action.payload);
         if (state.selected?.id === action.payload) state.selected = null;
       })
-      .addMatcher(
-        (action) => action.type.startsWith('segmentCoupon/') && action.type.endsWith('/pending'),
-        (state) => {
+      .addMatcher(isPending, (state, action) => {
+        if (action.type.startsWith('segmentCoupon/')) {
           state.isLoading = true;
           state.error = null;
         }
-      )
-      .addMatcher(
-        (action) => action.type.startsWith('segmentCoupon/') && action.type.endsWith('/rejected'),
-        (state, action: any) => {
+      })
+      .addMatcher(isRejectedWithValue, (state, action) => {
+        if (action.type.startsWith('segmentCoupon/')) {
           state.isLoading = false;
-          state.error = action.payload ?? action.error?.message ?? 'Unknown error';
+          state.error = (action.payload as string) || 'Unknown error';
         }
-      );
+      });
   },
 });
 

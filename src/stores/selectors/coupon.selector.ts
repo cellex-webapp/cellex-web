@@ -5,7 +5,7 @@ const selectCouponState = (state: RootState) => state.coupon;
 
 export const selectAllCampaigns = createSelector(
   [selectCouponState],
-  (state) => state.campaigns
+  (state) => Array.isArray(state.campaigns) ? state.campaigns : []
 );
 
 export const selectSelectedCampaign = createSelector(
@@ -15,7 +15,7 @@ export const selectSelectedCampaign = createSelector(
 
 export const selectCampaignLogs = createSelector(
   [selectCouponState],
-  (state) => state.logs
+  (state) => Array.isArray(state.logs) ? state.logs : []
 );
 
 export const selectCouponIsLoading = createSelector(
@@ -30,5 +30,5 @@ export const selectCouponError = createSelector(
 
 export const selectMyCoupons = createSelector(
   [selectCouponState],
-  (state) => state.myCoupons || []
+  (state) => Array.isArray(state.myCoupons) ? state.myCoupons : []
 );

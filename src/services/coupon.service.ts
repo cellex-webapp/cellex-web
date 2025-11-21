@@ -1,74 +1,65 @@
-import axiosInstance from "@/utils/axiosInstance";
+import axiosInstance from '@/utils/axiosInstance';
 
 export const couponService = {
-  createCampaign: async (payload: CreateCampaignRequest): Promise<IApiResponse<CouponCampaignResponse>> => {
-    const resp = await axiosInstance.post('/coupon-campaigns', payload);
-    return (resp as unknown) as IApiResponse<CouponCampaignResponse>;
+  createCampaign: async (payload: CreateCampaignRequest) => {
+    const resp = await axiosInstance.post<IApiResponse<CouponCampaignResponse>>('/coupon-campaigns', payload);
+    return resp.data;
   },
-
-  getAllCampaigns: async (): Promise<IApiResponse<CouponCampaignResponse[]>> => {
-    const resp = await axiosInstance.get('/coupon-campaigns');
-    return (resp as unknown) as IApiResponse<CouponCampaignResponse[]>;
+  getAllCampaigns: async () => {
+    const resp = await axiosInstance.get<IApiResponse<CouponCampaignResponse[]>>('/coupon-campaigns');
+    return resp.data;
   },
-
-  getCampaignsByStatus: async (status: CampaignStatus): Promise<IApiResponse<CouponCampaignResponse[]>> => {
-    const resp = await axiosInstance.get(`/coupon-campaigns/status/${status}`);
-    return (resp as unknown) as IApiResponse<CouponCampaignResponse[]>;
+  getCampaignsByStatus: async (status: CampaignStatus) => {
+    const resp = await axiosInstance.get<IApiResponse<CouponCampaignResponse[]>>(`/coupon-campaigns/status/${status}`);
+    return resp.data;
   },
-
-  getCampaignById: async (id: string): Promise<IApiResponse<CouponCampaignResponse>> => {
-    const resp = await axiosInstance.get(`/coupon-campaigns/${id}`);
-    return (resp as unknown) as IApiResponse<CouponCampaignResponse>;
+  getCampaignById: async (id: string) => {
+    const resp = await axiosInstance.get<IApiResponse<CouponCampaignResponse>>(`/coupon-campaigns/${id}`);
+    return resp.data;
   },
-
-  updateCampaign: async (id: string, payload: UpdateCampaignRequest): Promise<IApiResponse<CouponCampaignResponse>> => {
-    const resp = await axiosInstance.put(`/coupon-campaigns/${id}`, payload);
-    return (resp as unknown) as IApiResponse<CouponCampaignResponse>;
+  updateCampaign: async (id: string, payload: UpdateCampaignRequest) => {
+    const resp = await axiosInstance.put<IApiResponse<CouponCampaignResponse>>(`/coupon-campaigns/${id}`, payload);
+    return resp.data;
   },
-
-  deleteCampaign: async (id: string): Promise<IApiResponse<void>> => {
-    const resp = await axiosInstance.delete(`/coupon-campaigns/${id}`);
-    return (resp as unknown) as IApiResponse<void>;
+  deleteCampaign: async (id: string) => {
+    const resp = await axiosInstance.delete<IApiResponse<void>>(`/coupon-campaigns/${id}`);
+    return resp.data;
   },
-
-  distributeCampaign: async (payload: DistributeCampaignRequest): Promise<IApiResponse<CampaignDistributionResponse>> => {
-    const resp = await axiosInstance.post(`/coupon-campaigns/distribute`, payload);
-    return (resp as unknown) as IApiResponse<CampaignDistributionResponse>;
+  distributeCampaign: async (payload: DistributeCampaignRequest) => {
+    const resp = await axiosInstance.post<IApiResponse<CampaignDistributionResponse>>('/coupon-campaigns/distribute', payload);
+    return resp.data;
   },
-
-  getCampaignDistributionLogs: async (id: string): Promise<IApiResponse<CampaignDistributionResponse[]>> => {
-    const resp = await axiosInstance.get(`/coupon-campaigns/${id}/distribution-logs`);
-    return (resp as unknown) as IApiResponse<CampaignDistributionResponse[]>;
+  getCampaignDistributionLogs: async (id: string) => {
+    const resp = await axiosInstance.get<IApiResponse<CampaignDistributionResponse[]>>(`/coupon-campaigns/${id}/distribution-logs`);
+    return resp.data;
   },
-
-  getMyCoupons: async (): Promise<IApiResponse<IUserCoupon[]>> => {
-    const resp = await axiosInstance.get('/user-coupons/my-coupons');
-    return (resp as unknown) as IApiResponse<IUserCoupon[]>;
+  getMyCoupons: async () => {
+    const resp = await axiosInstance.get<IApiResponse<IUserCoupon[]>>('/user-coupons/my-coupons');
+    return resp.data;
   },
-
   // Segment Coupons (Admin)
-  getAllSegmentCoupons: async (): Promise<IApiResponse<SegmentCouponResponse[]>> => {
-    const resp = await axiosInstance.get('/segment-coupons');
-    return (resp as unknown) as IApiResponse<SegmentCouponResponse[]>;
+  getAllSegmentCoupons: async () => {
+    const resp = await axiosInstance.get<IApiResponse<SegmentCouponResponse[]>>('/segment-coupons');
+    return resp.data;
   },
-  getSegmentCouponById: async (id: string): Promise<IApiResponse<SegmentCouponResponse>> => {
-    const resp = await axiosInstance.get(`/segment-coupons/${id}`);
-    return (resp as unknown) as IApiResponse<SegmentCouponResponse>;
+  getSegmentCouponById: async (id: string) => {
+    const resp = await axiosInstance.get<IApiResponse<SegmentCouponResponse>>(`/segment-coupons/${id}`);
+    return resp.data;
   },
-  getSegmentCouponsBySegmentId: async (segmentId: string): Promise<IApiResponse<SegmentCouponResponse[]>> => {
-    const resp = await axiosInstance.get(`/segment-coupons/segment/${segmentId}`);
-    return (resp as unknown) as IApiResponse<SegmentCouponResponse[]>;
+  getSegmentCouponsBySegmentId: async (segmentId: string) => {
+    const resp = await axiosInstance.get<IApiResponse<SegmentCouponResponse[]>>(`/segment-coupons/segment/${segmentId}`);
+    return resp.data;
   },
-  createSegmentCoupon: async (payload: CreateSegmentCouponRequest): Promise<IApiResponse<SegmentCouponResponse>> => {
-    const resp = await axiosInstance.post('/segment-coupons', payload);
-    return (resp as unknown) as IApiResponse<SegmentCouponResponse>;
+  createSegmentCoupon: async (payload: CreateSegmentCouponRequest) => {
+    const resp = await axiosInstance.post<IApiResponse<SegmentCouponResponse>>('/segment-coupons', payload);
+    return resp.data;
   },
-  updateSegmentCoupon: async (id: string, payload: UpdateSegmentCouponRequest): Promise<IApiResponse<SegmentCouponResponse>> => {
-    const resp = await axiosInstance.put(`/segment-coupons/${id}`, payload);
-    return (resp as unknown) as IApiResponse<SegmentCouponResponse>;
+  updateSegmentCoupon: async (id: string, payload: UpdateSegmentCouponRequest) => {
+    const resp = await axiosInstance.put<IApiResponse<SegmentCouponResponse>>(`/segment-coupons/${id}`, payload);
+    return resp.data;
   },
-  deleteSegmentCoupon: async (id: string): Promise<IApiResponse<string>> => {
-    const resp = await axiosInstance.delete(`/segment-coupons/${id}`);
-    return (resp as unknown) as IApiResponse<string>;
+  deleteSegmentCoupon: async (id: string) => {
+    const resp = await axiosInstance.delete<IApiResponse<string>>(`/segment-coupons/${id}`);
+    return resp.data;
   },
 };
