@@ -47,8 +47,9 @@ const CustomerSegmentPageContent: React.FC = () => {
   
   const filteredSegments = useMemo(() => {
     const kw = q.trim().toLowerCase();
-    if (!kw) return segments;
-    return segments.filter((s) =>
+    const list = Array.isArray(segments) ? segments : [];
+    if (!kw) return list;
+    return list.filter((s) =>
       s.name.toLowerCase().includes(kw) || (s.description || '').toLowerCase().includes(kw)
     );
   }, [q, segments]);
@@ -147,7 +148,7 @@ const CustomerSegmentPageContent: React.FC = () => {
           columns={columns}
           dataSource={filteredSegments}
           loading={isLoading}
-          pagination={{ pageSize: 10 }}
+          pagination={{ pageSize: 10, showTotal: (t) => `Tổng ${t} phân khúc` }}
           scroll={{ x: 900 }}
           size="middle"
           rowClassName="cursor-pointer"

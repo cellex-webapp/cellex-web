@@ -2,7 +2,7 @@ import axiosInstance from '@/utils/axiosInstance';
 
 export const customerSegmentService = {
   getAllSegments: async () => {
-    const resp = await axiosInstance.get<IApiResponse<CustomerSegmentResponse[]>>('/customer-segments');
+    const resp = await axiosInstance.get<IApiResponse<IPaginatedResult<CustomerSegmentResponse>>>('/customer-segments');
     return resp.data;
   },
   getSegmentById: async (id: string) => {

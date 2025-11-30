@@ -16,8 +16,10 @@ export const fetchAllSegments = createAsyncThunk<CustomerSegmentResponse[], void
   async (_, { rejectWithValue }) => {
     try {
       const response = await customerSegmentService.getAllSegments();
-      const list = response.result || [];
-      return list.sort((a, b) => a.level - b.level);
+      const list = Array.isArray(response.result?.content)
+        ? response.result.content
+        : [];
+      return list.sort((a: CustomerSegmentResponse, b: CustomerSegmentResponse) => a.level - b.level);
     } catch (error) {
       return rejectWithValue(getErrorMessage(error));
     }

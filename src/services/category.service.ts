@@ -28,7 +28,9 @@ export const categoryService = {
       image: data.image,
     });
 
-    const response = await axiosInstance.post<IApiResponse<ICategory>>('/categories', fd);
+    const response = await axiosInstance.post<IApiResponse<ICategory>>('/categories', fd, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
     return response.data;
   },
 
@@ -43,7 +45,9 @@ export const categoryService = {
       image: data.image,
     });
 
-    const response = await axiosInstance.put<IApiResponse<ICategory>>(`/categories/${id}`, fd);
+    const response = await axiosInstance.put<IApiResponse<ICategory>>(`/categories/${id}`, fd, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
     return response.data;
   },
 

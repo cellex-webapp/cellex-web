@@ -37,7 +37,9 @@ export const shopService = {
 
   updateShop: async (id: string, payload: ICreateUpdateShopPayload) => {
     const fd = toFormData(payload as Record<string, any>);
-    const response = await axiosInstance.put<IApiResponse<IShop>>(`/shops/${id}`, fd);
+    const response = await axiosInstance.put<IApiResponse<IShop>>(`/shops/${id}`, fd, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
     return response.data;
   },
 

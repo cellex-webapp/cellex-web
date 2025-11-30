@@ -493,9 +493,11 @@ declare global {
         subtotal: number;
         status: OrderStatus;
         note?: string | null;
-        user_id: string;
-        shop_id: string;
-        shop_name: string;
+        user_id?: string;
+        shop_id?: string;
+        shop_name?: string;
+        user?: IUser;
+        shop?: IShop;
         shipping_address: IAddress | null;
         shipping_fee: number;
         discount_amount: number;

@@ -2,6 +2,8 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button, Drawer, Input, Modal, Space, Table, Tag, Typography, message } from 'antd';
 import { useOrder } from '@/hooks/useOrder';
 import { formatDateVN } from '@/utils/date';
+import { useAppSelector } from '@/hooks/redux';
+import { selectMyOrderPageMeta } from '@/stores/selectors/order.selector';
 
 const { Title } = Typography;
 
@@ -47,7 +49,8 @@ const MyOrder: React.FC = () => {
 
   useEffect(() => { load(); }, [load]);
 
-  const data = useMemo(() => myOrders?.content || [], [myOrders]);
+  const data = useMemo(() => Array.isArray(myOrders?.content) ? myOrders!.content : [], [myOrders]);
+  const myMeta = useAppSelector(selectMyOrderPageMeta);
 
   const doCheckout = async (id: string) => {
     await checkoutOrder(id, { paymentMethod: 'COD' }).unwrap();
@@ -107,7 +110,7 @@ const MyOrder: React.FC = () => {
         columns={columns as any}
         size="middle"
         scroll={{ x: 1100 }}
-        pagination={{ current: page, pageSize, total: myOrders?.totalElements || 0, showSizeChanger: true }}
+        pagination={{ current: page, pageSize, total: myMeta.totalElements, showSizeChanger: true }}
         onChange={(p) => { setPage(p.current || 1); setPageSize(p.pageSize || 10); }}
       />
 
