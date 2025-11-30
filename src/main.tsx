@@ -1,48 +1,28 @@
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import "./styles/global.css";
-import ReactDOM from "react-dom/client";
-import { App, ConfigProvider } from "antd";
-import "@ant-design/v5-patch-for-react-19";
-import enUS from "antd/es/locale/en_US";
-import { AppProvider } from "./components/context/app.context";
-import ProtectedRoute from "./components/ProtectedRoute";
-import Layout from "./layout";
-import LoginPage from "./pages/login";
-import AdminPage from "./pages/admin";
-import ClientPage from "./pages/client";
-import VendorPage from "./pages/vendor";
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { Provider } from 'react-redux';
+import { store } from '@/stores/store';
+import App from './App';
 
-const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <Layout />,
-    // element: "",
-    children: [
-      { path: "login", element: <LoginPage /> },
-      {
-        element: <ProtectedRoute roles={["admin"]} />,
-        children: [{ path: "admin", element: <AdminPage /> }],
-      },
-      {
-        element: <ProtectedRoute roles={["client"]} />,
-        children: [{ path: "client", element: <ClientPage /> }],
-      },
-      {
-        element: <ProtectedRoute roles={["vendor"]} />,
-        children: [{ path: "vendor", element: <VendorPage /> }],
-      },
-    ],
-  },
-]);
+import 'antd/dist/reset.css';
+import './index.css';
 
-const root = document.getElementById("root");
+// Register Service Worker for Firebase Cloud Messaging
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker
+    .register('/firebase-messaging-sw.js')
+    .then((registration) => {
+      console.log('✅ Service Worker registered:', registration);
+    })
+    .catch((error) => {
+      console.error('❌ Service Worker registration failed:', error);
+    });
+}
 
-ReactDOM.createRoot(root!).render(
-  <App>
-    <AppProvider>
-      <ConfigProvider locale={enUS}>
-        <RouterProvider router={router} />
-      </ConfigProvider>
-    </AppProvider>
-  </App>
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <Provider store={store}>
+      <App />
+    </Provider>
+  </React.StrictMode>
 );
