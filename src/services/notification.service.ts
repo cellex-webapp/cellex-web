@@ -21,7 +21,12 @@ export const notificationService = {
     return resp.data;
   },
   registerDeviceToken: async (body: DeviceTokenRequest): Promise<IApiResponse<Record<string, string>>> => {
-    const resp = await axiosInstance.post<IApiResponse<Record<string, string>>>('/notifications/device-token', body);
+    console.log('🔍 registerDeviceToken called with:', body);
+    console.log('🔍 Request body JSON:', JSON.stringify(body));
+    const resp = await axiosInstance.post<IApiResponse<Record<string, string>>>('/notifications/device-token', body, {
+      headers: { 'Content-Type': 'application/json' },
+    });
+    console.log('🔍 Response:', resp.data);
     return resp.data;
   },
   unregisterDeviceToken: async (fcmToken: string): Promise<IApiResponse<void>> => {

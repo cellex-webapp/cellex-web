@@ -683,7 +683,8 @@ declare global {
 
     interface DeviceTokenRequest {
         fcmToken: string;
-        platform?: 'web' | 'ios' | 'android';
+        deviceType: 'WEB' | 'ANDROID' | 'IOS';
+        deviceName?: string;
     }
 
     interface BroadcastNotificationRequest {

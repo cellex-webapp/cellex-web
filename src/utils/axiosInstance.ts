@@ -55,6 +55,17 @@ axiosInstance.interceptors.request.use(
     if (token && config.url && !config.url.startsWith('/auth')) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
+    // Debug log for notification endpoint
+    if (config.url?.includes('/notifications/device-token')) {
+      console.log('🔍 Axios Request Config:', {
+        url: config.url,
+        method: config.method,
+        data: config.data,
+        headers: config.headers,
+      });
+    }
+    
     return config;
   },
   (error) => Promise.reject(error)
