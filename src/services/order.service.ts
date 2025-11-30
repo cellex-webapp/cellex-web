@@ -14,7 +14,7 @@ export const orderService = {
     const resp = await axiosInstance.post<IApiResponse<IOrder>>('/orders/from-product', body);
     return resp.data;
   },
-  createOrderFromCart: async (body: CreateOrderRequest): Promise<IApiResponse<IOrder>> => {
+  createOrderFromCart: async (body: CreateOrderFromCartRequest): Promise<IApiResponse<IOrder>> => {
     const resp = await axiosInstance.post<IApiResponse<IOrder>>('/orders/from-cart', body);
     return resp.data;
   },

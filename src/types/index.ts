@@ -525,15 +525,18 @@ declare global {
         paymentMethod: PaymentMethod;
     }
 
-    // For creation from product or from cart
     interface CreateOrderRequest {
-        // If from product
         productId?: string;
         quantity?: number;
-        // If from cart
-        cartItemIds?: string[];
-        // Optional override
         note?: string;
+    }
+
+    interface CartOrderItemRequest {
+        productId: string;
+        quantity: number;
+    }
+    interface CreateOrderFromCartRequest {
+        items: CartOrderItemRequest[];
     }
 
     interface AvailableCouponResponse {
@@ -703,6 +706,36 @@ declare global {
         size: number;
         totalPages: number;
         totalElements: number;
+        isLoading: boolean;
+        error: string | null;
+    }
+
+    // ========================= VNPay Payment =========================
+    interface VnpayPaymentRequest {
+        // Flexible shape depending on backend; minimally orderId & amount
+        orderId: string;
+        amount?: number; // total in smallest currency unit
+        returnUrl?: string; // override return URL if backend allows
+        [key: string]: any;
+    }
+
+    interface VnpayPaymentResponse {
+        paymentUrl: string; // URL to redirect user to VNPay gateway
+        [key: string]: any;
+    }
+
+    interface VnpayCallbackResponse {
+        code?: string; // internal processing code
+        message?: string; // human readable result
+        orderId?: string;
+        transactionNo?: string;
+        responseCode?: string; // vnp_ResponseCode
+        [key: string]: any;
+    }
+
+    interface VnpayState {
+        paymentUrl: string | null;
+        paymentStatus: any | null; // raw status object from /status/{orderId} or callback parse
         isLoading: boolean;
         error: string | null;
     }
