@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Typography, Card, Space, Badge, Button, Input, Tabs, List, Tag, Popconfirm, Pagination } from 'antd';
+import { Button, Card, Input, List, Space, Badge, Typography, Popconfirm, Tabs, Tag, Pagination } from 'antd';
 import { useNotification } from '@/hooks/useNotification';
+import BroadcastModal from '@/features/admin/pages/Notifications/components/BroadcastModal';
 
 const { Title, Text } = Typography;
 
@@ -10,7 +11,7 @@ const TYPE_COLOR: Record<string, string> = {
   PROMOTION: 'green',
 };
 
-const NotificationTab: React.FC = () => {
+const VendorNotificationsPage: React.FC = () => {
   const {
     notifications,
     unreadCount,
@@ -27,6 +28,7 @@ const NotificationTab: React.FC = () => {
   const [size, setSize] = useState(10);
   const [query, setQuery] = useState('');
   const [tab, setTab] = useState<'ALL' | 'UNREAD'>('ALL');
+  const [broadcastOpen, setBroadcastOpen] = useState(false);
 
   useEffect(() => {
     fetchNotifications(0, size);
@@ -47,9 +49,8 @@ const NotificationTab: React.FC = () => {
   }, [filteredNotifications, page, size]);
 
   return (
-    <div id="notifications">
     <Space direction="vertical" size="large" className="w-full">
-      <Card title={<Space><Title level={4} className="!mb-0">Trung tâm thông báo</Title>{unreadCount > 0 && <Badge count={unreadCount} />}</Space>}>
+      <Card title={<Space><Title level={4} className="!mb-0">Thông báo</Title>{unreadCount > 0 && <Badge count={unreadCount} />}</Space>} extra={<Button type="primary" onClick={() => setBroadcastOpen(true)}>Gửi Broadcast</Button>}>
         <Space wrap className="w-full justify-between">
           <Space>
             <Button onClick={() => fetchNotifications(0, size)} loading={isLoading}>Làm mới</Button>
@@ -69,7 +70,7 @@ const NotificationTab: React.FC = () => {
           dataSource={paginated}
           bordered
           renderItem={(item) => (
-            <List.Item id={`notification-${item.id}`}
+            <List.Item
               actions={[
                 !item.isRead && <Button size="small" type="link" onClick={() => markAsRead(item.id)}>Đánh dấu đọc</Button>,
                 <Popconfirm title="Xóa thông báo?" onConfirm={() => deleteNotification(item.id)}><Button danger size="small" type="link">Xóa</Button></Popconfirm>,
@@ -103,9 +104,10 @@ const NotificationTab: React.FC = () => {
           />
         </div>
       </Card>
+
+      <BroadcastModal open={broadcastOpen} onClose={() => setBroadcastOpen(false)} />
     </Space>
-    </div>
   );
 };
 
-export default NotificationTab;
+export default VendorNotificationsPage;

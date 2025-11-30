@@ -12,8 +12,9 @@ declare global {
     type ScheduleFrequency = 'NONE' | 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
     type DayOfWeek = 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
     type OrderStatus = 'PENDING' | 'CONFIRMED' | 'SHIPPING' | 'DELIVERED' | 'CANCELLED';
-    type PaymentMethod = 'COD';
-
+    type PaymentMethod = 'COD' | 'VNPAY';
+    type NotificationType = 'SYSTEM' | 'ORDER_CREATED' | 'ORDER_CONFIRMED' | 'ORDER_SHIPPING' | 'ORDER_DELIVERED' | 'ORDER_CANCELLED' | 'PAYMENT_SUCCESS' | 'PAYMENT_FAILED' | 'COUPON_AVAILABLE' | 'PROMOTION' | 'PRODUCT_RESTOCK' | 'REVIEW_REQUEST' | 'CUSTOM';
+    
     interface IPaginatedResult<T> {
         content: T[];
         currentPage: number;
@@ -656,6 +657,55 @@ declare global {
     }
 
     type UpdateCustomerSegmentRequest = Partial<CreateCustomerSegmentRequest>;
+    // ========================= Notifications =========================
+    interface NotificationResponse {
+        id: string;
+        title: string;
+        message: string;
+        type: NotificationType;
+        isRead: boolean;
+        readAt?: string;
+        isBroadcast: boolean;
+        metadata?: string; // raw JSON string or simple text
+        actionUrl?: string;
+        imageUrl?: string;
+        createdAt: string;
+        expiresAt?: string;
+    }
+
+    interface NotificationListResponse {
+        notifications: NotificationResponse[];
+        unreadCount: number;
+        currentPage: number;
+        totalPages: number;
+        totalElements: number;
+    }
+
+    interface DeviceTokenRequest {
+        fcmToken: string;
+        platform?: 'web' | 'ios' | 'android';
+    }
+
+    interface BroadcastNotificationRequest {
+        title: string;
+        message: string;
+        type: NotificationType;
+        metadata?: string;
+        actionUrl?: string;
+        imageFile?: File; // multipart
+        expiresAt?: string; // ISO date-time
+    }
+
+    interface NotificationState {
+        notifications: NotificationResponse[];
+        unreadCount: number;
+        page: number;
+        size: number;
+        totalPages: number;
+        totalElements: number;
+        isLoading: boolean;
+        error: string | null;
+    }
 }
 
 export { }

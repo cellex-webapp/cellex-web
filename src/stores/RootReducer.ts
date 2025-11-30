@@ -10,6 +10,7 @@ import couponReducer from '@/stores/slices/coupon.slice';
 import segmentReducer from '@/stores/slices/segment.slice';
 import segmentCouponReducer from '@/stores/slices/segmentCoupon.slice';
 import orderReducer from '@/stores/slices/order.slice';
+import notificationReducer from '@/stores/slices/notification.slice';
 
 const rootReducer = combineReducers({
   auth: authReducer,
@@ -23,6 +24,7 @@ const rootReducer = combineReducers({
   segment: segmentReducer,
   segmentCoupon: segmentCouponReducer,
   order: orderReducer,
+  notification: notificationReducer,
 });
 
 export default rootReducer;

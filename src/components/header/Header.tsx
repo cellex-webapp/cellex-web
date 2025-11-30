@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useNotification } from '@/hooks/useNotification';
 import logo from '@/assets/logo/cellex.png';
 import { SearchOutlined, UserOutlined, ShoppingCartOutlined, BellOutlined } from '@ant-design/icons';
 import { Badge } from 'antd';
@@ -13,6 +14,7 @@ const Header: React.FC = () => {
 
   const { isAuthenticated } = useAuth();
   const { totalItems, fetchMyCart } = useCart();
+  const { unreadCount, getUnreadCount } = useNotification();
 
   const onSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -24,8 +26,9 @@ const Header: React.FC = () => {
   useEffect(() => {
     if (isAuthenticated) {
       fetchMyCart();
+      getUnreadCount();
     }
-  }, [isAuthenticated, fetchMyCart]);
+  }, [isAuthenticated, fetchMyCart, getUnreadCount]);
 
   return (
     <header className="w-full fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-20">
@@ -60,9 +63,16 @@ const Header: React.FC = () => {
           {isAuthenticated ? (
             <>
               <div className="flex items-center gap-3">
-                <button aria-label="Thông báo" className="p-3 rounded-full bg-indigo-600 !text-white hover:brightness-90 cursor-pointer">
-                  <BellOutlined className="text-sm md:text-lg" />
-                </button>
+                <Badge count={unreadCount} overflowCount={99} offset={[-2, 6]}>
+                  <button
+                    type="button"
+                    aria-label="Thông báo"
+                    onClick={() => navigate('/account?tab=notifications#notifications')}
+                    className="p-3 rounded-full bg-indigo-600 !text-white hover:brightness-90 cursor-pointer"
+                  >
+                    <BellOutlined className="text-sm md:text-lg" />
+                  </button>
+                </Badge>
 
                 <Link to="/account" className="inline-flex items-center justify-center w-10 h-10 md:w-12 md:h-12 rounded-full bg-indigo-50 hover:bg-indigo-100 no-underline !cursor-pointer">
                   <UserOutlined className="text-indigo-600 text-sm md:text-lg" />

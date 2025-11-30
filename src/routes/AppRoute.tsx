@@ -12,6 +12,7 @@ import { AdminDashboard } from '@/features/admin/pages/Dashboard';
 import { VendorDashboard } from '@/features/vendors/pages/Dashboard';
 import AdminLayout from '@/features/admin/components/AdminLayout';
 import VendorLayout from '@/features/vendors/components/VendorLayout';
+import VendorNotificationsPage from '@/features/vendors/pages/Notifications/NotificationsPage';
 import ProductsPage from '@/features/vendors/pages/Product/ProductsPage';
 import CategoriesPage from '@/features/admin/pages/Categories/List/CategoriesPage';
 import AttributesPage from '@/features/admin/pages/Categories/Attributes/AttributesPage';
@@ -37,6 +38,7 @@ import ShopManagementPage from '@/features/vendors/pages/ShopManagement/ShopMana
 import CustomerSegmentPage from '@/features/admin/pages/CustomerSegment/CustomerSegmentPage';
 import AdminOrdersPage from '@/features/admin/pages/Orders/OrdersPage';
 import VendorOrdersPage from '@/features/vendors/pages/Order/OrdersPage';
+import NotificationsPage from '@/features/admin/pages/Notifications/NotificationsPage';
 
 const router = createBrowserRouter([
   {
@@ -60,6 +62,7 @@ const router = createBrowserRouter([
           { path: 'marketing/system/:id', element: <CampaignDetailPage /> },
           { path: 'marketing/segment', element: <SegmentCouponsPage /> },
           { path: 'customer-segments', element: <CustomerSegmentPage /> },
+          { path: 'notifications', element: <NotificationsPage /> },
         ],
       },
     ],
@@ -99,6 +102,7 @@ const router = createBrowserRouter([
           { path: 'orders', element: <VendorOrdersPage /> },
           { path: 'orders/shipping', element: <VendorOrdersPage /> },
           { path: 'shop', element: <ShopManagementPage /> },
+          { path: 'notifications', element: <VendorNotificationsPage /> },
         ],
       },
     ],

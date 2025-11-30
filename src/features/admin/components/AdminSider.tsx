@@ -75,6 +75,13 @@ const MENU_CONFIG = [
       { key: 'data-performance', label: 'Hiệu quả hoạt động', path: '/admin/data/performance' },
     ],
   }
+  ,
+  {
+    key: 'notification', label: 'Thông báo', icon: AppstoreOutlined,
+    children: [
+      { key: 'notification-all', label: 'Tất cả thông báo', path: '/admin/notifications' },
+    ],
+  }
 ];
 
 const pathKeyMap = new Map<string, { childKey: string; parentKey: string }>();

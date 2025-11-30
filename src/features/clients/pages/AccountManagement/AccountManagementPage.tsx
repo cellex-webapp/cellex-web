@@ -1,5 +1,5 @@
-import React, { useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useCallback, useEffect } from 'react';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { Layout, Menu, Button, Typography, Avatar, Progress, Form, Input, theme } from 'antd';
 import {
   UserOutlined,
@@ -60,6 +60,8 @@ const AccountManagementPage: React.FC = () => {
   const { logout, currentUser } = useAuth();
   const navigate = useNavigate();
   const [activeKey, setActiveKey] = useState('personal-info');
+  const [searchParams] = useSearchParams();
+  const location = useLocation();
   const { token } = theme.useToken();
 
   const handleLogout = useCallback(async () => {
@@ -69,6 +71,19 @@ const AccountManagementPage: React.FC = () => {
       navigate('/');
     }
   }, [logout, navigate]);
+
+  useEffect(() => {
+    // Priority: query param tab, then hash fragment
+    const tab = searchParams.get('tab');
+    if (tab) {
+      setActiveKey(tab);
+      return;
+    }
+    if (location.hash) {
+      const hashKey = location.hash.replace('#', '');
+      if (hashKey) setActiveKey(hashKey);
+    }
+  }, [searchParams, location.hash]);
 
   const menuItems = [
     { key: 'personal-info', icon: <SolutionOutlined />, label: 'Thông tin cá nhân' },
@@ -150,6 +165,14 @@ const AccountManagementPage: React.FC = () => {
                     handleLogout();
                   } else {
                     setActiveKey(key);
+                    navigate(`/account?tab=${key}#${key}`);
+                    // Scroll to anchor after navigation microtask
+                    setTimeout(() => {
+                      const el = document.getElementById(key);
+                      if (el) {
+                        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      }
+                    }, 0);
                   }
                 }}
               />
@@ -159,7 +182,9 @@ const AccountManagementPage: React.FC = () => {
 
         <Content className="overflow-y-auto !bg-slate-50">
           <div className="min-h-full rounded-lg bg-white p-6 shadow-2xl ring-1 ring-black/5">
-            {renderContent()}
+            <div id={activeKey}>
+              {renderContent()}
+            </div>
           </div>
         </Content>
       </Layout>
