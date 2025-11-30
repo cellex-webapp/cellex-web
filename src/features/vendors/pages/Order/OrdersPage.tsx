@@ -3,6 +3,8 @@ import { Button, Drawer, Select, Table, Tag, Typography, message, Space, Popconf
 import { useOrder } from '@/hooks/useOrder';
 import { formatDateVN } from '@/utils/date';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useAppSelector } from '@/hooks/redux';
+import { selectShopOrderPageMeta } from '@/stores/selectors/order.selector';
 
 const { Title } = Typography;
 
@@ -33,6 +35,7 @@ const VendorOrdersPage: React.FC = () => {
   } = useOrder();
   const navigate = useNavigate();
   const location = useLocation();
+  const shopMeta = useAppSelector(selectShopOrderPageMeta);
 
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -120,7 +123,7 @@ const VendorOrdersPage: React.FC = () => {
           loading={isLoading}
           dataSource={data}
           columns={columns as any}
-          pagination={{ current: page, pageSize, total: shopOrders?.totalElements || 0, showSizeChanger: true }}
+          pagination={{ current: page, pageSize, total: shopMeta.totalElements, showSizeChanger: true }}
           onChange={(p) => { setPage(p.current || 1); setPageSize(p.pageSize || 10); }}
           size="middle"
           scroll={{ x: 900 }}

@@ -1,5 +1,6 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice, isPending, isRejectedWithValue } from '@reduxjs/toolkit';
 import orderService from '@/services/order.service';
+import { getErrorMessage } from '@/helpers/errorHandler';
 
 const initialState: IOrderState = {
   myOrders: null,
@@ -12,99 +13,153 @@ const initialState: IOrderState = {
 };
 
 // USER
-export const fetchMyOrders = createAsyncThunk(
+type ThunkConfig = { rejectValue: string };
+
+export const fetchMyOrders = createAsyncThunk<IPage<IOrder>, { page?: number; limit?: number; sortBy?: string; sortType?: string } | undefined, ThunkConfig>(
   'order/fetchMyOrders',
-  async (params?: { page?: number; limit?: number; sortBy?: string; sortType?: string }) => {
-    const res = await orderService.getMyOrders(params);
-    return res.result;
+  async (params, { rejectWithValue }) => {
+    try {
+      const res = await orderService.getMyOrders(params);
+      return res.result as IPage<IOrder>;
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
+    }
   }
 );
 
-export const fetchOrderById = createAsyncThunk('order/fetchById', async (orderId: string) => {
-  const res = await orderService.getOrderById(orderId);
-  return res.result;
+export const fetchOrderById = createAsyncThunk<IOrder, string, ThunkConfig>('order/fetchById', async (orderId, { rejectWithValue }) => {
+  try {
+    const res = await orderService.getOrderById(orderId);
+    return res.result as IOrder;
+  } catch (error) {
+    return rejectWithValue(getErrorMessage(error));
+  }
 });
 
-export const fetchAvailableCoupons = createAsyncThunk(
+export const fetchAvailableCoupons = createAsyncThunk<AvailableCouponResponse[], string, ThunkConfig>(
   'order/fetchAvailableCoupons',
-  async (orderId: string) => {
-    const res = await orderService.getAvailableCoupons(orderId);
-    return res.result;
+  async (orderId, { rejectWithValue }) => {
+    try {
+      const res = await orderService.getAvailableCoupons(orderId);
+      return (res.result || []) as AvailableCouponResponse[];
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
+    }
   }
 );
 
-export const applyCouponToOrder = createAsyncThunk(
+export const applyCouponToOrder = createAsyncThunk<IOrder, { orderId: string; body: ApplyCouponRequest }, ThunkConfig>(
   'order/applyCoupon',
-  async (payload: { orderId: string; body: ApplyCouponRequest }) => {
-    const res = await orderService.applyCoupon(payload.orderId, payload.body);
-    return res.result;
+  async ({ orderId, body }, { rejectWithValue }) => {
+    try {
+      const res = await orderService.applyCoupon(orderId, body);
+      return res.result as IOrder;
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
+    }
   }
 );
 
-export const removeCouponFromOrder = createAsyncThunk('order/removeCoupon', async (orderId: string) => {
-  const res = await orderService.removeCoupon(orderId);
-  return res.result;
+export const removeCouponFromOrder = createAsyncThunk<IOrder, string, ThunkConfig>('order/removeCoupon', async (orderId, { rejectWithValue }) => {
+  try {
+    const res = await orderService.removeCoupon(orderId);
+    return res.result as IOrder;
+  } catch (error) {
+    return rejectWithValue(getErrorMessage(error));
+  }
 });
 
-export const checkoutOrder = createAsyncThunk(
+export const checkoutOrder = createAsyncThunk<IOrder, { orderId: string; body: CheckoutOrderRequest }, ThunkConfig>(
   'order/checkout',
-  async (payload: { orderId: string; body: CheckoutOrderRequest }) => {
-    const res = await orderService.checkoutOrder(payload.orderId, payload.body);
-    return res.result;
+  async ({ orderId, body }, { rejectWithValue }) => {
+    try {
+      const res = await orderService.checkoutOrder(orderId, body);
+      return res.result as IOrder;
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
+    }
   }
 );
 
-export const cancelOrder = createAsyncThunk('order/cancel', async (orderId: string) => {
-  const res = await orderService.cancelOrder(orderId);
-  return res.result;
+export const cancelOrder = createAsyncThunk<IOrder, string, ThunkConfig>('order/cancel', async (orderId, { rejectWithValue }) => {
+  try {
+    const res = await orderService.cancelOrder(orderId);
+    return res.result as IOrder;
+  } catch (error) {
+    return rejectWithValue(getErrorMessage(error));
+  }
 });
 
-export const confirmDelivery = createAsyncThunk('order/confirmDelivery', async (orderId: string) => {
-  const res = await orderService.confirmDelivery(orderId);
-  return res.result;
+export const confirmDelivery = createAsyncThunk<IOrder, string, ThunkConfig>('order/confirmDelivery', async (orderId, { rejectWithValue }) => {
+  try {
+    const res = await orderService.confirmDelivery(orderId);
+    return res.result as IOrder;
+  } catch (error) {
+    return rejectWithValue(getErrorMessage(error));
+  }
 });
 
 // VENDOR
-export const fetchShopOrders = createAsyncThunk(
+export const fetchShopOrders = createAsyncThunk<IPage<IOrder>, { page?: number; limit?: number; sortBy?: string; sortType?: string } | undefined, ThunkConfig>(
   'order/fetchShopOrders',
-  async (params?: { page?: number; limit?: number; sortBy?: string; sortType?: string }) => {
-    const res = await orderService.getShopOrders(params);
-    return res.result;
+  async (params, { rejectWithValue }) => {
+    try {
+      const res = await orderService.getShopOrders(params);
+      return res.result as IPage<IOrder>;
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
+    }
   }
 );
 
-export const fetchShopOrdersByStatus = createAsyncThunk(
+export const fetchShopOrdersByStatus = createAsyncThunk<IPage<IOrder>, { status: OrderStatus; params?: { page?: number; limit?: number; sortBy?: string; sortType?: string } }, ThunkConfig>(
   'order/fetchShopOrdersByStatus',
-  async (payload: { status: OrderStatus; params?: { page?: number; limit?: number; sortBy?: string; sortType?: string } }) => {
-    const res = await orderService.getShopOrdersByStatus(payload.status, payload.params);
-    return res.result;
+  async ({ status, params }, { rejectWithValue }) => {
+    try {
+      const res = await orderService.getShopOrdersByStatus(status, params);
+      return res.result as IPage<IOrder>;
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
+    }
   }
 );
 
-export const vendorConfirmOrder = createAsyncThunk('order/confirmOrder', async (orderId: string) => {
-  const res = await orderService.confirmOrder(orderId);
-  return res.result;
+export const vendorConfirmOrder = createAsyncThunk<IOrder, string, ThunkConfig>('order/confirmOrder', async (orderId, { rejectWithValue }) => {
+  try {
+    const res = await orderService.confirmOrder(orderId);
+    return res.result as IOrder;
+  } catch (error) {
+    return rejectWithValue(getErrorMessage(error));
+  }
 });
 
-export const vendorShipOrder = createAsyncThunk('order/shipOrder', async (orderId: string) => {
-  const res = await orderService.shipOrder(orderId);
-  return res.result;
+export const vendorShipOrder = createAsyncThunk<IOrder, string, ThunkConfig>('order/shipOrder', async (orderId, { rejectWithValue }) => {
+  try {
+    const res = await orderService.shipOrder(orderId);
+    return res.result as IOrder;
+  } catch (error) {
+    return rejectWithValue(getErrorMessage(error));
+  }
 });
 
 // ADMIN
-export const fetchAdminOrders = createAsyncThunk(
+export const fetchAdminOrders = createAsyncThunk<IPage<IOrder>, {
+  userId?: string;
+  vendorId?: string;
+  status?: OrderStatus;
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortType?: string;
+} | undefined, ThunkConfig>(
   'order/fetchAdminOrders',
-  async (params?: {
-    userId?: string;
-    vendorId?: string;
-    status?: OrderStatus;
-    page?: number;
-    limit?: number;
-    sortBy?: string;
-    sortType?: string;
-  }) => {
-    const res = await orderService.getAllOrdersForAdmin(params);
-    return res.result;
+  async (params, { rejectWithValue }) => {
+    try {
+      const res = await orderService.getAllOrdersForAdmin(params);
+      return res.result as IPage<IOrder>;
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
+    }
   }
 );
 
@@ -175,21 +230,19 @@ const orderSlice = createSlice({
         state.adminOrders = action.payload;
       })
       // Loading (place after addCase due to RTK type order constraints)
-      .addMatcher(
-        (action) => action.type.startsWith('order/') && action.type.endsWith('/pending'),
-        (state) => {
+      .addMatcher(isPending, (state, action) => {
+        if (action.type.startsWith('order/')) {
           state.isLoading = true;
           state.error = null;
         }
-      )
+      })
       // Rejected
-      .addMatcher(
-        (action) => action.type.startsWith('order/') && action.type.endsWith('/rejected'),
-        (state, action: any) => {
+      .addMatcher(isRejectedWithValue, (state, action) => {
+        if (action.type.startsWith('order/')) {
           state.isLoading = false;
-          state.error = action.error?.message || 'Something went wrong';
+          state.error = (action.payload as string) || 'Something went wrong';
         }
-      );
+      });
   },
 });
 

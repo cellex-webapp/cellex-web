@@ -39,36 +39,36 @@ export const useOrder = () => {
   const availableCoupons = useAppSelector(selectAvailableCoupons);
 
   // Stable action creators to avoid effect loops in consumers
-  const _fetchMyOrders = useCallback((params?: { page?: number; limit?: number; sortBy?: string; sortType?: string }) =>
+  const fetchMy = useCallback((params?: { page?: number; limit?: number; sortBy?: string; sortType?: string }) =>
     dispatch(fetchMyOrders(params)), [dispatch]);
 
-  const _fetchOrderById = useCallback((orderId: string) => dispatch(fetchOrderById(orderId)), [dispatch]);
+  const fetchById = useCallback((orderId: string) => dispatch(fetchOrderById(orderId)), [dispatch]);
 
-  const _fetchAvailableCoupons = useCallback((orderId: string) => dispatch(fetchAvailableCoupons(orderId)), [dispatch]);
+  const fetchAvailable = useCallback((orderId: string) => dispatch(fetchAvailableCoupons(orderId)), [dispatch]);
 
-  const _applyCouponToOrder = useCallback((orderId: string, body: ApplyCouponRequest) =>
+  const applyCoupon = useCallback((orderId: string, body: ApplyCouponRequest) =>
     dispatch(applyCouponToOrder({ orderId, body })), [dispatch]);
 
-  const _removeCouponFromOrder = useCallback((orderId: string) => dispatch(removeCouponFromOrder(orderId)), [dispatch]);
+  const removeCoupon = useCallback((orderId: string) => dispatch(removeCouponFromOrder(orderId)), [dispatch]);
 
-  const _checkoutOrder = useCallback((orderId: string, body: CheckoutOrderRequest) =>
+  const checkout = useCallback((orderId: string, body: CheckoutOrderRequest) =>
     dispatch(checkoutOrder({ orderId, body })), [dispatch]);
 
-  const _cancelOrder = useCallback((orderId: string) => dispatch(cancelOrder(orderId)), [dispatch]);
+  const cancel = useCallback((orderId: string) => dispatch(cancelOrder(orderId)), [dispatch]);
 
-  const _confirmDelivery = useCallback((orderId: string) => dispatch(confirmDelivery(orderId)), [dispatch]);
+  const confirmDelivered = useCallback((orderId: string) => dispatch(confirmDelivery(orderId)), [dispatch]);
 
-  const _fetchShopOrders = useCallback((params?: { page?: number; limit?: number; sortBy?: string; sortType?: string }) =>
+  const fetchShop = useCallback((params?: { page?: number; limit?: number; sortBy?: string; sortType?: string }) =>
     dispatch(fetchShopOrders(params)), [dispatch]);
 
-  const _fetchShopOrdersByStatus = useCallback((status: OrderStatus, params?: { page?: number; limit?: number; sortBy?: string; sortType?: string }) =>
+  const fetchShopByStatus = useCallback((status: OrderStatus, params?: { page?: number; limit?: number; sortBy?: string; sortType?: string }) =>
     dispatch(fetchShopOrdersByStatus({ status, params })), [dispatch]);
 
-  const _vendorConfirmOrder = useCallback((orderId: string) => dispatch(vendorConfirmOrder(orderId)), [dispatch]);
+  const confirmOrder = useCallback((orderId: string) => dispatch(vendorConfirmOrder(orderId)), [dispatch]);
 
-  const _vendorShipOrder = useCallback((orderId: string) => dispatch(vendorShipOrder(orderId)), [dispatch]);
+  const shipOrder = useCallback((orderId: string) => dispatch(vendorShipOrder(orderId)), [dispatch]);
 
-  const _fetchAdminOrders = useCallback((params?: {
+  const fetchAdmin = useCallback((params?: {
     userId?: string;
     vendorId?: string;
     status?: OrderStatus;
@@ -78,8 +78,8 @@ export const useOrder = () => {
     sortType?: string;
   }) => dispatch(fetchAdminOrders(params)), [dispatch]);
 
-  const _clearSelectedOrder = useCallback(() => dispatch(clearSelectedOrder()), [dispatch]);
-  const _clearAvailableCoupons = useCallback(() => dispatch(clearAvailableCoupons()), [dispatch]);
+  const clearSelected = useCallback(() => dispatch(clearSelectedOrder()), [dispatch]);
+  const clearCoupons = useCallback(() => dispatch(clearAvailableCoupons()), [dispatch]);
 
   return {
     // state
@@ -92,27 +92,27 @@ export const useOrder = () => {
     availableCoupons,
 
     // actions - user
-    fetchMyOrders: _fetchMyOrders,
-    fetchOrderById: _fetchOrderById,
-    fetchAvailableCoupons: _fetchAvailableCoupons,
-    applyCouponToOrder: _applyCouponToOrder,
-    removeCouponFromOrder: _removeCouponFromOrder,
-    checkoutOrder: _checkoutOrder,
-    cancelOrder: _cancelOrder,
-    confirmDelivery: _confirmDelivery,
+    fetchMyOrders: fetchMy,
+    fetchOrderById: fetchById,
+    fetchAvailableCoupons: fetchAvailable,
+    applyCouponToOrder: applyCoupon,
+    removeCouponFromOrder: removeCoupon,
+    checkoutOrder: checkout,
+    cancelOrder: cancel,
+    confirmDelivery: confirmDelivered,
 
     // actions - vendor
-    fetchShopOrders: _fetchShopOrders,
-    fetchShopOrdersByStatus: _fetchShopOrdersByStatus,
-    vendorConfirmOrder: _vendorConfirmOrder,
-    vendorShipOrder: _vendorShipOrder,
+    fetchShopOrders: fetchShop,
+    fetchShopOrdersByStatus: fetchShopByStatus,
+    vendorConfirmOrder: confirmOrder,
+    vendorShipOrder: shipOrder,
 
     // actions - admin
-    fetchAdminOrders: _fetchAdminOrders,
+    fetchAdminOrders: fetchAdmin,
 
     // utils
-    clearSelectedOrder: _clearSelectedOrder,
-    clearAvailableCoupons: _clearAvailableCoupons,
+    clearSelectedOrder: clearSelected,
+    clearAvailableCoupons: clearCoupons,
   };
 };
 
