@@ -557,6 +557,7 @@ declare global {
         adminOrders: IPage<IOrder> | null;
         selectedOrder: IOrder | null;
         availableCoupons: AvailableCouponResponse[];
+        paymentUrl?: string | null;
         isLoading: boolean;
         error: string | null;
     }

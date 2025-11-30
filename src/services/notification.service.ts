@@ -21,8 +21,6 @@ export const notificationService = {
     return resp.data;
   },
   registerDeviceToken: async (body: DeviceTokenRequest): Promise<IApiResponse<Record<string, string>>> => {
-    console.log('🔍 registerDeviceToken called with:', body);
-    console.log('🔍 Request body JSON:', JSON.stringify(body));
     const resp = await axiosInstance.post<IApiResponse<Record<string, string>>>('/notifications/device-token', body, {
       headers: { 'Content-Type': 'application/json' },
     });
@@ -43,7 +41,9 @@ export const notificationService = {
       expiresAt: payload.expiresAt,
       imageFile: payload.imageFile,
     });
-    const resp = await axiosInstance.post<IApiResponse<void>>('/notifications/broadcast', fd);
+    const resp = await axiosInstance.post<IApiResponse<void>>('/notifications/broadcast', fd, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
     return resp.data;
   },
   sendTestNotification: async (): Promise<IApiResponse<Record<string, string>>> => {

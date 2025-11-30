@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { Button, Spin, Tag, message, InputNumber } from 'antd';
 import { unwrapResult } from '@reduxjs/toolkit';
 import { ShoppingCartOutlined, LeftOutlined, RightOutlined } from '@ant-design/icons';
+import orderService from '@/services/order.service';
 import { useProduct } from '@/hooks/useProduct';
 import { useAttribute } from '@/hooks/useAttribute';
 import ShopCard from '@/features/clients/components/Shop/ShopCard';
@@ -79,14 +80,23 @@ const ProductDetailCard: React.FC = () => {
             return;
         }
         try {
-            const action = await addToCart({ productId: p.id, quantity });
-            unwrapResult(action as any);
-            message.success('Đã thêm vào giỏ hàng');
             if (goCheckout) {
-                window.location.href = '/checkout';
+                // Direct create order from product flow
+                const resp = await orderService.createOrderFromProduct({ productId: p.id, quantity });
+                const order = resp.result as IOrder;
+                if (order?.id) {
+                    message.success('Tạo đơn hàng thành công');
+                    window.location.href = `/order/confirm/${order.id}`;
+                } else {
+                    message.error('Không tạo được đơn hàng');
+                }
+            } else {
+                const action = await addToCart({ productId: p.id, quantity });
+                unwrapResult(action as any);
+                message.success('Đã thêm vào giỏ hàng');
             }
         } catch (e: any) {
-            message.error(e?.message || 'Không thể thêm vào giỏ hàng');
+            message.error(e?.message || 'Không thể xử lý yêu cầu');
         }
     };
 

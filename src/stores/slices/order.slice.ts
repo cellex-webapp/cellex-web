@@ -8,6 +8,7 @@ const initialState: IOrderState = {
   adminOrders: null,
   selectedOrder: null,
   availableCoupons: [],
+  paymentUrl: null,
   isLoading: false,
   error: null,
 };
@@ -69,12 +70,13 @@ export const removeCouponFromOrder = createAsyncThunk<IOrder, string, ThunkConfi
   }
 });
 
-export const checkoutOrder = createAsyncThunk<IOrder, { orderId: string; body: CheckoutOrderRequest }, ThunkConfig>(
+export const checkoutOrder = createAsyncThunk<{ order: IOrder; paymentUrl?: string }, { orderId: string; body: CheckoutOrderRequest }, ThunkConfig>(
   'order/checkout',
   async ({ orderId, body }, { rejectWithValue }) => {
     try {
       const res = await orderService.checkoutOrder(orderId, body);
-      return res.result as IOrder;
+      const paymentUrl = (res as any)?.paymentUrl || (res.result as any)?.paymentUrl || (res as any)?.result?.payment_url || (res as any)?.url;
+      return { order: res.result as IOrder, paymentUrl };
     } catch (error) {
       return rejectWithValue(getErrorMessage(error));
     }
@@ -199,7 +201,8 @@ const orderSlice = createSlice({
       })
       .addCase(checkoutOrder.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.selectedOrder = action.payload;
+        state.selectedOrder = action.payload.order;
+        state.paymentUrl = action.payload.paymentUrl || null;
       })
       .addCase(cancelOrder.fulfilled, (state, action) => {
         state.isLoading = false;

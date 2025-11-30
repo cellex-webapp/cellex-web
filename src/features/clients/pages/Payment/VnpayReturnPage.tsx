@@ -22,6 +22,8 @@ const VnpayReturnPage: React.FC = () => {
   const orderId = query['orderId'] || query['vnp_TxnRef'];
 
   useEffect(() => {
+    // Clear stored payment URL as we have returned from gateway
+    localStorage.removeItem('pendingVnpayPaymentUrl');
     const fetchStatus = async () => {
       if (!orderId) return;
       setChecking(true);
@@ -60,7 +62,7 @@ const VnpayReturnPage: React.FC = () => {
             title="Thanh toán thất bại hoặc bị hủy"
             subTitle={`Mã phản hồi: ${responseCode || '—'}`}
             extra={[
-              <Button key="retry" type="primary" className="!bg-indigo-600" onClick={() => navigate('/checkout')}>Thử lại</Button>,
+              <Button key="retry" type="primary" className="!bg-indigo-600" onClick={() => navigate(`/order/confirm/${orderId || ''}`)}>Thử lại</Button>,
               <Button key="home" onClick={() => navigate('/')}>Trang chủ</Button>,
             ]}
           />

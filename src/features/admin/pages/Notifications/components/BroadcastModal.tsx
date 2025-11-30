@@ -94,17 +94,53 @@ const BroadcastModal: React.FC<Props> = ({ open, onClose }) => {
       style={{ top: 20 }}
       destroyOnClose
     >
-      <Form form={form} layout="vertical" initialValues={{ type: initialType }} validateTrigger={["onChange","onBlur"]}>
+      <Form
+        form={form}
+        layout="vertical"
+        initialValues={{ type: initialType }}
+        validateTrigger="onChange"
+        onValuesChange={(changed) => {
+          // Revalidate only changed fields to clear previous errors promptly
+          const names = Object.keys(changed);
+          names.forEach((n) => form.validateFields([n]).catch(() => {}));
+        }}
+      >
         <Divider orientation="left">Thông tin nội dung</Divider>
         <Row gutter={16}>
           <Col span={12}>
-            <Form.Item name="title" label="Tiêu đề" rules={[{ required: true, whitespace: true, message: 'Nhập tiêu đề' }]}> <Input maxLength={120} /> </Form.Item>
+            <Form.Item
+              name="title"
+              label="Tiêu đề"
+              rules={[
+                { required: true, message: 'Nhập tiêu đề' },
+                {
+                  validator: (_, value) => {
+                    if (typeof value === 'string' && value.trim().length > 0) return Promise.resolve();
+                    return Promise.reject(new Error('Nhập tiêu đề'));}
+                },
+              ]}
+            >
+              <Input maxLength={120} />
+            </Form.Item>
           </Col>
           <Col span={12}>
             <Form.Item name="type" label="Loại" rules={[{ required: true }]}> <Select options={NotificationTypeOptions} allowClear /> </Form.Item>
           </Col>
         </Row>
-        <Form.Item name="message" label="Nội dung" rules={[{ required: true, whitespace: true, message: 'Nhập nội dung' }]}> <Input.TextArea rows={4} maxLength={500} showCount /> </Form.Item>
+        <Form.Item
+          name="message"
+          label="Nội dung"
+          rules={[
+            { required: true, message: 'Nhập nội dung' },
+            {
+              validator: (_, value) => {
+                if (typeof value === 'string' && value.trim().length > 0) return Promise.resolve();
+                return Promise.reject(new Error('Nhập nội dung'));}
+            },
+          ]}
+        >
+          <Input.TextArea rows={4} maxLength={500} showCount />
+        </Form.Item>
 
         <Divider orientation="left">Tùy chọn</Divider>
         <Row gutter={16}>

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Button, Drawer, Input, Modal, Space, Table, Tag, Typography, message } from 'antd';
+import { Button, Drawer, Input, Modal, Space, Table, Tag, Typography, message, Select } from 'antd';
 import { useOrder } from '@/hooks/useOrder';
 import { formatDateVN } from '@/utils/date';
 import { useAppSelector } from '@/hooks/redux';
@@ -40,6 +40,8 @@ const MyOrder: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [applyOpen, setApplyOpen] = useState(false);
   const [couponCode, setCouponCode] = useState('');
+  const [statusFilter, setStatusFilter] = useState<OrderStatus | 'ALL'>('ALL');
+  const [search, setSearch] = useState('');
 
   useEffect(() => { if (error) message.error(error); }, [error]);
 
@@ -49,7 +51,15 @@ const MyOrder: React.FC = () => {
 
   useEffect(() => { load(); }, [load]);
 
-  const data = useMemo(() => Array.isArray(myOrders?.content) ? myOrders!.content : [], [myOrders]);
+  const rawData = useMemo(() => Array.isArray(myOrders?.content) ? myOrders!.content : [], [myOrders]);
+  const data = useMemo(() => {
+    return rawData.filter(o => {
+      const matchStatus = statusFilter === 'ALL' || o.status === statusFilter;
+      const kw = search.trim().toLowerCase();
+      const matchSearch = !kw || o.id.toLowerCase().includes(kw) || o.shop?.shop_name?.toLowerCase().includes(kw) || (o.items || []).some(it => it.product_name.toLowerCase().includes(kw));
+      return matchStatus && matchSearch;
+    });
+  }, [rawData, statusFilter, search]);
   const myMeta = useAppSelector(selectMyOrderPageMeta);
 
   const doCheckout = async (id: string) => {
@@ -69,17 +79,52 @@ const MyOrder: React.FC = () => {
   };
 
   const columns = [
-    { title: 'Mã đơn', dataIndex: 'id', key: 'id', width: 240 },
-    { title: 'Cửa hàng', dataIndex: 'shop_name', key: 'shop_name', width: 200 },
-    { title: 'Trạng thái', dataIndex: 'status', key: 'status', render: (s: OrderStatus) => <Tag color={statusColor[s]}>{s}</Tag>, width: 120 },
-    { title: 'Tạm tính', dataIndex: 'subtotal', key: 'subtotal', render: currency, align: 'right', width: 140 },
-    { title: 'Giảm', dataIndex: 'discount_amount', key: 'discount_amount', render: currency, align: 'right', width: 120 },
-    { title: 'Thành tiền', dataIndex: 'total_amount', key: 'total_amount', render: currency, align: 'right', width: 140 },
-    { title: 'Tạo lúc', dataIndex: 'created_at', key: 'created_at', render: (v: string) => formatDateVN(v), width: 180 },
+    {
+      title: 'Đơn',
+      dataIndex: 'id',
+      key: 'id',
+      width: 220,
+      render: (_: any, r: IOrder) => (
+        <Space direction="vertical" size={2}>
+          <span className="font-medium">{r.id}</span>
+          <span className="text-xs text-gray-500">{formatDateVN(r.created_at)}</span>
+        </Space>
+      ),
+    },
+    {
+      title: 'Sản phẩm',
+      key: 'items',
+      width: 280,
+      render: (_: any, r: IOrder) => {
+        const items = r.items || [];
+        const first = items[0];
+        return (
+          <Space direction="vertical" size={2}>
+            {first && <span>{first.product_name} x{first.quantity}</span>}
+            {items.length > 1 && <span className="text-xs text-gray-500">+ {items.length - 1} sản phẩm khác</span>}
+          </Space>
+        );
+      },
+    },
+    { title: 'Cửa hàng', key: 'shop', width: 180, render: (_: any, r: IOrder) => <span>{r.shop?.shop_name}</span> },
+    { title: 'Trạng thái', dataIndex: 'status', key: 'status', width: 120, render: (s: OrderStatus) => <Tag color={statusColor[s]}>{s}</Tag> },
+    {
+      title: 'Thanh toán',
+      key: 'payment',
+      width: 140,
+      render: (_: any, r: IOrder) => (
+        <Space size={4} direction="vertical">
+          <span>{r.payment_method}</span>
+          {r.is_paid ? <Tag color="green">Đã trả</Tag> : <Tag color="volcano">Chưa trả</Tag>}
+        </Space>
+      ),
+    },
+    { title: 'Tổng tiền', dataIndex: 'total_amount', key: 'total_amount', align: 'right', width: 140, render: currency },
     {
       title: 'Thao tác',
       key: 'actions',
       fixed: 'right' as const,
+      width: 300,
       render: (_: any, r: IOrder) => (
         <Space size="small">
           <Button size="small" onClick={() => { fetchOrderById(r.id); setOpen(true); }}>Chi tiết</Button>
@@ -96,20 +141,37 @@ const MyOrder: React.FC = () => {
           )}
         </Space>
       ),
-      width: 360,
     },
   ];
 
   return (
     <div>
       <Title level={4}>Đơn hàng của tôi</Title>
+      <div className="flex flex-wrap gap-3 mb-4 items-center">
+        <Input
+          allowClear
+          placeholder="Tìm (mã đơn / cửa hàng / sản phẩm)"
+          value={search}
+          onChange={e => { setSearch(e.target.value); setPage(1); }}
+          style={{ width: 280 }}
+          size="small"
+        />
+        <Select
+          size="small"
+          value={statusFilter}
+          style={{ width: 160 }}
+          onChange={(v) => { setStatusFilter(v as any); setPage(1); }}
+          options={[{ value: 'ALL', label: 'Tất cả trạng thái' }, ...Object.keys(statusColor).map(s => ({ value: s, label: s }))]}
+        />
+        <span className="text-xs text-gray-500">Hiển thị {data.length} / {rawData.length} đơn</span>
+      </div>
       <Table
         rowKey="id"
         loading={isLoading}
         dataSource={data}
         columns={columns as any}
         size="middle"
-        scroll={{ x: 1100 }}
+        scroll={{ x: 1200 }}
         pagination={{ current: page, pageSize, total: myMeta.totalElements, showSizeChanger: true }}
         onChange={(p) => { setPage(p.current || 1); setPageSize(p.pageSize || 10); }}
       />

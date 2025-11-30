@@ -8,6 +8,7 @@ export const selectShopOrders = (state: RootState) => state.order.shopOrders;
 export const selectAdminOrders = (state: RootState) => state.order.adminOrders;
 export const selectSelectedOrder = (state: RootState) => state.order.selectedOrder;
 export const selectAvailableCoupons = (state: RootState) => Array.isArray(state.order.availableCoupons) ? state.order.availableCoupons : [];
+export const selectOrderPaymentUrl = (state: RootState) => state.order.paymentUrl;
 
 export const selectMyOrderPageMeta = (state: RootState) => {
 	const p = state.order.myOrders as any;

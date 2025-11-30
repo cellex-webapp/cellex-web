@@ -27,8 +27,10 @@ import VendorAttributesPage from '@/features/vendors/pages/Categories/Attributes
 import AdminProductsPage from '@/features/admin/pages/Products/List/ProductsPage';
 import HomePage from '@/features/clients/pages/Home/HomePage';
 import ProductDetailPage from '@/features/clients/pages/Product/ProductDetailPage';
-import CheckoutPage from '@/features/clients/pages/Checkout/CheckoutPage';
 import VnpayReturnPage from '@/features/clients/pages/Payment/VnpayReturnPage';
+import OrderConfirmPage from '@/features/clients/pages/Order/OrderConfirmPage';
+import PaymentFailurePage from '@/features/clients/pages/Payment/PaymentFailurePage';
+import PaymentSuccessPage from '@/features/clients/pages/Payment/PaymentSuccessPage';
 import ProductByCategory from '@/features/clients/pages/Product/ProductByCategory';
 import ProductByShop from '@/features/clients/pages/Product/ProductByShop';
 import AttributeByCategoryPage from '@/features/admin/pages/Categories/Attributes/AttributeByCategoryPage';
@@ -86,8 +88,10 @@ const router = createBrowserRouter([
           { path: 'products/:id', element: <ProductDetailPage /> },
           { path: 'account', element: <AccountManagementPage /> },
           { path: 'cart', element: <CartPage /> },
-          { path: 'checkout', element: <CheckoutPage /> },
+          { path: 'order/confirm/:orderId', element: <OrderConfirmPage /> },
           { path: 'payment/vnpay/return', element: <VnpayReturnPage /> },
+          { path: 'payment/failure', element: <PaymentFailurePage /> },
+          { path: 'payment/success', element: <PaymentSuccessPage /> },
         ],
       },
     ],

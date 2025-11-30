@@ -4,6 +4,7 @@ import { DeleteOutlined, ShoppingCartOutlined } from '@ant-design/icons';
 import { useCart } from '@/hooks/useCart';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
+import orderService from '@/services/order.service';
 
 const { Title, Text } = Typography;
 
@@ -224,7 +225,21 @@ const CartPageContent: React.FC = () => {
                             block
                             className="!bg-indigo-600"
                             icon={<ShoppingCartOutlined />}
-                            onClick={() => navigate('/checkout')}
+                            disabled={isLoading || items.length === 0}
+                            onClick={async () => {
+                                try {
+                                    const resp = await orderService.createOrderFromCart({ items: items.map(i => ({ productId: i.productId, quantity: i.quantity })) });
+                                    const order = resp.result as IOrder;
+                                    if (order?.id) {
+                                        message.success('Tạo đơn hàng thành công');
+                                        navigate(`/order/confirm/${order.id}`);
+                                    } else {
+                                        message.error('Không tạo được đơn hàng');
+                                    }
+                                } catch (e: any) {
+                                    message.error(e?.message || 'Lỗi tạo đơn hàng');
+                                }
+                            }}
                         >
                             Tiến hành thanh toán
                         </Button>
