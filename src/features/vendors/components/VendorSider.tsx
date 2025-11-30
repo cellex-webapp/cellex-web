@@ -69,6 +69,14 @@ const MENU_CONFIG = [
     ],
   },
   {
+    key: 'notification',
+    label: 'Thông báo',
+    icon: AppstoreOutlined,
+    children: [
+      { key: 'notification-all', label: 'Tất cả thông báo', path: '/vendor/notifications' },
+    ],
+  },
+  {
     key: 'shop',
     label: 'Quản lý Shop',
     icon: TeamOutlined,

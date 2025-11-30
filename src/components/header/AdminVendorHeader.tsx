@@ -1,13 +1,23 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import logo from '@/assets/logo/cellex.png';
-import { UserOutlined } from '@ant-design/icons';
+import { UserOutlined, BellOutlined } from '@ant-design/icons';
+import { Badge } from 'antd';
+import { useNotification } from '@/hooks/useNotification';
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
 
   const { isAuthenticated, currentUser, logout } = useAuth();
+  const { unreadCount } = useNotification();
+
+  const targetPath = useMemo(() => {
+    const roles = (currentUser?.role || []) as string[];
+    if (roles.includes('ADMIN')) return '/admin/notifications';
+    if (roles.includes('VENDOR')) return '/vendor/notifications';
+    return '/account?tab=notifications';
+  }, [currentUser]);
 
   const handleLogout = async () => {
     await logout(); 
@@ -29,6 +39,11 @@ const Header: React.FC = () => {
         <div className="flex items-center gap-3 text-sm ml-auto">
           {isAuthenticated ? (
             <>
+              <Link to={targetPath} className="flex items-center">
+                <Badge count={unreadCount} size="small">
+                  <BellOutlined className="text-xl text-gray-700" />
+                </Badge>
+              </Link>
               <div className="hidden md:flex items-center gap-2 text-gray-700">
                 <UserOutlined />
                 <span className="truncate max-w-[160px]" title={currentUser?.email}>
