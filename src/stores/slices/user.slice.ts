@@ -1,8 +1,10 @@
 import { createSlice, createAsyncThunk, isPending, isRejectedWithValue } from '@reduxjs/toolkit';
 import { userService } from '@/services/user.service';
-import { getErrorMessage } from '@/helpers/errorHandler'; 
+import { getErrorMessage } from '@/helpers/errorHandler';
+import { store } from '@/stores/store';
 
-type ThunkConfig = { rejectValue: string };
+type RootState = ReturnType<typeof store.getState>;
+type ThunkConfig = { state: RootState; rejectValue: string };
 
 interface UserState {
   users: IUser[];
@@ -22,7 +24,7 @@ const initialState: UserState = {
 
 export const fetchAllUsers = createAsyncThunk<
   IPaginatedResult<IUser>,
-  IPaginationParams | undefined, 
+  IPaginationParams | undefined,
   ThunkConfig
 >('user/fetchAll', async (params, { rejectWithValue }) => {
   try {
@@ -30,6 +32,12 @@ export const fetchAllUsers = createAsyncThunk<
     return resp.result;
   } catch (error) {
     return rejectWithValue(getErrorMessage(error));
+  }
+},
+{
+  condition: (_, { getState }) => {
+    const state = getState();
+    if (state.user.isLoading) return false;
   }
 });
 
@@ -46,7 +54,7 @@ export const fetchUserById = createAsyncThunk<IUser, string, ThunkConfig>(
 );
 
 export const updateUserProfile = createAsyncThunk<IUser, IUpdateProfilePayload, ThunkConfig>(
-  'auth/updateProfile', 
+  'auth/updateProfile',
   async (payload, { rejectWithValue }) => {
     try {
       const resp = await userService.updateUserProfile(payload);
@@ -114,12 +122,12 @@ const userSlice = createSlice({
           total: action.payload.totalElements,
         };
       })
-      
+
       .addCase(fetchUserById.fulfilled, (state, action) => {
         state.isLoading = false;
         state.selectedUser = action.payload;
       })
-      
+
       .addCase(addUserAccount.fulfilled, (state, action) => {
         state.isLoading = false;
         state.users.unshift(action.payload);
@@ -127,9 +135,9 @@ const userSlice = createSlice({
       })
 
       .addMatcher(
-        (action): action is { payload: IUser; type: string } => 
-          updateUserProfile.fulfilled.match(action) || 
-          banUser.fulfilled.match(action) || 
+        (action): action is { payload: IUser; type: string } =>
+          updateUserProfile.fulfilled.match(action) ||
+          banUser.fulfilled.match(action) ||
           unbanUser.fulfilled.match(action),
         (state, action) => {
           const updatedUser = action.payload;
@@ -139,20 +147,20 @@ const userSlice = createSlice({
           if (index !== -1) {
             state.users[index] = { ...state.users[index], ...updatedUser };
           }
-          
+
           if (state.selectedUser?.id === updatedUser.id) {
             state.selectedUser = { ...state.selectedUser, ...updatedUser };
           }
         }
       )
-      
+
       .addMatcher(isPending, (state, action) => {
         if (action.type.startsWith('user/') || action.type.startsWith('auth/updateProfile')) {
           state.isLoading = true;
           state.error = null;
         }
       })
-      
+
       .addMatcher(isRejectedWithValue, (state, action) => {
         if (action.type.startsWith('user/') || action.type.startsWith('auth/updateProfile')) {
           state.isLoading = false;

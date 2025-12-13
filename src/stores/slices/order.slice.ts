@@ -1,6 +1,10 @@
 import { createAsyncThunk, createSlice, isPending, isRejectedWithValue } from '@reduxjs/toolkit';
 import orderService from '@/services/order.service';
 import { getErrorMessage } from '@/helpers/errorHandler';
+import { store } from '@/stores/store';
+
+type RootState = ReturnType<typeof store.getState>;
+type ThunkConfig = { state: RootState; rejectValue: string };
 
 const initialState: IOrderState = {
   myOrders: null,
@@ -13,9 +17,6 @@ const initialState: IOrderState = {
   error: null,
 };
 
-// USER
-type ThunkConfig = { rejectValue: string };
-
 export const fetchMyOrders = createAsyncThunk<IPage<IOrder>, { page?: number; limit?: number; sortBy?: string; sortType?: string } | undefined, ThunkConfig>(
   'order/fetchMyOrders',
   async (params, { rejectWithValue }) => {
@@ -24,6 +25,12 @@ export const fetchMyOrders = createAsyncThunk<IPage<IOrder>, { page?: number; li
       return res.result as IPage<IOrder>;
     } catch (error) {
       return rejectWithValue(getErrorMessage(error));
+    }
+  },
+  {
+    condition: (_, { getState }) => {
+      const state = getState();
+      if (state.order.isLoading) return false;
     }
   }
 );
@@ -45,6 +52,12 @@ export const fetchAvailableCoupons = createAsyncThunk<AvailableCouponResponse[],
       return (res.result || []) as AvailableCouponResponse[];
     } catch (error) {
       return rejectWithValue(getErrorMessage(error));
+    }
+  },
+  {
+    condition: (_, { getState }) => {
+      const state = getState();
+      if (state.order.isLoading) return false;
     }
   }
 );
@@ -111,6 +124,12 @@ export const fetchShopOrders = createAsyncThunk<IPage<IOrder>, { page?: number; 
     } catch (error) {
       return rejectWithValue(getErrorMessage(error));
     }
+  },
+  {    
+    condition: (_, { getState }) => {
+      const state = getState();
+      if (state.order.isLoading) return false;
+    }
   }
 );
 
@@ -161,6 +180,12 @@ export const fetchAdminOrders = createAsyncThunk<IPage<IOrder>, {
       return res.result as IPage<IOrder>;
     } catch (error) {
       return rejectWithValue(getErrorMessage(error));
+    }
+  },
+  {
+    condition: (_, { getState }) => {
+      const state = getState();
+      if (state.order.isLoading) return false;
     }
   }
 );

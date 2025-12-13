@@ -8,7 +8,6 @@ import LoginPage from '@/features/auth/pages/LoginPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import SignupPage from '@/features/auth/pages/SignupPage';
 import OTPPage from '@/features/auth/pages/OTPPage';
-import { AdminDashboard } from '@/features/admin/pages/Dashboard';
 import { VendorDashboard } from '@/features/vendors/pages/Dashboard';
 import AdminLayout from '@/features/admin/components/AdminLayout';
 import VendorLayout from '@/features/vendors/components/VendorLayout';
@@ -43,6 +42,10 @@ import CustomerSegmentPage from '@/features/admin/pages/CustomerSegment/Customer
 import AdminOrdersPage from '@/features/admin/pages/Orders/OrdersPage';
 import VendorOrdersPage from '@/features/vendors/pages/Order/OrdersPage';
 import NotificationsPage from '@/features/admin/pages/Notifications/NotificationsPage';
+import CustomerAnalyticsPage from '@/features/admin/pages/Dashboard/CustomerAnalytics';
+import ProductAnalyticsPage from '@/features/admin/pages/Dashboard/ProductAnalytics';
+import ShopAnalyticsPage from '@/features/admin/pages/Dashboard/ShopAnalytics';
+import AdminDashboardPage from '@/features/admin/pages/Dashboard/AdminDashboardPage';
 
 const router = createBrowserRouter([
   {
@@ -52,7 +55,10 @@ const router = createBrowserRouter([
         path: '/admin',
         element: <AdminLayout />,
         children: [
-          { index: true, element: <AdminDashboard /> },
+          { index: true, element: <AdminDashboardPage /> },
+          { path: 'dashboard/product', element: <ProductAnalyticsPage /> },
+          { path: 'dashboard/shop', element: <ShopAnalyticsPage /> },
+          { path: 'dashboard/customer', element: <CustomerAnalyticsPage /> },
           { path: 'categories', element: <CategoriesPage /> },
           { path: 'categories/attributes', element: <AttributeByCategoryPage /> },
           { path: 'categories/:slug/attributes', element: <AttributesPage /> },

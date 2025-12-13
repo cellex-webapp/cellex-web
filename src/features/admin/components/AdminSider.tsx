@@ -13,9 +13,10 @@ const MENU_CONFIG = [
   {
     key: 'overview', label: 'Tổng quan', icon: AppstoreOutlined,
     children: [
-      { key: 'overview-customer', label: 'Số liệu Khách hàng', path: '/admin/overview/customer' },
-      { key: 'overview-store', label: 'Số liệu Cửa hàng', path: '/admin/overview/store' },
-      { key: 'overview-product', label: 'Số liệu Sản phẩm', path: '/admin/overview/product' },
+      { key: 'overview-dashboard', label: 'Bảng điều khiển', path: '/admin' },
+      { key: 'overview-customer', label: 'Số liệu Khách hàng', path: '/admin/dashboard/customer' },
+      { key: 'overview-store', label: 'Số liệu Cửa hàng', path: '/admin/dashboard/shop' },
+      { key: 'overview-product', label: 'Số liệu Sản phẩm', path: '/admin/dashboard/product' },
     ],
   },
   {

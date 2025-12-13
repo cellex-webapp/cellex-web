@@ -21,7 +21,6 @@ const MENU_CONFIG = [
     icon: AppstoreOutlined,
     children: [
       { key: 'order-all', label: 'Tất cả', path: '/vendor/orders' },
-      { key: 'order-shipping', label: 'Đơn vị vận chuyển', path: '/vendor/orders/shipping' },
     ],
   },
   {
@@ -30,7 +29,6 @@ const MENU_CONFIG = [
     icon: ShopOutlined,
     children: [
       { key: 'product-all', label: 'Tất cả sản phẩm', path: '/vendor/products' },
-      { key: 'product-add', label: 'Tạo sản phẩm', path: '/vendor/products/create' },
       { key: 'product-category', label: 'Danh mục sản phẩm', path: '/vendor/categories' },
     ],
   },

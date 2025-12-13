@@ -2,6 +2,10 @@ import { createSlice, createAsyncThunk, type PayloadAction, isPending, isRejecte
 import { couponService } from '@/services/coupon.service';
 import { message } from 'antd';
 import { getErrorMessage } from '@/helpers/errorHandler';
+import { store } from '@/stores/store';
+
+type RootState = ReturnType<typeof store.getState>;
+type ThunkConfig = { state: RootState; rejectValue: string };
 
 const initialState: ICouponState = {
   campaigns: [],
@@ -11,8 +15,6 @@ const initialState: ICouponState = {
   isLoading: false,
   error: null,
 };
-
-type ThunkConfig = { rejectValue: string };
 
 export const fetchCampaignsByStatus = createAsyncThunk<CouponCampaignResponse[], CampaignStatus, ThunkConfig>(
   'coupon/fetchByStatus',
@@ -24,6 +26,12 @@ export const fetchCampaignsByStatus = createAsyncThunk<CouponCampaignResponse[],
     } catch (error) {
       return rejectWithValue(getErrorMessage(error));
     }
+  },
+  {
+    condition: (_, { getState }) => {
+      const state = getState() as RootState;
+      if (state.coupon.isLoading) return false;
+    },
   }
 );
 
@@ -97,6 +105,12 @@ export const fetchCampaignLogs = createAsyncThunk<CampaignDistributionResponse[]
     } catch (error) {
       return rejectWithValue(getErrorMessage(error));
     }
+  },
+  {
+    condition: (_, { getState }) => {
+      const state = getState() as RootState;
+      if (state.coupon.isLoading) return false;
+    },
   }
 );
 
@@ -109,6 +123,12 @@ export const fetchMyCoupons = createAsyncThunk<IUserCoupon[], void, ThunkConfig>
     } catch (error) {
       return rejectWithValue(getErrorMessage(error));
     }
+  },
+  {
+    condition: (_, { getState }) => {
+      const state = getState() as RootState;
+      if (state.coupon.isLoading) return false;
+    },
   }
 );
 

@@ -1,8 +1,10 @@
 import { createSlice, createAsyncThunk, isPending, isRejectedWithValue } from '@reduxjs/toolkit';
 import { attributeService } from '@/services/attribute.service';
 import { getErrorMessage } from '@/helpers/errorHandler';
+import { store } from '@/stores/store';
 
-type ThunkConfig = { rejectValue: string };
+type RootState = ReturnType<typeof store.getState>;
+type ThunkConfig = { state: RootState; rejectValue: string };
 
 interface AttributeState {
   attributes: IAttribute[];
@@ -25,18 +27,24 @@ const initialState: AttributeState = {
 };
 
 export const fetchAttributesOfCategory = createAsyncThunk<
-  IPaginatedResult<IAttribute>, 
-  { categoryId: string; params?: IPaginationParams }, 
+  IPaginatedResult<IAttribute>,
+  { categoryId: string; params?: IPaginationParams },
   ThunkConfig
 >(
   'attribute/fetchOfCategory',
   async ({ categoryId, params }, { rejectWithValue }) => {
     try {
       const resp = await attributeService.getAttributesOfCategory(categoryId, params);
-      return resp.result; 
+      return resp.result;
     } catch (err) {
       return rejectWithValue(getErrorMessage(err));
     }
+  },
+  {
+    condition: (_, { getState }) => {
+      const state = getState() as RootState;
+      if (state.attribute.isLoading) return false;
+    },
   }
 );
 
@@ -53,6 +61,12 @@ export const fetchHighlightAttributesOfCategory = createAsyncThunk<
     } catch (err) {
       return rejectWithValue(getErrorMessage(err));
     }
+  },
+  {
+    condition: (_, { getState }) => {
+      const state = getState() as RootState;
+      if (state.attribute.isLoading) return false;
+    },
   }
 );
 

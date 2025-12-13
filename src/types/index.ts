@@ -14,7 +14,10 @@ declare global {
     type OrderStatus = 'PENDING' | 'CONFIRMED' | 'SHIPPING' | 'DELIVERED' | 'CANCELLED';
     type PaymentMethod = 'COD' | 'VNPAY';
     type NotificationType = 'SYSTEM' | 'ORDER_CREATED' | 'ORDER_CONFIRMED' | 'ORDER_SHIPPING' | 'ORDER_DELIVERED' | 'ORDER_CANCELLED' | 'PAYMENT_SUCCESS' | 'PAYMENT_FAILED' | 'COUPON_AVAILABLE' | 'PROMOTION' | 'PRODUCT_RESTOCK' | 'REVIEW_REQUEST' | 'CUSTOM';
-    
+    type TrendType = 'UP' | 'DOWN' | 'STABLE';
+    type MetricType = 'NUMBER' | 'CURRENCY';
+    type ChartType = 'LINE' | 'AREA' | 'BAR' | 'PIE';
+
     interface IPaginatedResult<T> {
         content: T[];
         currentPage: number;
@@ -741,11 +744,332 @@ declare global {
         isLoading: boolean;
         error: string | null;
     }
+    interface IDateRange {
+        startDate: string;
+        endDate: string;
+        period: string;
+        previousStartDate: string;
+        previousEndDate: string;
+    }
+
+    interface ISummaryCard {
+        title: string;
+        value: string;
+        numericValue: number;
+        unit: string;
+        changePercent?: number;
+        previousValue: number;
+        trend: TrendType;
+        metricType: MetricType;
+        description: string;
+        icon: string;
+    }
+
+    interface IChartDataPoint {
+        label: string;
+        value: number;
+        date: string;
+    }
+
+    interface IChartData {
+        title: string;
+        chartType: ChartType;
+        data?: IChartDataPoint[];
+        slices?: {
+            label: string;
+            value: number;
+            percentage: number;
+            color: string
+        }[];
+        unit?: string;
+        total?: number;
+        average?: number;
+        yaxisLabel?: string;
+        xaxisLabel?: string;
+        categories?: string[];
+        series?: {
+            name: string;
+            data: number[];
+            color?: string
+        }[];
+    }
+
+    interface IAdminDashboard {
+        dateRange: IDateRange;
+        summaryCards: ISummaryCard[];
+        secondaryKPIs: {
+            averageOrderValue: number;
+            aovChange: number;
+            conversionRate: number;
+            conversionRateChange: number;
+            cancellationRate: number;
+            cancellationRateChange: number;
+            activeShops: number;
+            newShopsThisPeriod: number;
+            activeProducts: number;
+            newProductsThisPeriod: number;
+        };
+        charts: {
+            revenueChart: IChartData;
+            ordersChart: IChartData;
+            orderStatusDistribution: IChartData;
+            revenueByCategoryChart: IChartData;
+        };
+        topPerformers: {
+            topShops: ITopShopPerformer[];
+            topProducts: any[]; // Define if needed
+            topCustomers: any[]; // Define if needed
+        };
+        recentActivities: {
+            recentOrders: IRecentActivityOrder[];
+            newShops: INewShopActivity[];
+            newUsers: INewUserActivity[];
+        };
+    }
+
+    interface ITopShopPerformer {
+        rank: number;
+        shopId: string;
+        shopName: string;
+        logoUrl: string;
+        revenue: number;
+        orderCount: number;
+        rating: number;
+    }
+
+    interface IRecentActivityOrder {
+        orderId: string;
+        customerName: string;
+        shopName: string;
+        totalAmount: number;
+        status: string;
+        paymentMethod: string;
+        isPaid: boolean;
+        createdAt: string;
+    }
+
+    interface INewShopActivity {
+        shopId: string;
+        shopName: string;
+        logoUrl: string;
+        vendorName: string;
+        status: string;
+        createdAt: string;
+    }
+
+    interface INewUserActivity {
+        userId: string;
+        fullName: string;
+        email: string;
+        avatarUrl: string | null;
+        createdAt: string;
+    }
+
+    interface ICustomerAnalytics {
+        dateRange: IDateRange;
+        summaryCards: ISummaryCard[];
+        overview: {
+            totalCustomers: number;
+            newCustomers: number;
+            newCustomersChange: number;
+            activeCustomers: number;
+            activeCustomersChange: number;
+            returnRate: number;
+            returnRateChange: number;
+            averageCustomerValue: number;
+            acvChange: number;
+            averageOrdersPerCustomer: number;
+        };
+        charts: {
+            newCustomersChart: IChartData;
+            activeCustomersChart: IChartData;
+            customerSegmentChart: IChartData;
+            customersByOrderCountChart: IChartData;
+            customerSpendingChart: IChartData;
+        };
+        segments: {
+            vipCustomers: ISegmentDetail;
+            regularCustomers: ISegmentDetail;
+            newCustomers: ISegmentDetail;
+            inactiveCustomers: ISegmentDetail;
+        };
+        topCustomers: any[];
+        recentCustomers: INewUserActivity[];
+    }
+
+    interface ISegmentDetail {
+        segmentName: string;
+        count: number;
+        percentage: number;
+        averageSpending: number;
+        averageOrders: number;
+    }
+
+    interface IShopAnalytics {
+        dateRange: IDateRange;
+        summaryCards: ISummaryCard[];
+        overview: {
+            totalShops: number;
+            activeShops: number;
+            newShops: number;
+            newShopsChange: number;
+            pendingShops: number;
+            suspendedShops: number;
+            totalRevenue: number;
+            revenueChange: number;
+            averageRevenuePerShop: number;
+            averageOrdersPerShop: number;
+            averageShopRating: number;
+            averageProductsPerShop: number;
+        };
+        charts: {
+            newShopsChart: IChartData;
+            revenueChart: IChartData;
+            shopStatusChart: IChartData;
+            shopRatingDistributionChart: IChartData;
+            topShopsComparisonChart: IChartData;
+        };
+        statusDistribution: {
+            approved: number;
+            pending: number;
+            rejected: number;
+            suspended: number;
+            approvalRate: number;
+        };
+        topShops: {
+            byRevenue: ITopShopMetric[];
+            byOrderCount: ITopShopMetric[];
+            byRating: ITopShopMetric[];
+            byProductCount: ITopShopMetric[];
+        };
+        pendingShops: any[];
+    }
+
+    interface ITopShopMetric {
+        rank: number;
+        shopId: string;
+        shopName: string;
+        logoUrl: string;
+        vendorName: string;
+        revenue: number;
+        orderCount: number;
+        rating: number;
+        productCount: number;
+        reviewCount: number | null;
+        createdAt: string;
+    }
+
+    interface IProductAnalytics {
+        dateRange: IDateRange;
+        summaryCards: ISummaryCard[];
+        overview: {
+            totalActiveProducts: number;
+            newProducts: number;
+            newProductsChange: number;
+            totalQuantitySold: number;
+            quantitySoldChange: number;
+            totalProductRevenue: number;
+            revenueChange: number;
+            averagePrice: number;
+            outOfStockProducts: number;
+            lowStockProducts: number;
+            averageRating: number;
+            totalReviews: number;
+        };
+        charts: {
+            salesQuantityChart: IChartData;
+            productRevenueChart: IChartData;
+            revenueByCategoryChart: IChartData;
+            productsByCategoryChart: IChartData;
+            ratingDistributionChart: IChartData;
+        };
+        topProducts: {
+            byQuantitySold: any[];
+            byRevenue: any[];
+            byRating: ITopProductMetric[];
+            byViews: any[];
+        };
+        recentProducts: IRecentProduct[];
+    }
+
+    interface ITopProductMetric {
+        rank: number;
+        productId: string;
+        productName: string;
+        imageUrl: string;
+        shopId: string;
+        shopName: string;
+        categoryName: string;
+        price: number;
+        quantitySold: number | null;
+        revenue: number | null;
+        rating: number;
+        reviewCount: number;
+        viewCount: number | null;
+        stock: number;
+    }
+
+    interface IRecentProduct {
+        productId: string;
+        productName: string;
+        imageUrl: string;
+        shopName: string;
+        categoryName: string;
+        price: number;
+        stock: number;
+        createdAt: string;
+    }
+
+    interface IVendorDashboard {
+        shopInfo: {
+            shopId: string;
+            shopName: string;
+            logoUrl: string;
+            rating: number;
+        };
+        revenueStats: {
+            totalRevenue: number;
+            startDate: string;
+            endDate: string;
+            completedOrdersCount: number;
+            averageOrderValue: number;
+            revenueGrowthPercent: number;
+        };
+        orderStatistics: {
+            totalOrders: number;
+            pendingOrders: number;
+            confirmedOrders: number;
+            shippingOrders: number;
+            deliveredOrders: number;
+            cancelledOrders: number;
+            ordersByStatus: Record<string, number>;
+        };
+        bestSellingProducts: {
+            productId: string;
+            productName: string;
+            productImage: string;
+            totalQuantitySold: number;
+            totalRevenue: number;
+            rank: number;
+        }[];
+        recentOrders: {
+            orderId: string;
+            customerName: string;
+            totalAmount: number;
+            status: string;
+            createdAt: string;
+        }[];
+    }
+
+
+    interface IAnalyticsParams {
+        startDate?: string;
+        endDate?: string;
+    }
+
+    interface IVendorAnalyticsParams extends IAnalyticsParams {
+        shopId: string;
+    }
 }
 
 export { }
-
-
-
-
-

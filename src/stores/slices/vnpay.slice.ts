@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice, isPending, isRejectedWithValue } from '@reduxjs/toolkit';
 import vnpayService from '@/services/vnpay.service';
 import { getErrorMessage } from '@/helpers/errorHandler';
+import { store } from '@/stores/store';
 
 const initialState: VnpayState = {
   paymentUrl: null,
@@ -9,7 +10,8 @@ const initialState: VnpayState = {
   error: null,
 };
 
-type ThunkConfig = { rejectValue: string };
+type RootState = ReturnType<typeof store.getState>;
+type ThunkConfig = { state: RootState; rejectValue: string };
 
 export const createVnpayPayment = createAsyncThunk<VnpayPaymentResponse, VnpayPaymentRequest, ThunkConfig>(
   'vnpay/createPayment',
@@ -19,6 +21,12 @@ export const createVnpayPayment = createAsyncThunk<VnpayPaymentResponse, VnpayPa
     } catch (error) {
       return rejectWithValue(getErrorMessage(error));
     }
+  },
+  {
+    condition: (_, { getState }) => {
+      const state = getState() as RootState;
+      if (state.vnpay.isLoading) return false;
+    },
   }
 );
 
@@ -30,6 +38,12 @@ export const fetchVnpayStatus = createAsyncThunk<any, string, ThunkConfig>(
     } catch (error) {
       return rejectWithValue(getErrorMessage(error));
     }
+  },
+  {
+    condition: (_, { getState }) => {
+      const state = getState() as RootState;
+      if (state.vnpay.isLoading) return false;
+    },
   }
 );
 

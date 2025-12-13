@@ -1,6 +1,10 @@
 import { createAsyncThunk, createSlice, isPending, isRejectedWithValue } from '@reduxjs/toolkit';
 import { couponService } from '@/services/coupon.service';
 import { getErrorMessage } from '@/helpers/errorHandler';
+import { store } from '@/stores/store';
+
+type RootState = ReturnType<typeof store.getState>;
+type ThunkConfig = { state: RootState; rejectValue: string };
 
 const initialState: SegmentCouponState = {
   items: [],
@@ -9,8 +13,6 @@ const initialState: SegmentCouponState = {
   isLoading: false,
   error: null,
 };
-
-type ThunkConfig = { rejectValue: string };
 
 export const fetchAllSegmentCoupons = createAsyncThunk<SegmentCouponResponse[], void, ThunkConfig>(
   'segmentCoupon/fetchAll',
@@ -22,6 +24,12 @@ export const fetchAllSegmentCoupons = createAsyncThunk<SegmentCouponResponse[], 
     } catch (error) {
       return rejectWithValue(getErrorMessage(error));
     }
+  },
+  {
+    condition: (_, { getState }) => {
+      const state = getState() as RootState;
+      if (state.segmentCoupon.isLoading) return false;
+    },
   }
 );
 
@@ -48,6 +56,12 @@ export const fetchSegmentCouponsBySegmentId = createAsyncThunk<{ segmentId: stri
     } catch (error) {
       return rejectWithValue(getErrorMessage(error));
     }
+  },
+  {
+    condition: (_, { getState }) => {
+      const state = getState() as RootState;
+      if (state.segmentCoupon.isLoading) return false;
+    },
   }
 );
 

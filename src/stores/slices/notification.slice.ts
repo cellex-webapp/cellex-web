@@ -1,6 +1,10 @@
 import { createAsyncThunk, createSlice, isPending, isRejectedWithValue } from '@reduxjs/toolkit';
 import notificationService from '@/services/notification.service';
 import { getErrorMessage } from '@/helpers/errorHandler';
+import { store } from '@/stores/store';
+
+type RootState = ReturnType<typeof store.getState>;
+type ThunkConfig = { state: RootState; rejectValue: string };
 
 const initialState: NotificationState = {
   notifications: [],
@@ -13,8 +17,6 @@ const initialState: NotificationState = {
   error: null,
 };
 
-type ThunkConfig = { rejectValue: string };
-
 export const fetchNotifications = createAsyncThunk<NotificationListResponse, { page?: number; size?: number } | undefined, ThunkConfig>(
   'notification/fetchAll',
   async (params, { rejectWithValue }) => {
@@ -24,17 +26,32 @@ export const fetchNotifications = createAsyncThunk<NotificationListResponse, { p
     } catch (err) {
       return rejectWithValue(getErrorMessage(err));
     }
+  },
+  {
+    condition: (_, { getState }) => {
+      const state = getState();
+      if (state.notification.isLoading) return false;
+    }
   }
 );
 
-export const fetchUnreadCount = createAsyncThunk<number, void, ThunkConfig>('notification/fetchUnreadCount', async (_, { rejectWithValue }) => {
-  try {
-    const resp = await notificationService.getUnreadCount();
-    return (resp.result as any)?.unreadCount ?? 0;
-  } catch (err) {
-    return rejectWithValue(getErrorMessage(err));
+export const fetchUnreadCount = createAsyncThunk<number, void, ThunkConfig>(
+  'notification/fetchUnreadCount', 
+  async (_, { rejectWithValue }) => {
+    try {
+      const resp = await notificationService.getUnreadCount();
+      return (resp.result as any)?.unreadCount ?? 0;
+    } catch (err) {
+      return rejectWithValue(getErrorMessage(err));
+    }
+  },
+  {
+    condition: (_, { getState }) => {
+      const state = getState();
+      if (state.notification.isLoading) return false;
+    }
   }
-});
+);
 
 export const markNotificationRead = createAsyncThunk<string, string, ThunkConfig>('notification/markRead', async (id, { rejectWithValue }) => {
   try {

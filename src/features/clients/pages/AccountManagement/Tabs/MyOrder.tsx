@@ -1,24 +1,33 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Button, Drawer, Input, Modal, Space, Table, Tag, Typography, message, Select } from 'antd';
+import { Button, Drawer, Input, Modal, Space, Table, Tag, Typography, message, Select, Avatar, Divider, Card, Tooltip } from 'antd';
+import { EyeOutlined, SearchOutlined, FilterOutlined } from '@ant-design/icons';
 import { useOrder } from '@/hooks/useOrder';
 import { formatDateVN } from '@/utils/date';
 import { useAppSelector } from '@/hooks/redux';
 import { selectMyOrderPageMeta } from '@/stores/selectors/order.selector';
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
-const statusColor: Record<OrderStatus, string> = {
+const statusColor: Record<string, string> = {
   PENDING: 'gold',
   CONFIRMED: 'blue',
-  SHIPPING: 'purple',
+  SHIPPING: 'geekblue',
   DELIVERED: 'green',
   CANCELLED: 'red',
+};
+
+const statusLabel: Record<string, string> = {
+  PENDING: 'Chờ xử lý',
+  CONFIRMED: 'Đã xác nhận',
+  SHIPPING: 'Đang giao',
+  DELIVERED: 'Đã giao',
+  CANCELLED: 'Đã hủy',
 };
 
 const currency = (n?: number) =>
   typeof n === 'number'
     ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(n)
-    : '';
+    : '0 ₫';
 
 const MyOrder: React.FC = () => {
   const {
@@ -52,16 +61,22 @@ const MyOrder: React.FC = () => {
   useEffect(() => { load(); }, [load]);
 
   const rawData = useMemo(() => Array.isArray(myOrders?.content) ? myOrders!.content : [], [myOrders]);
+  
   const data = useMemo(() => {
     return rawData.filter(o => {
       const matchStatus = statusFilter === 'ALL' || o.status === statusFilter;
       const kw = search.trim().toLowerCase();
-      const matchSearch = !kw || o.id.toLowerCase().includes(kw) || o.shop?.shop_name?.toLowerCase().includes(kw) || (o.items || []).some(it => it.product_name.toLowerCase().includes(kw));
+      const matchSearch = !kw || 
+        o.id.toLowerCase().includes(kw) || 
+        o.shop?.shop_name?.toLowerCase().includes(kw) || 
+        (o.items || []).some(it => it.product_name.toLowerCase().includes(kw));
       return matchStatus && matchSearch;
     });
   }, [rawData, statusFilter, search]);
+
   const myMeta = useAppSelector(selectMyOrderPageMeta);
 
+  // Actions
   const doCheckout = async (id: string) => {
     await checkoutOrder(id, { paymentMethod: 'COD' }).unwrap();
     message.success('Đã xác nhận đặt hàng');
@@ -80,124 +95,226 @@ const MyOrder: React.FC = () => {
 
   const columns = [
     {
-      title: 'Đơn',
-      dataIndex: 'id',
-      key: 'id',
-      width: 220,
+      title: 'Thông tin đơn hàng',
+      key: 'info',
+      width: 280,
       render: (_: any, r: IOrder) => (
-        <Space direction="vertical" size={2}>
-          <span className="font-medium">{r.id}</span>
-          <span className="text-xs text-gray-500">{formatDateVN(r.created_at)}</span>
+        <Space align="start" size={12}>
+          <Avatar 
+            shape="square" 
+            size={48} 
+            src={r.items?.[0]?.product_image} 
+            className="bg-gray-100 border border-gray-200"
+          />
+          <Space direction="vertical" size={0}>
+            <Text strong className="text-gray-700">{r.id}</Text>
+            <Text type="secondary" style={{ fontSize: 12 }}>{formatDateVN(r.created_at)}</Text>
+            <Text type="secondary" style={{ fontSize: 12 }}>{r.shop?.shop_name}</Text>
+          </Space>
         </Space>
       ),
     },
     {
       title: 'Sản phẩm',
       key: 'items',
-      width: 280,
+      width: 250,
       render: (_: any, r: IOrder) => {
         const items = r.items || [];
         const first = items[0];
         return (
-          <Space direction="vertical" size={2}>
-            {first && <span>{first.product_name} x{first.quantity}</span>}
-            {items.length > 1 && <span className="text-xs text-gray-500">+ {items.length - 1} sản phẩm khác</span>}
+          <Space direction="vertical" size={2} className="w-full">
+            {first && (
+              <Text ellipsis className="max-w-[220px]" title={first.product_name}>
+                {first.product_name} <Text type="secondary">x{first.quantity}</Text>
+              </Text>
+            )}
+            {items.length > 1 && (
+              <Tag className="!mr-0 w-fit text-xs">
+                + {items.length - 1} sản phẩm khác
+              </Tag>
+            )}
           </Space>
         );
       },
     },
-    { title: 'Cửa hàng', key: 'shop', width: 180, render: (_: any, r: IOrder) => <span>{r.shop?.shop_name}</span> },
-    { title: 'Trạng thái', dataIndex: 'status', key: 'status', width: 120, render: (s: OrderStatus) => <Tag color={statusColor[s]}>{s}</Tag> },
     {
-      title: 'Thanh toán',
-      key: 'payment',
+      title: 'Tổng tiền',
+      dataIndex: 'total_amount',
+      key: 'total_amount',
       width: 140,
-      render: (_: any, r: IOrder) => (
-        <Space size={4} direction="vertical">
-          <span>{r.payment_method}</span>
-          {r.is_paid ? <Tag color="green">Đã trả</Tag> : <Tag color="volcano">Chưa trả</Tag>}
-        </Space>
+      align: 'right' as const,
+      render: (val: number) => <Text strong className="text-blue-600">{currency(val)}</Text>,
+    },
+    {
+      title: 'Trạng thái',
+      dataIndex: 'status',
+      key: 'status',
+      width: 140,
+      align: 'center' as const,
+      render: (s: string) => (
+        <Tag color={statusColor[s] || 'default'} className="min-w-[90px] text-center font-medium border-0 py-0.5">
+          {statusLabel[s] || s}
+        </Tag>
       ),
     },
-    { title: 'Tổng tiền', dataIndex: 'total_amount', key: 'total_amount', align: 'right', width: 140, render: currency },
     {
       title: 'Thao tác',
       key: 'actions',
       fixed: 'right' as const,
-      width: 300,
+      width: 80,
+      align: 'center' as const,
       render: (_: any, r: IOrder) => (
-        <Space size="small">
-          <Button size="small" onClick={() => { fetchOrderById(r.id); setOpen(true); }}>Chi tiết</Button>
-          {r.status === 'PENDING' && (
-            <>
-              <Button size="small" type="primary" className="!bg-blue-600" onClick={() => doCheckout(r.id)}>Checkout</Button>
-              <Button size="small" onClick={() => { setCouponCode(''); setApplyOpen(true); fetchOrderById(r.id); }}>Áp mã</Button>
-              {r.coupon_code && <Button size="small" danger onClick={() => removeCouponFromOrder(r.id)}>Bỏ mã</Button>}
-              <Button size="small" danger onClick={() => doCancel(r.id)}>Hủy</Button>
-            </>
-          )}
-          {r.status === 'SHIPPING' && (
-            <Button size="small" type="primary" className="!bg-green-600" onClick={() => doConfirmDelivery(r.id)}>Đã nhận</Button>
-          )}
-        </Space>
+        <Tooltip title="Xem chi tiết">
+          <Button 
+            type="text" 
+            icon={<EyeOutlined className="text-gray-500" />} 
+            onClick={() => { fetchOrderById(r.id); setOpen(true); }}
+            className="hover:!text-blue-600 hover:!bg-blue-50"
+          />
+        </Tooltip>
       ),
     },
   ];
 
   return (
-    <div>
-      <Title level={4}>Đơn hàng của tôi</Title>
-      <div className="flex flex-wrap gap-3 mb-4 items-center">
-        <Input
-          allowClear
-          placeholder="Tìm (mã đơn / cửa hàng / sản phẩm)"
-          value={search}
-          onChange={e => { setSearch(e.target.value); setPage(1); }}
-          style={{ width: 280 }}
-          size="small"
-        />
-        <Select
-          size="small"
-          value={statusFilter}
-          style={{ width: 160 }}
-          onChange={(v) => { setStatusFilter(v as any); setPage(1); }}
-          options={[{ value: 'ALL', label: 'Tất cả trạng thái' }, ...Object.keys(statusColor).map(s => ({ value: s, label: s }))]}
-        />
-        <span className="text-xs text-gray-500">Hiển thị {data.length} / {rawData.length} đơn</span>
-      </div>
-      <Table
-        rowKey="id"
-        loading={isLoading}
-        dataSource={data}
-        columns={columns as any}
-        size="middle"
-        scroll={{ x: 1200 }}
-        pagination={{ current: page, pageSize, total: myMeta.totalElements, showSizeChanger: true }}
-        onChange={(p) => { setPage(p.current || 1); setPageSize(p.pageSize || 10); }}
-      />
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+      <Space direction="vertical" size="large" className="w-full">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <Title level={3} className="!mb-0">Đơn hàng của tôi</Title>
+            <Text type="secondary">Quản lý và theo dõi trạng thái đơn hàng</Text>
+          </div>
+          <Space>
+             {/* Thêm các button global actions nếu cần */}
+          </Space>
+        </div>
 
-      <Drawer title={`Chi tiết đơn ${selectedOrder?.id || ''}`} placement="right" width={560} onClose={() => setOpen(false)} open={open}>
-        {selectedOrder ? (
-          <div className="space-y-3">
-            <div className="flex justify-between">
-              <span>Trạng thái</span>
-              <Tag color={statusColor[selectedOrder.status]}>{selectedOrder.status}</Tag>
+        <Card 
+          bordered={false} 
+          className="shadow-sm rounded-lg overflow-hidden" 
+          bodyStyle={{ padding: '0' }} // Reset padding card để table full width đẹp hơn
+        >
+          {/* Filter Section */}
+          <div className="p-5 border-b border-gray-100 flex flex-wrap gap-4 items-center bg-white">
+            <Input
+              prefix={<SearchOutlined className="text-gray-400" />}
+              allowClear
+              placeholder="Tìm theo mã đơn, sản phẩm..."
+              value={search}
+              onChange={e => { setSearch(e.target.value); setPage(1); }}
+              style={{ width: 300 }}
+              className="rounded-md"
+            />
+            <Select
+              suffixIcon={<FilterOutlined className="text-gray-400" />}
+              value={statusFilter}
+              style={{ width: 180 }}
+              onChange={(v) => { setStatusFilter(v as any); setPage(1); }}
+              options={[{ value: 'ALL', label: 'Tất cả trạng thái' }, ...Object.keys(statusColor).map(s => ({ value: s, label: statusLabel[s] || s }))]}
+            />
+          </div>
+
+          {/* Table */}
+          <Table
+            rowKey="id"
+            loading={isLoading}
+            dataSource={data}
+            columns={columns as any}
+            size="middle" // Dùng middle để cân đối, không quá to như default
+            scroll={{ x: 1000 }}
+            pagination={{ 
+              current: page, 
+              pageSize, 
+              total: myMeta.totalElements, 
+              showSizeChanger: true,
+              showTotal: (total) => `Tổng ${total} đơn hàng`,
+              className: "p-4 !m-0 flex justify-end" // Padding cho pagination
+            }}
+            onChange={(p) => { setPage(p.current || 1); setPageSize(p.pageSize || 10); }}
+          />
+        </Card>
+      </Space>
+
+      {/* Drawer Chi tiết */}
+      <Drawer 
+        title={<span className="font-bold text-lg">Chi tiết đơn hàng</span>} 
+        placement="right" 
+        width={600} 
+        onClose={() => setOpen(false)} 
+        open={open}
+        extra={<Tag color={statusColor[selectedOrder?.status || '']}>{statusLabel[selectedOrder?.status || ''] || selectedOrder?.status}</Tag>}
+      >
+        {selectedOrder && (
+          <div className="space-y-6">
+            {/* Info Section */}
+            <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
+              <div>
+                <Text type="secondary" className="text-xs uppercase block mb-1">Mã đơn hàng</Text>
+                <Text strong copyable>{selectedOrder.id}</Text>
+              </div>
+              <div>
+                <Text type="secondary" className="text-xs uppercase block mb-1">Ngày đặt</Text>
+                <Text>{formatDateVN(selectedOrder.created_at)}</Text>
+              </div>
+              <div>
+                <Text type="secondary" className="text-xs uppercase block mb-1">Cửa hàng</Text>
+                <Text className="text-blue-600">{selectedOrder.shop_name}</Text>
+              </div>
+               <div>
+                <Text type="secondary" className="text-xs uppercase block mb-1">Thanh toán</Text>
+                <Text>{selectedOrder.payment_method}</Text>
+              </div>
             </div>
-            <div className="flex justify-between"><span>Cửa hàng</span><b>{selectedOrder.shop_name} ({selectedOrder.shop_id})</b></div>
-            <div className="flex justify-between"><span>Tạm tính</span><b>{currency(selectedOrder.subtotal)}</b></div>
-            <div className="flex justify-between"><span>Giảm</span><b>{currency(selectedOrder.discount_amount)}</b></div>
-            <div className="flex justify-between"><span>Phí vận chuyển</span><b>{currency(selectedOrder.shipping_fee)}</b></div>
-            <div className="flex justify-between"><span>Thành tiền</span><b>{currency(selectedOrder.total_amount)}</b></div>
-            <div className="mt-4">
-              <b>Danh sách sản phẩm</b>
-              <ul className="list-disc pl-5 mt-2">
+
+            {/* Items Section */}
+            <div>
+              <Text strong className="block mb-3">Sản phẩm ({selectedOrder.items?.length})</Text>
+              <div className="border rounded-lg divide-y">
                 {(selectedOrder.items || []).map((i) => (
-                  <li key={`${i.product_id}`}>{i.product_name} x{i.quantity} — {currency(i.subtotal)}</li>
+                  <div key={i.product_id} className="p-3 flex items-start gap-3">
+                    <Avatar shape="square" size={48} src={i.product_image} className="bg-gray-100" />
+                    <div className="flex-1">
+                      <Text className="block mb-0.5 font-medium">{i.product_name}</Text>
+                      <div className="flex justify-between text-sm">
+                        <Text type="secondary">x{i.quantity}</Text>
+                        <Text strong>{currency(i.subtotal)}</Text>
+                      </div>
+                    </div>
+                  </div>
                 ))}
-              </ul>
+              </div>
+            </div>
+
+            {/* Summary Section */}
+            <div className="space-y-2 pt-2">
+              <div className="flex justify-between text-gray-500"><span>Tạm tính</span><span>{currency(selectedOrder.subtotal)}</span></div>
+              <div className="flex justify-between text-gray-500"><span>Giảm giá</span><span>- {currency(selectedOrder.discount_amount)}</span></div>
+              <div className="flex justify-between text-gray-500"><span>Phí vận chuyển</span><span>+ {currency(selectedOrder.shipping_fee)}</span></div>
+              <Divider className="my-2" />
+              <div className="flex justify-between items-center">
+                <Text strong className="text-lg">Tổng cộng</Text>
+                <Text strong className="text-xl text-blue-600">{currency(selectedOrder.total_amount)}</Text>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="pt-4 grid grid-cols-2 gap-3">
+               {selectedOrder.status === 'PENDING' && (
+                 <>
+                   <Button block type="primary" size="large" onClick={() => doCheckout(selectedOrder.id)}>Thanh toán ngay</Button>
+                   <Button block danger size="large" onClick={() => doCancel(selectedOrder.id)}>Hủy đơn</Button>
+                   {/* <Button block onClick={() => { setCouponCode(''); setApplyOpen(true); }}>Áp mã giảm giá</Button> */}
+                   {selectedOrder.coupon_code && <Button block danger onClick={() => removeCouponFromOrder(selectedOrder.id)}>Gỡ mã</Button>}
+                 </>
+               )}
+               {selectedOrder.status === 'SHIPPING' && (
+                 <Button block type="primary" className="col-span-2 !bg-green-600" size="large" onClick={() => doConfirmDelivery(selectedOrder.id)}>
+                   Đã nhận được hàng
+                 </Button>
+               )}
             </div>
           </div>
-        ) : null}
+        )}
       </Drawer>
 
       <Modal
@@ -212,9 +329,18 @@ const MyOrder: React.FC = () => {
           load();
         }}
         okText="Áp dụng"
-        cancelText="Hủy"
+        cancelText="Đóng"
+        centered
       >
-        <Input placeholder="Nhập mã" value={couponCode} onChange={(e) => setCouponCode(e.target.value)} />
+        <div className="py-4">
+           <Input 
+             size="large" 
+             placeholder="Nhập mã voucher (VD: SUMMER2024)" 
+             value={couponCode} 
+             onChange={(e) => setCouponCode(e.target.value.toUpperCase())} 
+             prefix={<Tag color="blue">VOUCHER</Tag>}
+           />
+        </div>
       </Modal>
     </div>
   );

@@ -1,6 +1,10 @@
 import { createSlice, createAsyncThunk, type PayloadAction, isPending, isRejectedWithValue } from '@reduxjs/toolkit';
 import { customerSegmentService } from '@/services/segment.service';
 import { getErrorMessage } from '@/helpers/errorHandler';
+import { store } from '@/stores/store';
+
+type RootState = ReturnType<typeof store.getState>;
+type ThunkConfig = { state: RootState; rejectValue: string };
 
 const initialState: ICustomerSegmentState = {
   segments: [],
@@ -8,8 +12,6 @@ const initialState: ICustomerSegmentState = {
   isLoading: false,
   error: null,
 };
-
-type ThunkConfig = { rejectValue: string };
 
 export const fetchAllSegments = createAsyncThunk<CustomerSegmentResponse[], void, ThunkConfig>(
   'segment/fetchAll',
@@ -23,6 +25,12 @@ export const fetchAllSegments = createAsyncThunk<CustomerSegmentResponse[], void
     } catch (error) {
       return rejectWithValue(getErrorMessage(error));
     }
+  },
+  {
+    condition: (_, { getState }) => {
+      const state = getState() as RootState;
+      if (state.segment.isLoading) return false;
+    },
   }
 );
 

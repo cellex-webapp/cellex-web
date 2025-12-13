@@ -16,16 +16,14 @@ const ProductList: React.FC<Props> = ({ title = 'Sản phẩm nổi bật', init
   }, [fetchAllProducts]);
 
   useEffect(() => {
-    if (pagination.page === 1 && pagination.total === 0) {
-        loadProducts(1, initialPageSize);
-    }
-  }, [initialPageSize, loadProducts, pagination.page, pagination.total]);
+    loadProducts(1, initialPageSize);
+  }, [initialPageSize, loadProducts]);
 
   const handlePageChange = (p: number, size: number) => {
     loadProducts(p, size);
   };
 
-  const renderContent = () => {
+  const renderData = () => {
     if (error) {
       return (
         <Alert
@@ -42,7 +40,7 @@ const ProductList: React.FC<Props> = ({ title = 'Sản phẩm nổi bật', init
       );
     }
 
-    if (!isLoading && products.length === 0) {
+    if (products.length === 0) {
       return (
         <div className="flex justify-center items-center min-h-[200px]">
           <Empty description="Không có sản phẩm nào" />
@@ -63,22 +61,28 @@ const ProductList: React.FC<Props> = ({ title = 'Sản phẩm nổi bật', init
     <div className="space-y-4">
       {title && <h2 className="text-xl font-semibold">{title}</h2>}
 
-      <Spin spinning={isLoading} tip="Đang tải...">
-        {renderContent()}
-      </Spin>
-
-      {!error && pagination.total > 0 && (
-        <div className="flex flex-wrap items-center justify-between gap-4 text-sm text-gray-600">
-          <span>Hiển thị {products.length} / {pagination.total} sản phẩm</span>
-          <Pagination
-            current={pagination.page}
-            pageSize={pagination.limit}
-            total={pagination.total}
-            showSizeChanger={true}
-            pageSizeOptions={['50', '100', '150', '200']}
-            onChange={handlePageChange}
-          />
+      {isLoading ? (
+        <div className="flex justify-center items-center w-full min-h-[300px]">
+          <Spin size="large" tip="Đang tải dữ liệu..." />
         </div>
+      ) : (
+        <>
+          {renderData()}
+
+          {!error && pagination.total > 0 && products.length > 0 && (
+            <div className="flex flex-wrap items-center justify-between gap-4 text-sm text-gray-600 mt-4">
+              <span>Hiển thị {products.length} / {pagination.total} sản phẩm</span>
+              <Pagination
+                current={pagination.page}
+                pageSize={pagination.limit}
+                total={pagination.total}
+                showSizeChanger={true}
+                pageSizeOptions={['12', '24', '48', '100']}
+                onChange={handlePageChange}
+              />
+            </div>
+          )}
+        </>
       )}
     </div>
   );

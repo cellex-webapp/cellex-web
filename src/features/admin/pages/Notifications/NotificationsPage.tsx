@@ -5,10 +5,20 @@ import BroadcastModal from './components/BroadcastModal';
 
 const { Title, Text } = Typography;
 
-const TYPE_COLOR: Record<string, string> = {
-  GENERAL: 'blue',
-  SYSTEM: 'purple',
-  PROMOTION: 'green',
+const TYPE_COLOR: Record<NotificationType, string> = {
+  SYSTEM: 'purple',           
+  ORDER_CREATED: 'blue',      
+  ORDER_CONFIRMED: 'cyan',    
+  ORDER_SHIPPING: 'geekblue', 
+  ORDER_DELIVERED: 'green',   
+  ORDER_CANCELLED: 'red',     
+  PAYMENT_SUCCESS: 'success', 
+  PAYMENT_FAILED: 'error',    
+  COUPON_AVAILABLE: 'gold',   
+  PROMOTION: 'orange',        
+  PRODUCT_RESTOCK: 'magenta', 
+  REVIEW_REQUEST: 'lime',     
+  CUSTOM: 'default',          
 };
 
 const NotificationsPage: React.FC = () => {
@@ -48,22 +58,47 @@ const NotificationsPage: React.FC = () => {
     return filteredNotifications.slice(start, start + size);
   }, [filteredNotifications, page, size]);
 
+  // Helper để lấy màu an toàn
+  const getTagColor = (type: string): string => {
+    return TYPE_COLOR[type as NotificationType] || 'default';
+  };
+
   return (
     <Space direction="vertical" size="large" className="w-full">
-      <Card title={<Space><Title level={4} className="!mb-0">Quản lý Thông báo</Title>{unreadCount > 0 && <Badge count={unreadCount} />}</Space>} extra={<Button className='!bg-indigo-600' type="primary" onClick={() => setBroadcastOpen(true)}>Gửi Thông báo</Button>}>
+      <Card 
+        title={
+          <Space>
+            <Title level={4} className="!mb-0">Quản lý Thông báo</Title>
+            {unreadCount > 0 && <Badge count={unreadCount} />}
+          </Space>
+        } 
+        extra={
+          <Button className='!bg-indigo-600' type="primary" onClick={() => setBroadcastOpen(true)}>
+            Gửi Thông báo
+          </Button>
+        }
+      >
         <Space wrap className="w-full justify-between">
           <Space>
             <Button onClick={() => fetchNotifications(0, size)} loading={isLoading}>Làm mới</Button>
             <Button onClick={() => markAllAsRead()} disabled={unreadCount === 0} loading={isLoading}>Đánh dấu tất cả đã đọc</Button>
-            {/* <Button onClick={() => getUnreadCount()} loading={isLoading}>Cập nhật số chưa đọc</Button> */}
           </Space>
-          <Input.Search allowClear placeholder="Tìm theo tiêu đề/nội dung" onSearch={setQuery} onChange={(e) => setQuery(e.target.value)} style={{ maxWidth: 320 }} />
+          <Input.Search 
+            allowClear 
+            placeholder="Tìm theo tiêu đề/nội dung" 
+            onSearch={setQuery} 
+            onChange={(e) => setQuery(e.target.value)} 
+            style={{ maxWidth: 320 }} 
+          />
         </Space>
+        
         {error && <Text type="danger" className="block mt-2">{error}</Text>}
+        
         <Tabs activeKey={tab} onChange={(key) => setTab(key as any)} className="mt-3">
           <Tabs.TabPane tab={<Space> Tất cả <Badge count={notifications.length} /></Space>} key="ALL" />
           <Tabs.TabPane tab={<Space> Chưa đọc <Badge count={notifications.filter(n => !n.isRead).length} /></Space>} key="UNREAD" />
         </Tabs>
+
         <List
           className="mt-4"
           loading={isLoading}
@@ -73,14 +108,17 @@ const NotificationsPage: React.FC = () => {
             <List.Item
               actions={[
                 !item.isRead && <Button size="small" type="link" onClick={() => markAsRead(item.id)}>Đánh dấu đọc</Button>,
-                <Popconfirm title="Xóa thông báo?" onConfirm={() => deleteNotification(item.id)}><Button danger size="small" type="link">Xóa</Button></Popconfirm>,
+                <Popconfirm title="Xóa thông báo?" onConfirm={() => deleteNotification(item.id)}>
+                  <Button danger size="small" type="link">Xóa</Button>
+                </Popconfirm>,
               ].filter(Boolean)}
             >
               <Space direction="vertical" size={0} className="w-full">
                 <Space>
                   {!item.isRead && <Badge status="processing" />}
                   <Text strong>{item.title}</Text>
-                  <Tag color={TYPE_COLOR[item.type] || 'default'}>{item.type}</Tag>
+                  {/* Sử dụng Type mới để render Tag */}
+                  <Tag color={getTagColor(item.type)}>{item.type}</Tag>
                 </Space>
                 <Text>{item.message}</Text>
                 {item.actionUrl && (

@@ -1,8 +1,10 @@
 import { createSlice, createAsyncThunk, isPending, isRejectedWithValue } from '@reduxjs/toolkit';
 import { categoryService } from '@/services/category.service';
 import { getErrorMessage } from '@/helpers/errorHandler';
+import { store } from '@/stores/store';
 
-type ThunkConfig = { rejectValue: string };
+type RootState = ReturnType<typeof store.getState>;
+type ThunkConfig = { state: RootState; rejectValue: string };
 
 interface CategoryState {
   categories: ICategory[]; 
@@ -25,7 +27,7 @@ const initialState: CategoryState = {
 export const fetchAllCategories = createAsyncThunk<
   IPaginatedResult<ICategory>, 
   IPaginationParams | undefined, 
-  { rejectValue: string }
+  ThunkConfig
 >(
   'category/fetchAll', 
   async (params, { rejectWithValue }) => {
@@ -35,7 +37,14 @@ export const fetchAllCategories = createAsyncThunk<
     } catch (error) {
       return rejectWithValue(getErrorMessage(error));
     }
-});
+  },
+  {
+    condition: (_, { getState }) => {
+      const state = getState();
+      if (state.category.isLoading) return false;
+    }
+  }
+);
 
 export const createCategory = createAsyncThunk<ICategory, ICreateCategoryPayload, ThunkConfig>(
   'category/create',

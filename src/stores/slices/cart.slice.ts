@@ -1,8 +1,10 @@
 import { createSlice, createAsyncThunk, isPending, isRejectedWithValue } from '@reduxjs/toolkit';
 import { cartService } from '@/services/cart.service';
 import { getErrorMessage } from '@/helpers/errorHandler';
+import { store } from '@/stores/store';
 
-type ThunkConfig = { rejectValue: string };
+type RootState = ReturnType<typeof store.getState>;
+type ThunkConfig = { state: RootState; rejectValue: string };
 
 interface ICartState {
   cart: ICart | null;
@@ -24,6 +26,12 @@ export const fetchMyCart = createAsyncThunk<ICart, void, ThunkConfig>(
       return response.result; 
     } catch (err) {
       return rejectWithValue(getErrorMessage(err));
+    }
+  },
+  {
+    condition: (_, { getState }) => {
+      const state = getState();
+      if (state.cart.isLoading) return false;
     }
   }
 );
@@ -109,14 +117,12 @@ const cartSlice = createSlice({
           state.error = null;
         }
       )
-      
       .addMatcher(isPending, (state, action) => {
         if (action.type.startsWith('cart/')) {
           state.isLoading = true;
           state.error = null;
         }
       })
-      
       .addMatcher(isRejectedWithValue, (state, action) => {
         if (action.type.startsWith('cart/')) {
           state.isLoading = false;

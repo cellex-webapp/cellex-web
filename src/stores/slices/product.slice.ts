@@ -1,8 +1,10 @@
 import { createSlice, createAsyncThunk, isPending, isRejectedWithValue } from '@reduxjs/toolkit';
 import { productService } from '@/services/product.service';
 import { getErrorMessage } from '@/helpers/errorHandler';
+import { store } from '@/stores/store';
 
-type ThunkConfig = { rejectValue: string };
+type RootState = ReturnType<typeof store.getState>;
+type ThunkConfig = { state: RootState; rejectValue: string };
 
 interface ProductState {
   products: IProduct[];
@@ -33,6 +35,12 @@ export const fetchAllProducts = createAsyncThunk<IPaginatedResult<IProduct>, IPa
     } catch (error) {
       return rejectWithValue(getErrorMessage(error));
     }
+  },
+  {
+    condition: (_, { getState }) => {
+      const state = getState();
+      if (state.product.isLoading) return false;
+    }
   }
 );
 
@@ -56,6 +64,12 @@ export const fetchProductsByShop = createAsyncThunk<IPaginatedResult<IProduct>, 
       return resp.result;
     } catch (error) {
       return rejectWithValue(getErrorMessage(error));
+    }
+  },
+  {
+    condition: (_, { getState }) => {
+      const state = getState();
+      if (state.product.isLoading) return false;
     }
   }
 );
@@ -178,10 +192,10 @@ const productSlice = createSlice({
           return (
             action.type.endsWith('/fulfilled') &&
             (action.type.includes('fetchAll') ||
-             action.type.includes('fetchByShop') ||
-             action.type.includes('fetchByCategory') ||
-             action.type.includes('search') ||
-             action.type.includes('fetchMyProducts'))
+              action.type.includes('fetchByShop') ||
+              action.type.includes('fetchByCategory') ||
+              action.type.includes('search') ||
+              action.type.includes('fetchMyProducts'))
           );
         },
         (state, action) => {

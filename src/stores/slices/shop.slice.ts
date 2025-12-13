@@ -1,6 +1,10 @@
 import { createSlice, createAsyncThunk, isPending, isRejectedWithValue } from '@reduxjs/toolkit';
 import { shopService } from '@/services/shop.service';
 import { getErrorMessage } from '@/helpers/errorHandler'; 
+import { store } from '@/stores/store';
+
+type RootState = ReturnType<typeof store.getState>;
+type ThunkConfig = { state: RootState; rejectValue: string };
 
 interface ShopState {
   shop: IShop | null;       
@@ -23,11 +27,11 @@ const initialState: ShopState = {
 };
 
 export const fetchShops = createAsyncThunk<
-  IPaginatedResult<IShop>, 
+  IPaginatedResult<IShop>,
   IPaginationParams | undefined,
-  { rejectValue: string }
+  ThunkConfig
 >(
-  'shop/fetchAll', 
+  'shop/fetchAll',
   async (params, { rejectWithValue }) => {
     try {
       const resp = await shopService.getShopList(params);
@@ -35,6 +39,12 @@ export const fetchShops = createAsyncThunk<
     } catch (error) {
       return rejectWithValue(getErrorMessage(error));
     }
+  },
+  {
+    condition: (_, { getState }) => {
+      const state = getState() as RootState;
+      if (state.shop.isLoading) return false;
+    },
   }
 );
 
