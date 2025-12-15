@@ -27,7 +27,7 @@ const ProductAnalyticsPage: React.FC = () => {
 
   const overview = productAnalytics?.overview;
   const categoryData = productAnalytics?.charts.productsByCategoryChart.slices || [];
-  const topProducts = productAnalytics?.topProducts.byRating || []; // Or byRevenue if available
+  const topProducts = productAnalytics?.topProducts.byRating || [];
 
   return (
     <div className="space-y-6 p-6 bg-gray-50 min-h-screen">

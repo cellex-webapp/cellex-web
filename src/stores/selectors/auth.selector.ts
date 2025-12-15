@@ -9,6 +9,10 @@ export const selectIsAuthenticated = createSelector(
 );
 
 export const selectCurrentUser = createSelector([selectAuth], (auth) => auth.user);
+export const selectCurrentShop = createSelector(
+  [selectAuth],
+  (auth) => auth.shop
+);
 
 export const selectUserRole = createSelector(
   [selectCurrentUser],

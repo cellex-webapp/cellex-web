@@ -6,6 +6,7 @@ import { getErrorMessage } from '@/helpers/errorHandler';
 type ThunkConfig = { rejectValue: string };
 
 interface AuthResult {
+  shop?: IShop;
   user: IUser;
   accessToken: string;
   refreshToken: string;
@@ -13,6 +14,7 @@ interface AuthResult {
 
 interface AuthState {
   user: IUser | null;
+  shop?: IShop | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
@@ -20,8 +22,10 @@ interface AuthState {
 
 const savedUser = localStorage.getItem('user');
 const savedToken = localStorage.getItem('accessToken');
+const savedShop = localStorage.getItem('shop');
 const initialState: AuthState = {
   user: savedUser ? JSON.parse(savedUser) : null,
+  shop: savedShop ? JSON.parse(savedShop) : null,
   isAuthenticated: !!savedToken,
   isLoading: false,
   error: null,
@@ -86,7 +90,7 @@ const authSlice = createSlice({
         state.isAuthenticated = false;
         state.user = null;
         state.isLoading = false;
-        ['accessToken', 'refreshToken', 'user', 'role'].forEach(k => localStorage.removeItem(k));
+        ['accessToken', 'refreshToken', 'user', 'role','shop'].forEach(k => localStorage.removeItem(k));
       })
 
       .addCase(updateUserProfile.fulfilled, (state, action) => {
@@ -98,6 +102,11 @@ const authSlice = createSlice({
 
       .addCase(login.fulfilled, (state, action: PayloadAction<AuthResult>) => {
         const userFromApi = action.payload.user;
+        const shopFromApi = action.payload.shop;
+        if (shopFromApi) {
+          state.shop = shopFromApi;
+          localStorage.setItem('shop', JSON.stringify(shopFromApi));
+        }
         if (!userFromApi.role) userFromApi.role = 'USER';
 
         state.isLoading = false;

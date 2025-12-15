@@ -6,15 +6,20 @@ import {
   AppstoreOutlined,
   ShopOutlined,
   TeamOutlined,
-  DollarOutlined,
   CustomerServiceOutlined,
-  TagsOutlined,
-  DatabaseOutlined,
 } from '@ant-design/icons';
 
 const { Sider } = Layout;
 
 const MENU_CONFIG = [
+  {
+    key: 'dashboard',
+    label: 'Bảng điều khiển',
+    icon: ShopOutlined,
+    children: [
+      { key: 'dashboard-home', label: 'Tổng quan', path: '/vendor' },
+    ]
+  },
   {
     key: 'order',
     label: 'Quản lý đơn hàng',
@@ -33,37 +38,12 @@ const MENU_CONFIG = [
     ],
   },
   {
-    key: 'marketing',
-    label: 'Kênh Marketing',
-    icon: TagsOutlined,
-    children: [
-      { key: 'marketing-coupon', label: 'Khuyến mãi của tôi', path: '/vendor/marketing/coupons' },
-      { key: 'marketing-system', label: 'Khuyến mãi hệ thống', path: '/vendor/marketing/system' },
-    ],
-  },
-  {
     key: 'customer',
     label: 'Chăm sóc Khách hàng',
     icon: CustomerServiceOutlined,
     children: [
-      { key: 'customer-message', label: 'Quản lý tin nhắn', path: '/vendor/customers/messages' },
-      { key: 'customer-rating', label: 'Quản lý đánh giá', path: '/vendor/customers/ratings' },
-    ],
-  },
-  {
-    key: 'finance',
-    label: 'Tài chính',
-    icon: DollarOutlined,
-    children: [
-      { key: 'finance-revenue', label: 'Doanh thu', path: '/vendor/finance/revenue' },
-    ],
-  },
-  {
-    key: 'data',
-    label: 'Dữ liệu',
-    icon: DatabaseOutlined,
-    children: [
-      { key: 'data-analytics', label: 'Phân tích bán hàng', path: '/vendor/data/analytics' },
+      { key: 'customer-message', label: 'Quản lý tin nhắn', path: '/vendor/chat' },
+      { key: 'customer-rating', label: 'Quản lý đánh giá', path: '/vendor/rating' },
     ],
   },
   {

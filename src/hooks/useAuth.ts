@@ -2,6 +2,7 @@ import { useAppSelector, useAppDispatch } from '@/hooks/redux';
 import { login, logout, sendSignupCode, verifySignupCode } from '@/stores/slices/auth.slice';
 import {
   selectIsAuthenticated,
+  selectCurrentShop,
   selectCurrentUser,
   selectUserRole,
   selectAuthIsLoading,
@@ -13,6 +14,7 @@ export const useAuth = () => {
 
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const currentUser = useAppSelector(selectCurrentUser);
+  const currentShop = useAppSelector(selectCurrentShop);
   const userRole = useAppSelector(selectUserRole);
   const isLoading = useAppSelector(selectAuthIsLoading);
   const error = useAppSelector(selectAuthError);
@@ -36,6 +38,7 @@ export const useAuth = () => {
   return {
     isAuthenticated,
     currentUser,
+    currentShop,
     userRole,
     isLoading,
     error,
