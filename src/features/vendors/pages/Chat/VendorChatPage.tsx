@@ -1,10 +1,9 @@
 import React, { useEffect } from 'react';
-import ChatSidebar from '@/features/vendors/pages/Chat/components/ChatSidebar';
-import ChatWindow from '@/features/vendors/pages/Chat/components/ChatWindow';
+import ChatSidebar from './components/ChatSidebar';
+import ChatWindow from './components/ChatWindow';
 import { useChat } from '@/hooks/useChat';
 
-// User Chat tab: reuse shared chat components
-const Chat: React.FC = () => {
+const VendorChatPage: React.FC = () => {
   const { initChat, disconnectChat } = useChat();
 
   useEffect(() => {
@@ -22,4 +21,4 @@ const Chat: React.FC = () => {
   );
 };
 
-export default Chat;
+export default VendorChatPage;

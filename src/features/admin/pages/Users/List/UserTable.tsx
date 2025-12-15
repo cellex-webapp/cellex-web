@@ -1,6 +1,6 @@
 import React from 'react';
 import { Table, Tag, Button, Space, Tooltip } from 'antd';
-import { LockOutlined, UnlockOutlined } from '@ant-design/icons';
+import { LockOutlined, UnlockOutlined, MessageOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 
 interface UserTableProps {
@@ -8,9 +8,10 @@ interface UserTableProps {
   loading: boolean;
   onRowClick: (id: string) => void;
   onLock?: (id: string) => void;
+  onChat?: (id: string) => void;
 }
 
-const UserTable: React.FC<UserTableProps> = ({ data, loading, onRowClick, onLock }) => {
+const UserTable: React.FC<UserTableProps> = ({ data, loading, onRowClick, onLock, onChat }) => {
   const columns: ColumnsType<IUser> = [
     {
       title: 'Ảnh',
@@ -112,6 +113,18 @@ const UserTable: React.FC<UserTableProps> = ({ data, loading, onRowClick, onLock
         const isBanned = typeof record.banned === 'boolean' ? record.banned : !record.active;
         return (
           <Space size="small">
+            <Tooltip title="Nhắn tin">
+              <Button
+                type="text"
+                size="small"
+                icon={<MessageOutlined className="!text-blue-600" />}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onChat?.(record.id);
+                }}
+              />
+            </Tooltip>
+
             <Tooltip title={isBanned ? 'Mở khóa' : 'Khóa'}>
               <Button
                 type="text"

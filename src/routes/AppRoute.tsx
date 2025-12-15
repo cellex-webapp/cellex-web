@@ -8,7 +8,7 @@ import LoginPage from '@/features/auth/pages/LoginPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import SignupPage from '@/features/auth/pages/SignupPage';
 import OTPPage from '@/features/auth/pages/OTPPage';
-import { VendorDashboard } from '@/features/vendors/pages/Dashboard';
+import VendorDashboardPage from '@/features/vendors/pages/Dashboard/VendorDashboardPage';
 import AdminLayout from '@/features/admin/components/AdminLayout';
 import VendorLayout from '@/features/vendors/components/VendorLayout';
 import VendorNotificationsPage from '@/features/vendors/pages/Notifications/NotificationsPage';
@@ -46,6 +46,8 @@ import CustomerAnalyticsPage from '@/features/admin/pages/Dashboard/CustomerAnal
 import ProductAnalyticsPage from '@/features/admin/pages/Dashboard/ProductAnalytics';
 import ShopAnalyticsPage from '@/features/admin/pages/Dashboard/ShopAnalytics';
 import AdminDashboardPage from '@/features/admin/pages/Dashboard/AdminDashboardPage';
+import VendorChatPage from '@/features/vendors/pages/Chat/VendorChatPage';
+import AdminChatPage from '@/features/admin/pages/Chat/AdminChatPage';
 
 const router = createBrowserRouter([
   {
@@ -73,6 +75,7 @@ const router = createBrowserRouter([
           { path: 'marketing/segment', element: <SegmentCouponsPage /> },
           { path: 'customer-segments', element: <CustomerSegmentPage /> },
           { path: 'notifications', element: <NotificationsPage /> },
+          { path: 'customers/messages', element: <AdminChatPage /> },
         ],
       },
     ],
@@ -109,7 +112,7 @@ const router = createBrowserRouter([
         path: '/vendor',
         element: <VendorLayout />,
         children: [
-          { index: true, element: <VendorDashboard /> },
+          { index: true, element: <VendorDashboardPage /> },
           { path: 'products', element: <ProductsPage /> },
           { path: 'categories', element: <VendorCategoriesPage /> },
           { path: 'categories/:slug/attributes', element: <VendorAttributesPage /> },
@@ -117,6 +120,7 @@ const router = createBrowserRouter([
           { path: 'orders/shipping', element: <VendorOrdersPage /> },
           { path: 'shop', element: <ShopManagementPage /> },
           { path: 'notifications', element: <VendorNotificationsPage /> },
+          { path: 'chat', element: <VendorChatPage /> },
         ],
       },
     ],

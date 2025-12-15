@@ -8,6 +8,7 @@ import UserTable from './UserTable';
 import UserDetailModal from './UserDetailModal';
 import UserBanReasonModal from './UserBanReasonModal';
 import type { TablePaginationConfig } from 'antd/es/table';
+import { useChat } from '@/hooks/useChat';
 
 const UsersListPage: React.FC = () => {
   const navigate = useNavigate();
@@ -20,6 +21,7 @@ const UsersListPage: React.FC = () => {
     banUser, 
     unbanUser 
   } = useUser();
+  const { startChatWithUser } = useChat();
   
   const [q, setQ] = useState('');
   const debouncedQ = useDebounce(q, 350); 
@@ -44,6 +46,20 @@ const UsersListPage: React.FC = () => {
   useEffect(() => {
     if (error) message.error(error);
   }, [error]);
+
+  const handleChat = async (userId: string) => {
+    try {
+      const room = await startChatWithUser(userId);
+      if (room) {
+        navigate('/admin/customers/messages'); 
+      } else {
+        message.error('Không thể tạo cuộc trò chuyện');
+      }
+    } catch (err) {
+      console.error(err);
+      message.error('Lỗi khi kết nối đến chat');
+    }
+  };
 
   const handleLock = async (id: string) => {
     const user = users.find((u) => u.id === id);
@@ -116,6 +132,7 @@ const UsersListPage: React.FC = () => {
           setDetailOpen(true);
         }}
         onLock={handleLock} 
+        onChat={handleChat}
       />
       
       <UserBanReasonModal

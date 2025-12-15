@@ -17,6 +17,9 @@ declare global {
     type TrendType = 'UP' | 'DOWN' | 'STABLE';
     type MetricType = 'NUMBER' | 'CURRENCY';
     type ChartType = 'LINE' | 'AREA' | 'BAR' | 'PIE';
+    type PartnerRole = 'ADMIN' | 'USER' | 'VENDOR';
+    type MessageType = 'TEXT' | 'IMAGE' | 'FILE' | 'SYSTEM';
+    type MessageStatus = 'SENT' | 'DELIVERED' | 'READ';
 
     interface IPaginatedResult<T> {
         content: T[];
@@ -1069,6 +1072,54 @@ declare global {
 
     interface IVendorAnalyticsParams extends IAnalyticsParams {
         shopId: string;
+    }
+    interface IChatRoom {
+        id: string;
+        partnerId: string;
+        partnerName: string;
+        partnerAvatar: string;
+        partnerRole: PartnerRole;
+        lastMessage: string;
+        lastMessageAt: string;
+        lastMessageSenderId: string;
+        unreadCount: number;
+        createdAt: string;
+    }
+
+    interface IMessage {
+        id: string;
+        chatRoomId: string;
+        senderId: string;
+        senderName: string;
+        senderAvatar: string;
+        receiverId: string;
+        receiverName: string;
+        content: string;
+        type: MessageType;
+        status: MessageStatus;
+        attachmentUrl?: string;
+        attachmentName?: string;
+        createdAt: string;
+        readAt?: string;
+    }
+
+
+    interface ICreateChatRoomRequest {
+        participantId: string;
+    }
+
+    interface ISendMessageRequest {
+        receiverId: string;
+        content: string;
+        type: MessageType;
+        attachmentUrl?: string;
+        attachmentName?: string;
+    }
+
+
+    interface IChatPaginationParams {
+        page?: number;
+        size?: number;
     }
 }
 

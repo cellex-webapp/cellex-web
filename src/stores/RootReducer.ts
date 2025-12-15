@@ -13,6 +13,7 @@ import orderReducer from '@/stores/slices/order.slice';
 import notificationReducer from '@/stores/slices/notification.slice';
 import vnpayReducer from '@/stores/slices/vnpay.slice';
 import analyticsReducer from '@/stores/slices/analytics.slice';
+import chatReducer from '@/stores/slices/chat.slice';
 
 const rootReducer = combineReducers({
   auth: authReducer,
@@ -29,6 +30,7 @@ const rootReducer = combineReducers({
   notification: notificationReducer,
   vnpay: vnpayReducer,
   analytics: analyticsReducer,
+  chat: chatReducer,
 });
 
 export default rootReducer;

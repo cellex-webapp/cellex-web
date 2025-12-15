@@ -7,4 +7,7 @@ export default defineConfig({
   plugins: [
     tailwindcss(), 
     tsconfigPaths()],
+  define: {
+    global: 'window',
+  },
 });

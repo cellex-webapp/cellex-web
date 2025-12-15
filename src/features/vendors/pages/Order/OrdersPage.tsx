@@ -154,7 +154,7 @@ const VendorOrdersPage: React.FC = () => {
       align: 'center' as const,
       render: (s: string) => {
         const conf = statusConfig[s] || { color: 'default', label: s };
-        return <Tag color={conf.color} className="font-medium min-w-[100px] text-center">{conf.label}</Tag>;
+        return <Tag color={conf.color} className="font-medium text-center">{conf.label}</Tag>;
       }
     },
     {
