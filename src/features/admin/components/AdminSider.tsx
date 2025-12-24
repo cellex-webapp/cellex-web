@@ -60,6 +60,7 @@ const MENU_CONFIG = [
     children: [
       { key: 'customer-message', label: 'Quản lý tin nhắn', path: '/admin/customers/messages' },
       { key: 'customer-rating', label: 'Quản lý đánh giá', path: '/admin/customers/ratings' },
+      { key: 'customer-reviews', label: 'Kiểm duyệt đánh giá', path: '/admin/reviews' },
     ],
   },
   {

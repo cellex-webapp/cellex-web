@@ -1,10 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button, Drawer, Input, Modal, Space, Table, Tag, Typography, message, Select, Avatar, Divider, Card, Tooltip } from 'antd';
-import { EyeOutlined, SearchOutlined, FilterOutlined } from '@ant-design/icons';
+import { EyeOutlined, SearchOutlined, FilterOutlined, StarOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { useOrder } from '@/hooks/useOrder';
 import { formatDateVN } from '@/utils/date';
 import { useAppSelector } from '@/hooks/redux';
 import { selectMyOrderPageMeta } from '@/stores/selectors/order.selector';
+import { reviewService } from '@/services/review.service';
+import { ReviewForm } from '@/features/clients/components/Review';
 
 const { Title, Text } = Typography;
 
@@ -52,6 +54,13 @@ const MyOrder: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<OrderStatus | 'ALL'>('ALL');
   const [search, setSearch] = useState('');
 
+  // Review states
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [selectedProductForReview, setSelectedProductForReview] = useState<IOrderItem | null>(null);
+  const [selectedOrderForReview, setSelectedOrderForReview] = useState<IOrder | null>(null);
+  const [orderReviews, setOrderReviews] = useState<Map<string, Set<string>>>(new Map()); // orderId -> Set of reviewedProductIds
+  const [loadingReviews, setLoadingReviews] = useState<Set<string>>(new Set());
+
   useEffect(() => { if (error) message.error(error); }, [error]);
 
   const load = useCallback(() => {
@@ -75,6 +84,67 @@ const MyOrder: React.FC = () => {
   }, [rawData, statusFilter, search]);
 
   const myMeta = useAppSelector(selectMyOrderPageMeta);
+
+  // Fetch reviews for delivered orders to check which products have been reviewed
+  const fetchOrderReviews = useCallback(async (orderId: string) => {
+    if (loadingReviews.has(orderId) || orderReviews.has(orderId)) return;
+    
+    setLoadingReviews(prev => new Set(prev).add(orderId));
+    try {
+      const response = await reviewService.getOrderReviews(orderId);
+      const reviewedProductIds = new Set(response.result?.map(r => r.product_id) || []);
+      setOrderReviews(prev => new Map(prev).set(orderId, reviewedProductIds));
+    } catch {
+      // Silent fail - we'll just not show reviewed status
+    } finally {
+      setLoadingReviews(prev => {
+        const next = new Set(prev);
+        next.delete(orderId);
+        return next;
+      });
+    }
+  }, [loadingReviews, orderReviews]);
+
+  // Fetch reviews for all delivered orders when data changes
+  useEffect(() => {
+    const deliveredOrders = rawData.filter(o => o.status === 'DELIVERED');
+    deliveredOrders.forEach(order => {
+      if (!orderReviews.has(order.id)) {
+        fetchOrderReviews(order.id);
+      }
+    });
+  }, [rawData, fetchOrderReviews, orderReviews]);
+
+  // Check if a product in an order has been reviewed
+  const isProductReviewed = useCallback((orderId: string, productId: string) => {
+    return orderReviews.get(orderId)?.has(productId) || false;
+  }, [orderReviews]);
+
+  // Handle opening review modal
+  const handleOpenReviewModal = (order: IOrder, item: IOrderItem) => {
+    setSelectedOrderForReview(order);
+    setSelectedProductForReview(item);
+    setReviewModalOpen(true);
+  };
+
+  // Handle review submission success
+  const handleReviewSuccess = () => {
+    setReviewModalOpen(false);
+    setSelectedProductForReview(null);
+    setSelectedOrderForReview(null);
+    message.success('Đánh giá của bạn đã được gửi thành công!');
+    
+    // Update the orderReviews to mark this product as reviewed
+    if (selectedOrderForReview && selectedProductForReview) {
+      setOrderReviews(prev => {
+        const next = new Map(prev);
+        const reviewedProducts = next.get(selectedOrderForReview.id) || new Set();
+        reviewedProducts.add(selectedProductForReview.product_id);
+        next.set(selectedOrderForReview.id, reviewedProducts);
+        return next;
+      });
+    }
+  };
 
   // Actions
   const doCheckout = async (id: string) => {
@@ -270,18 +340,38 @@ const MyOrder: React.FC = () => {
             <div>
               <Text strong className="block mb-3">Sản phẩm ({selectedOrder.items?.length})</Text>
               <div className="border rounded-lg divide-y">
-                {(selectedOrder.items || []).map((i) => (
-                  <div key={i.product_id} className="p-3 flex items-start gap-3">
-                    <Avatar shape="square" size={48} src={i.product_image} className="bg-gray-100" />
-                    <div className="flex-1">
-                      <Text className="block mb-0.5 font-medium">{i.product_name}</Text>
-                      <div className="flex justify-between text-sm">
-                        <Text type="secondary">x{i.quantity}</Text>
-                        <Text strong>{currency(i.subtotal)}</Text>
+                {(selectedOrder.items || []).map((i) => {
+                  const reviewed = isProductReviewed(selectedOrder.id, i.product_id);
+                  return (
+                    <div key={i.product_id} className="p-3 flex items-start gap-3">
+                      <Avatar shape="square" size={48} src={i.product_image} className="bg-gray-100" />
+                      <div className="flex-1">
+                        <Text className="block mb-0.5 font-medium">{i.product_name}</Text>
+                        <div className="flex justify-between items-center text-sm">
+                          <Text type="secondary">x{i.quantity}</Text>
+                          <div className="flex items-center gap-2">
+                            <Text strong>{currency(i.subtotal)}</Text>
+                            {selectedOrder.status === 'DELIVERED' && (
+                              reviewed ? (
+                                <Tag color="green" icon={<CheckCircleOutlined />} className="!m-0">Đã đánh giá</Tag>
+                              ) : (
+                                <Button 
+                                  type="link" 
+                                  size="small" 
+                                  icon={<StarOutlined />}
+                                  className="!p-0 text-orange-500 hover:!text-orange-600"
+                                  onClick={() => handleOpenReviewModal(selectedOrder, i)}
+                                >
+                                  Đánh giá
+                                </Button>
+                              )
+                            )}
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
@@ -341,6 +431,52 @@ const MyOrder: React.FC = () => {
              prefix={<Tag color="blue">VOUCHER</Tag>}
            />
         </div>
+      </Modal>
+
+      {/* Review Modal */}
+      <Modal
+        title={
+          <div className="flex items-center gap-2">
+            <StarOutlined className="text-orange-500" />
+            <span>Đánh giá sản phẩm</span>
+          </div>
+        }
+        open={reviewModalOpen}
+        onCancel={() => {
+          setReviewModalOpen(false);
+          setSelectedProductForReview(null);
+          setSelectedOrderForReview(null);
+        }}
+        footer={null}
+        width={600}
+        centered
+        destroyOnClose
+      >
+        {selectedProductForReview && selectedOrderForReview && (
+          <div className="space-y-4">
+            {/* Review Form */}
+            <ReviewForm
+              productId={selectedProductForReview.product_id}
+              orderId={selectedOrderForReview.id}
+              productName={selectedProductForReview.product_name}
+              productImage={selectedProductForReview.product_image}
+              onSubmit={async (data) => {
+                try {
+                  await reviewService.createReview(data as ICreateReviewRequest);
+                  handleReviewSuccess();
+                } catch (err: any) {
+                  message.error(err?.response?.data?.message || 'Không thể gửi đánh giá');
+                  throw err;
+                }
+              }}
+              onCancel={() => {
+                setReviewModalOpen(false);
+                setSelectedProductForReview(null);
+                setSelectedOrderForReview(null);
+              }}
+            />
+          </div>
+        )}
       </Modal>
     </div>
   );

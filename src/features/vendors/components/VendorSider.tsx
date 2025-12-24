@@ -43,7 +43,7 @@ const MENU_CONFIG = [
     icon: CustomerServiceOutlined,
     children: [
       { key: 'customer-message', label: 'Quản lý tin nhắn', path: '/vendor/chat' },
-      { key: 'customer-rating', label: 'Quản lý đánh giá', path: '/vendor/rating' },
+      { key: 'customer-rating', label: 'Quản lý đánh giá', path: '/vendor/reviews' },
     ],
   },
   {

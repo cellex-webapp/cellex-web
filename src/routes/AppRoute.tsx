@@ -48,6 +48,8 @@ import ShopAnalyticsPage from '@/features/admin/pages/Dashboard/ShopAnalytics';
 import AdminDashboardPage from '@/features/admin/pages/Dashboard/AdminDashboardPage';
 import VendorChatPage from '@/features/vendors/pages/Chat/VendorChatPage';
 import AdminChatPage from '@/features/admin/pages/Chat/AdminChatPage';
+import AdminReviewPage from '@/features/admin/pages/Reviews/AdminReviewPage';
+import { VendorReviewsPage } from '@/features/vendors/pages/Reviews';
 
 const router = createBrowserRouter([
   {
@@ -76,6 +78,7 @@ const router = createBrowserRouter([
           { path: 'customer-segments', element: <CustomerSegmentPage /> },
           { path: 'notifications', element: <NotificationsPage /> },
           { path: 'customers/messages', element: <AdminChatPage /> },
+          { path: 'reviews', element: <AdminReviewPage /> },
         ],
       },
     ],
@@ -121,6 +124,8 @@ const router = createBrowserRouter([
           { path: 'shop', element: <ShopManagementPage /> },
           { path: 'notifications', element: <VendorNotificationsPage /> },
           { path: 'chat', element: <VendorChatPage /> },
+          { path: 'reviews', element: <VendorReviewsPage /> },
+          { path: 'rating', element: <VendorReviewsPage /> },
         ],
       },
     ],

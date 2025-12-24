@@ -1121,6 +1121,164 @@ declare global {
         page?: number;
         size?: number;
     }
+
+    // ========================= Review System =========================
+    type ReviewStatus = 
+        | 'PENDING_MODERATION'      // Đang chờ kiểm duyệt tự động
+        | 'APPROVED'                // Đã được duyệt tự động
+        | 'REJECTED_AUTO'           // Bị từ chối bởi hệ thống tự động
+        | 'APPROVED_BY_ADMIN'       // Được admin duyệt thủ công
+        | 'REJECTED_BY_ADMIN'       // Bị admin từ chối
+        | 'HIDDEN';                 // Bị ẩn bởi admin
+
+    interface IVendorResponse {
+        vendorId: string;
+        vendorName: string;
+        comment: string;
+        createdAt: string;
+        updatedAt?: string;
+    }
+
+    interface IModerationResult {
+        is_flagged: boolean;
+        flagged_categories: string[];
+        category_scores: Record<string, number>;
+        moderated_at?: string;
+        model_used?: string;
+    }
+
+    interface IAdminDecision {
+        admin_id: string;
+        admin_name: string;
+        action: 'APPROVE' | 'REJECT' | 'HIDE';
+        reason?: string;
+        decided_at: string;
+    }
+
+    interface IReview {
+        id: string;
+        product_id: string;
+        product_name?: string;
+        product_image?: string;
+        user_id: string;
+        user_name: string;
+        user_avatar?: string;
+        order_id: string;
+        shop_id: string;
+        rating: number;
+        comment?: string;
+        images?: string[];
+        videos?: string[];
+        vendor_response?: IVendorResponse;
+        is_verified_purchase: boolean;
+        helpful_count?: number;
+        has_voted_helpful?: boolean;
+        status: ReviewStatus;
+        moderation_result?: IModerationResult;
+        admin_decision?: IAdminDecision;
+        rejection_reason?: string;
+        flagged_categories_vi?: string[];
+        created_at: string;
+        updated_at?: string;
+    }
+
+    interface IReviewStats {
+        average_rating: number;
+        total_reviews: number;
+        five_star_count: number;
+        four_star_count: number;
+        three_star_count: number;
+        two_star_count: number;
+        one_star_count: number;
+        five_star_percentage: number;
+        four_star_percentage: number;
+        three_star_percentage: number;
+        two_star_percentage: number;
+        one_star_percentage: number;
+    }
+
+    interface ICreateReviewRequest {
+        order_id: string;
+        product_id: string;
+        rating: number;
+        comment?: string;
+        images?: string[];
+        videos?: string[];
+    }
+
+    interface IUpdateReviewRequest {
+        rating: number;
+        comment?: string;
+        images?: string[];
+        videos?: string[];
+    }
+
+    interface IVendorResponseRequest {
+        comment: string;
+    }
+
+    interface IReviewState {
+        reviews: IReview[];
+        stats: IReviewStats | null;
+        userReviews: IReview[];
+        pagination: {
+            page: number;
+            limit: number;
+            total: number;
+            totalPages: number;
+        };
+        isLoading: boolean;
+        isSubmitting: boolean;
+        error: string | null;
+    }
+
+    // ========================= Admin Review Management =========================
+    
+    /**
+     * Statistics for review moderation dashboard
+     */
+    interface IAdminReviewStats {
+        total_reviews: number;
+        pending_moderation: number;
+        approved: number;
+        rejected_auto: number;
+        approved_by_admin: number;
+        rejected_by_admin: number;
+        hidden: number;
+    }
+
+    /**
+     * Parameters for admin review queries
+     */
+    interface IAdminReviewParams {
+        page?: number;
+        size?: number;
+        status?: ReviewStatus;
+        productId?: string;
+        userId?: string;
+        productName?: string;
+        userName?: string;
+        startDate?: string;
+        endDate?: string;
+        sortBy?: string;
+        sortDirection?: 'asc' | 'desc';
+    }
+
+    /**
+     * Request body for admin review actions
+     */
+    interface IAdminReviewActionRequest {
+        reason?: string;
+    }
+
+    /**
+     * Extended review for admin view with product/user details
+     */
+    interface IAdminReview extends IReview {
+        product_name?: string;
+        product_image?: string;
+        product_price?: number;
+    }
 }
 
 export { }

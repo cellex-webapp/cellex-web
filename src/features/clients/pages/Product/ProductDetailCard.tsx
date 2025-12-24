@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { Button, Spin, Tag, message, InputNumber } from 'antd';
 import { unwrapResult } from '@reduxjs/toolkit';
 import { ShoppingCartOutlined, LeftOutlined, RightOutlined } from '@ant-design/icons';
@@ -9,6 +9,7 @@ import { useAttribute } from '@/hooks/useAttribute';
 import ShopCard from '@/features/clients/components/Shop/ShopCard';
 import { useCart } from '@/hooks/useCart';
 import CouponList from '@/features/clients/components/Coupon/CouponList';
+import { ProductReviews } from '@/features/clients/components/Review';
 
 const formatCurrency = (v?: number) => {
     if (v == null) return '';
@@ -26,11 +27,31 @@ const PlaceholderImage: React.FC = () => (
 
 const ProductDetailCard: React.FC = () => {
     const { id } = useParams();
+    const [searchParams] = useSearchParams();
+    
+    // Check for order ID from query params (for review creation)
+    const orderIdForReview = searchParams.get('orderId');
+    const showReviewForm = searchParams.get('review') === 'true';
 
     const { selectedProduct, isLoading, fetchProductById } = useProduct();
     const { addToCart, isLoading: cartLoading } = useCart();
     const [imgIndex, setImgIndex] = useState(0);
     const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string>>({});
+    
+    // Get current user from localStorage (would be better from Redux in real app)
+    const currentUser = useMemo(() => {
+        const userInfo = localStorage.getItem('userInfo');
+        const role = localStorage.getItem('role') as UserRole;
+        if (userInfo) {
+            try {
+                const user = JSON.parse(userInfo);
+                return { id: user.id, role, shopId: user.shopId };
+            } catch {
+                return undefined;
+            }
+        }
+        return undefined;
+    }, []);
 
     useEffect(() => {
         if (id) fetchProductById(id);
@@ -267,6 +288,19 @@ const ProductDetailCard: React.FC = () => {
                         />
                     </div>
                 </div>
+            </div>
+
+            {/* Product Reviews Section */}
+            <div className="mt-4">
+                <ProductReviews
+                    productId={id!}
+                    productName={p.name}
+                    productImage={p.images?.[0]}
+                    shopId={p.shopId}
+                    currentUser={currentUser}
+                    orderIdForReview={orderIdForReview || undefined}
+                    showReviewForm={showReviewForm}
+                />
             </div>
         </div>
     );

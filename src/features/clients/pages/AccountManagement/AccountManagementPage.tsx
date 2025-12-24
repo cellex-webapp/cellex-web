@@ -9,10 +9,12 @@ import {
   MessageOutlined,
   EnvironmentOutlined,
   LogoutOutlined,
+  StarOutlined,
 } from '@ant-design/icons';
 import { useAuth } from '@/hooks/useAuth';
 import UserInformation from './Tabs/UserInformation';
 import MyOrder from './Tabs/MyOrder';
+import MyReviews from '@/features/clients/pages/AccountManagement/Tabs/MyReviews';
 // Vendor placeholder removed; VendorRegistration is used instead
 import VendorRegistration from './Tabs/VendorRegistration';
 import NotificationTab from './Tabs/Notification';
@@ -88,6 +90,7 @@ const AccountManagementPage: React.FC = () => {
   const menuItems = [
     { key: 'personal-info', icon: <SolutionOutlined />, label: 'Thông tin cá nhân' },
     { key: 'orders', icon: <UserOutlined />, label: 'Đơn hàng của tôi' },
+    { key: 'reviews', icon: <StarOutlined />, label: 'Đánh giá của tôi' },
     { key: 'seller-channel', icon: <ShopOutlined />, label: 'Kênh Người bán' },
     { key: 'notifications', icon: <NotificationOutlined />, label: 'Trung tâm thông báo' },
     { key: 'messages', icon: <MessageOutlined />, label: 'Trung tâm tin nhắn' },
@@ -103,6 +106,9 @@ const AccountManagementPage: React.FC = () => {
 
       case 'orders':
         return <MyOrder />;
+
+      case 'reviews':
+        return <MyReviews />;
 
       case 'seller-channel':
         return <VendorRegistration />;
