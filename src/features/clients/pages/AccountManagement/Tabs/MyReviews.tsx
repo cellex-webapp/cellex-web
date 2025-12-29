@@ -302,7 +302,7 @@ const MyReviewCard: React.FC<{
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
                 <Text strong className="text-sm">
-                  {review.vendor_response.vendor_name}
+                  {review.vendor_response.vendorName}
                 </Text>
                 <Text type="secondary" className="text-xs">
                   đã phản hồi
@@ -312,7 +312,7 @@ const MyReviewCard: React.FC<{
                 {review.vendor_response.comment}
               </Paragraph>
               <Text type="secondary" className="text-xs">
-                {formatDateVN(review.vendor_response.created_at)}
+                {formatDateVN(review.vendor_response.createdAt)}
               </Text>
             </div>
           </div>
