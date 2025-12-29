@@ -533,8 +533,7 @@ declare global {
     }
 
     interface CreateOrderRequest {
-        productId?: string;
-        quantity?: number;
+        items: CartOrderItemRequest[];
         note?: string;
     }
 

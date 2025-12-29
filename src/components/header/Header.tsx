@@ -25,7 +25,7 @@ const Header: React.FC<HeaderProps> = ({ hideSearchBar = false }) => {
   const { totalItems, fetchMyCart } = useCart();
   const { unreadCount, getUnreadCount } = useNotification();
   const { totalUnread: totalUnreadMessages, initChat } = useChat();
-  const { isListening, transcript, startListening, stopListening, isSupported } = useVoiceSearch('vi-VN');
+  const { isListening, transcript, interimTranscript, startListening, stopListening, isSupported } = useVoiceSearch('vi-VN');
 
   const onSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -58,6 +58,13 @@ const Header: React.FC<HeaderProps> = ({ hideSearchBar = false }) => {
       setQ(transcript);
     }
   }, [transcript]);
+
+  // Show interim results in real-time
+  useEffect(() => {
+    if (isListening && interimTranscript) {
+      setQ(interimTranscript);
+    }
+  }, [isListening, interimTranscript]);
 
   // Auto-submit when voice recognition stops with delay
   useEffect(() => {

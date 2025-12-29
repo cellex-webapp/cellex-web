@@ -1,10 +1,14 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Card, Typography, Spin, List, Row, Col, Statistic, Space, Radio, Button, Tag, message, Divider } from 'antd';
+import { Card, Typography, Spin, List, Row, Col, Statistic, Space, Radio, Button, Tag, message, Divider, Form, Input, Select, Modal } from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch } from '@/stores/store';
 import { fetchOrderById, fetchAvailableCoupons, applyCouponToOrder, removeCouponFromOrder, checkoutOrder } from '@/stores/slices/order.slice';
 import { selectSelectedOrder, selectAvailableCoupons, selectOrderLoading, selectOrderError, selectOrderPaymentUrl } from '@/stores/selectors/order.selector';
+import { useAuth } from '@/hooks/useAuth';
+import { useAppDispatch } from '@/hooks/redux';
+import { updateUserProfile } from '@/stores/slices/user.slice';
+import { addressService } from '@/services/address.service';
 
 const { Title, Text } = Typography;
 
@@ -20,6 +24,8 @@ const OrderConfirmPage: React.FC = () => {
   const { orderId } = useParams<{ orderId: string }>();
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
+  const appDispatch = useAppDispatch();
+  const { currentUser } = useAuth();
 
   const order = useSelector(selectSelectedOrder);
   const coupons = useSelector(selectAvailableCoupons);
@@ -29,8 +35,73 @@ const OrderConfirmPage: React.FC = () => {
 
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('COD');
   const [submitting, setSubmitting] = useState(false);
-  const [countdown, setCountdown] = useState<number | null>(null); // seconds remaining before auto redirect
+  const [countdown, setCountdown] = useState<number | null>(null);
   const COUNTDOWN_SECONDS = 6;
+
+  // Address management state
+  const [isAddressModalVisible, setIsAddressModalVisible] = useState(false);
+  const [addressForm] = Form.useForm();
+  const [provinces, setProvinces] = useState<IAddressDataUnit[]>([]);
+  const [communes, setCommunes] = useState<IAddressDataUnit[]>([]);
+  const [provinceSelected, setProvinceSelected] = useState<string | undefined>(undefined);
+  const [addressLoading, setAddressLoading] = useState(false);
+
+  // Load address data from user
+  const getUserAddress = useCallback(() => {
+    const anyUser: any = currentUser as any;
+    if (!anyUser) return null;
+
+    const provinceCode = anyUser.provinceCode ?? anyUser.province_code ?? undefined;
+    const communeCode = anyUser.communeCode ?? anyUser.commune_code ?? undefined;
+    const detailAddress = anyUser.detailAddress ?? anyUser.detail_address ?? anyUser.address?.detailAddress ?? anyUser.address?.street;
+    const provinceName = anyUser.address?.province;
+    const communeName = anyUser.address?.commune;
+
+    return {
+      provinceCode,
+      communeCode,
+      detailAddress,
+      provinceName: provinceName ?? provinces.find(p => p.code === String(provinceCode))?.name,
+      communeName: communeName ?? communes.find(c => c.code === String(communeCode))?.name,
+      fullAddress: anyUser.address?.fullAddress ?? [detailAddress, communeName ?? communes.find(c => c.code === String(communeCode))?.name, provinceName ?? provinces.find(p => p.code === String(provinceCode))?.name].filter(Boolean).join(', ')
+    };
+  }, [currentUser, provinces, communes]);
+
+  // Load provinces on mount
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      try {
+        const resp = await addressService.getProvinces();
+        if (mounted) setProvinces(resp.result || []);
+      } catch (err) {
+        console.error('Failed to load provinces', err);
+      }
+    };
+    load();
+    return () => { mounted = false; };
+  }, []);
+
+  // Load communes when province selected
+  useEffect(() => {
+    if (!provinceSelected) {
+      setCommunes([]);
+      return;
+    }
+
+    let mounted = true;
+    const load = async () => {
+      try {
+        const resp = await addressService.getCommunesByProvinceCode(provinceSelected);
+        if (mounted) setCommunes(resp.result || []);
+      } catch (err) {
+        console.error('Failed to load communes', err);
+        if (mounted) setCommunes([]);
+      }
+    };
+    load();
+    return () => { mounted = false; };
+  }, [provinceSelected]);
 
   useEffect(() => {
     if (orderId) {
@@ -58,6 +129,71 @@ const OrderConfirmPage: React.FC = () => {
       message.error(e?.message || 'Không gỡ được mã');
     }
   }, [dispatch, orderId]);
+
+  // Handle address update
+  const handleOpenAddressModal = () => {
+    const address = getUserAddress();
+    if (address) {
+      addressForm.setFieldsValue({
+        provinceCode: address.provinceCode,
+        communeCode: address.communeCode,
+        detailAddress: address.detailAddress
+      });
+      setProvinceSelected(address.provinceCode);
+    }
+    setIsAddressModalVisible(true);
+  };
+
+  const handleAddressUpdate = async (values: any) => {
+    setAddressLoading(true);
+    try {
+      const anyUser: any = currentUser as any;
+      const payload: IUpdateProfilePayload = {
+        fullName: anyUser?.fullName ?? undefined,
+        phoneNumber: anyUser?.phoneNumber ?? undefined,
+        provinceCode: values.provinceCode || undefined,
+        communeCode: values.communeCode || undefined,
+        detailAddress: values.detailAddress || undefined,
+      };
+
+      const res: any = await appDispatch(updateUserProfile(payload));
+      if (res?.error) {
+        throw new Error(res.error?.message ?? 'Cập nhật thất bại');
+      }
+
+      message.success('Cập nhật địa chỉ nhận hàng thành công');
+      setIsAddressModalVisible(false);
+
+      // Update localStorage
+      try {
+        const provinceName = provinces.find(p => p.code === payload.provinceCode)?.name;
+        const communeName = communes.find(c => c.code === payload.communeCode)?.name;
+        const address = {
+          provinceCode: payload.provinceCode,
+          communeCode: payload.communeCode,
+          detailAddress: payload.detailAddress,
+          street: payload.detailAddress,
+          province: provinceName,
+          commune: communeName,
+          fullAddress: [payload.detailAddress, communeName, provinceName].filter(Boolean).join(', '),
+        };
+
+        const raw = localStorage.getItem('user');
+        if (raw) {
+          const u = JSON.parse(raw);
+          u.address = address;
+          u.provinceCode = payload.provinceCode;
+          u.communeCode = payload.communeCode;
+          u.detailAddress = payload.detailAddress;
+          localStorage.setItem('user', JSON.stringify(u));
+        }
+      } catch { /* ignore */ }
+    } catch (err: any) {
+      message.error(err?.message ?? 'Có lỗi xảy ra. Vui lòng thử lại.');
+    } finally {
+      setAddressLoading(false);
+    }
+  };
 
   // Load stored paymentUrl (in case of refresh) if state empty and paymentMethod already VNPAY
   useEffect(() => {
@@ -123,11 +259,36 @@ const OrderConfirmPage: React.FC = () => {
   const totalBefore = order.subtotal;
   const discount = order.discount_amount;
   const totalAfter = order.total_amount;
+  const userAddress = getUserAddress();
 
   return (
     <div className="max-w-5xl mx-auto p-4 md:p-6">
       <Title level={2}>Xác nhận đơn hàng</Title>
       <Space direction="vertical" size="large" className="w-full">
+        {/* Shipping Address Card */}
+        <Card 
+          title="Địa chỉ nhận hàng" 
+          bordered
+          extra={
+            <Button type="link" onClick={handleOpenAddressModal}>
+              {userAddress?.detailAddress ? 'Thay đổi' : 'Thêm địa chỉ'}
+            </Button>
+          }
+        >
+          {userAddress?.detailAddress ? (
+            <Space direction="vertical" size="small" className="w-full">
+              <div>
+                <Text strong>{(currentUser as any)?.fullName ?? 'Khách hàng'}</Text>
+                <Divider type="vertical" />
+                <Text>{(currentUser as any)?.phoneNumber ?? (currentUser as any)?.phone_number ?? ''}</Text>
+              </div>
+              <Text>{userAddress.fullAddress}</Text>
+            </Space>
+          ) : (
+            <Text type="warning">Chưa có địa chỉ nhận hàng. Vui lòng thêm địa chỉ để tiếp tục.</Text>
+          )}
+        </Card>
+
         <Card title="Sản phẩm" bordered>
           <List
             dataSource={order.items}
@@ -216,12 +377,94 @@ const OrderConfirmPage: React.FC = () => {
               block
               loading={submitting}
               onClick={handleCheckout}
+              disabled={!userAddress?.detailAddress}
             >
               Xác nhận & Thanh toán
             </Button>
+            {!userAddress?.detailAddress && (
+              <Text type="danger" className="text-center block">
+                Vui lòng thêm địa chỉ nhận hàng để tiếp tục
+              </Text>
+            )}
           </Space>
         </Card>
       </Space>
+
+      {/* Address Edit Modal */}
+      <Modal
+        title="Cập nhật địa chỉ nhận hàng"
+        open={isAddressModalVisible}
+        onCancel={() => setIsAddressModalVisible(false)}
+        footer={null}
+        width={600}
+      >
+        <Form 
+          form={addressForm} 
+          layout="vertical" 
+          onFinish={handleAddressUpdate}
+        >
+          <Form.Item 
+            label="Tỉnh/Thành" 
+            name="provinceCode"
+            rules={[{ required: true, message: 'Vui lòng chọn tỉnh/thành' }]}
+          >
+            <Select
+              showSearch
+              placeholder="Chọn tỉnh/thành"
+              optionFilterProp="label"
+              onChange={(value) => {
+                setProvinceSelected(value);
+                addressForm.setFieldsValue({ communeCode: undefined });
+              }}
+              options={provinces.map((p) => ({
+                value: p.code,
+                label: p.name,
+              }))}
+            />
+          </Form.Item>
+
+          <Form.Item 
+            label="Phường/Xã" 
+            name="communeCode"
+            rules={[{ required: true, message: 'Vui lòng chọn phường/xã' }]}
+          >
+            <Select
+              showSearch
+              placeholder="Chọn phường/xã"
+              disabled={!provinceSelected}
+              optionFilterProp="label"
+              options={communes.map((c) => ({
+                value: c.code,
+                label: c.name,
+              }))}
+            />
+          </Form.Item>
+
+          <Form.Item
+            label="Địa chỉ chi tiết"
+            name="detailAddress"
+            rules={[{ required: true, message: 'Vui lòng nhập địa chỉ chi tiết' }]}
+          >
+            <Input.TextArea rows={3} placeholder="Số nhà, tên đường..." />
+          </Form.Item>
+
+          <Form.Item>
+            <Space>
+              <Button 
+                className="!bg-indigo-600" 
+                type="primary" 
+                htmlType="submit" 
+                loading={addressLoading}
+              >
+                Lưu địa chỉ
+              </Button>
+              <Button onClick={() => setIsAddressModalVisible(false)}>
+                Hủy
+              </Button>
+            </Space>
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 };

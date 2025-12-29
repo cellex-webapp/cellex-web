@@ -42,7 +42,7 @@ const Address: React.FC = () => {
     form.setFieldsValue({ provinceCode, communeCode, detailAddress });
     
     if (provinceCode) {
-      setProvinceSelected(String(provinceCode)); 
+      setProvinceSelected(provinceCode); 
     }
     
     return { hasAddress: Boolean(detailAddress || provinceCode || communeCode) };
@@ -66,7 +66,7 @@ const Address: React.FC = () => {
     form.setFieldsValue({ provinceCode, communeCode, detailAddress });
     
     if (provinceCode) {
-      setProvinceSelected(String(provinceCode)); 
+      setProvinceSelected(provinceCode); 
     }
 
     const hasAddress = Boolean(detailAddress || provinceCode || communeCode);
@@ -100,7 +100,7 @@ const Address: React.FC = () => {
     const load = async () => {
       setCommunesLoading(true);
       try {
-        const resp = await addressService.getCommunesByProvinceCode(Number(provinceSelected));
+        const resp = await addressService.getCommunesByProvinceCode(provinceSelected);
         if (mounted) setCommunes(resp.result || []);
       } catch (err) {
         console.error('Failed to load communes', err);
@@ -197,8 +197,8 @@ const Address: React.FC = () => {
       );
     }
 
-    const provinceName = anyUser?.address?.province ?? provinces.find(p => p.code === provinceCode)?.name;
-    const communeName = anyUser?.address?.commune ?? communes.find(c => c.code === communeCode)?.name;
+    const provinceName = anyUser?.address?.province ?? provinces.find(p => p.code === String(provinceCode))?.name;
+    const communeName = anyUser?.address?.commune ?? communes.find(c => c.code === String(communeCode))?.name;
     const fullAddress = anyUser?.address?.fullAddress ?? [detailAddress, communeName, provinceName].filter(Boolean).join(', ');
 
     return (
@@ -242,7 +242,7 @@ const Address: React.FC = () => {
               loading={provincesLoading}
               optionFilterProp="label" 
               onChange={(value) => {
-                setProvinceSelected(String(value));
+                setProvinceSelected(value);
                 form.setFieldsValue({ communeCode: undefined });
               }}
               options={provinces.map((p) => ({
@@ -290,7 +290,7 @@ const Address: React.FC = () => {
                     communeCode: anyUser?.communeCode ?? anyUser?.commune_code ?? undefined,
                     detailAddress: anyUser?.detailAddress ?? anyUser?.detail_address ?? '',
                   });
-                  setProvinceSelected(provinceCode ? String(provinceCode) : undefined);
+                  setProvinceSelected(provinceCode);
                 }}
               >
                 Hủy

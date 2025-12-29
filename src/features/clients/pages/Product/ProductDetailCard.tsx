@@ -103,7 +103,15 @@ const ProductDetailCard: React.FC = () => {
         try {
             if (goCheckout) {
                 // Direct create order from product flow
-                const resp = await orderService.createOrderFromProduct({ productId: p.id, quantity });
+                const requestBody: CreateOrderRequest = {
+                    items: [
+                        {
+                            productId: p.id,
+                            quantity: quantity
+                        }
+                    ]
+                };
+                const resp = await orderService.createOrderFromProduct(requestBody);
                 const order = resp.result as IOrder;
                 if (order?.id) {
                     message.success('Tạo đơn hàng thành công');

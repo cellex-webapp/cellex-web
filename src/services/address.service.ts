@@ -6,7 +6,7 @@ export const addressService = {
     return response.data;
   },
 
-  getCommunesByProvinceCode: async (provinceCode: number): Promise<IApiResponse<IAddressDataUnit[]>> => {
+  getCommunesByProvinceCode: async (provinceCode: string): Promise<IApiResponse<IAddressDataUnit[]>> => {
     const response = await axiosInstance.get<IApiResponse<IAddressDataUnit[]>>(`/address/communes/${provinceCode}`);
     return response.data;
   },

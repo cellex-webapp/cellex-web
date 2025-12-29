@@ -21,6 +21,8 @@ const VoiceSearch: React.FC<VoiceSearchProps> = ({
 	const {
 		isListening,
 		transcript,
+		interimTranscript,
+		confidence,
 		error,
 		isSupported,
 		startListening,
@@ -34,6 +36,13 @@ const VoiceSearch: React.FC<VoiceSearchProps> = ({
 			setSearchQuery(transcript);
 		}
 	}, [transcript]);
+
+	// Show interim results in real-time
+	useEffect(() => {
+		if (isListening && interimTranscript) {
+			setSearchQuery(interimTranscript);
+		}
+	}, [isListening, interimTranscript]);
 
 	// Auto-submit search when speech recognition ends with delay
 	useEffect(() => {
@@ -173,8 +182,17 @@ const VoiceSearch: React.FC<VoiceSearchProps> = ({
 								<span className="animate-bounce w-2 h-2 bg-red-500 rounded-full" style={{ animationDelay: '150ms' }}></span>
 								<span className="animate-bounce w-2 h-2 bg-red-500 rounded-full" style={{ animationDelay: '300ms' }}></span>
 							</div>
-							<span className="text-sm font-medium">Đang lắng nghe...</span>
+							<span className="text-sm font-medium">
+								{interimTranscript ? `"${interimTranscript}"` : 'Đang lắng nghe...'}
+							</span>
 						</div>
+					</div>
+				)}
+
+				{/* Confidence Indicator */}
+				{!isListening && transcript && confidence > 0 && (
+					<div className="absolute -bottom-8 right-4 text-xs text-gray-400">
+						Độ tin cậy: {Math.round(confidence * 100)}%
 					</div>
 				)}
 			</form>
