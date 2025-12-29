@@ -4,6 +4,7 @@ import type { MenuProps } from 'antd';
 import {
   AppstoreOutlined, ShopOutlined, TeamOutlined, DollarOutlined,
   CustomerServiceOutlined, TagsOutlined, DatabaseOutlined, PartitionOutlined,
+  BulbOutlined,
 } from '@ant-design/icons';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -68,6 +69,12 @@ const MENU_CONFIG = [
     children: [
       { key: 'marketing-system', label: 'Khuyến mãi hệ thống', path: '/admin/marketing/system' },
       { key: 'marketing-segment', label: 'Khuyến mãi phân khúc', path: '/admin/marketing/segment' },
+    ],
+  },
+  {
+    key: 'recommendation', label: 'Hệ thống Gợi ý', icon: BulbOutlined,
+    children: [
+      { key: 'recommendation-manage', label: 'Quản lý gợi ý', path: '/admin/recommendations' },
     ],
   },
   {

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button, Drawer, Input, Modal, Space, Table, Tag, Typography, message, Select, Avatar, Divider, Card, Tooltip } from 'antd';
-import { EyeOutlined, SearchOutlined, FilterOutlined, StarOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import { EyeOutlined, SearchOutlined, FilterOutlined, StarOutlined, CheckCircleOutlined, FormOutlined } from '@ant-design/icons';
 import { useOrder } from '@/hooks/useOrder';
 import { formatDateVN } from '@/utils/date';
 import { useAppSelector } from '@/hooks/redux';
@@ -76,6 +76,7 @@ const MyOrder: React.FC = () => {
       const matchStatus = statusFilter === 'ALL' || o.status === statusFilter;
       const kw = search.trim().toLowerCase();
       const matchSearch = !kw || 
+        o.order_code?.toLowerCase().includes(kw) ||
         o.id.toLowerCase().includes(kw) || 
         o.shop?.shop_name?.toLowerCase().includes(kw) || 
         (o.items || []).some(it => it.product_name.toLowerCase().includes(kw));
@@ -120,6 +121,14 @@ const MyOrder: React.FC = () => {
     return orderReviews.get(orderId)?.has(productId) || false;
   }, [orderReviews]);
 
+  // Check if an order has any unreviewed products (for highlighting)
+  const hasUnreviewedProducts = useCallback((order: IOrder) => {
+    if (order.status !== 'DELIVERED') return false;
+    const reviewedProducts = orderReviews.get(order.id);
+    if (!reviewedProducts) return true; // Still loading, consider as potentially reviewable
+    return (order.items || []).some(item => !reviewedProducts.has(item.product_id));
+  }, [orderReviews]);
+
   // Handle opening review modal
   const handleOpenReviewModal = (order: IOrder, item: IOrderItem) => {
     setSelectedOrderForReview(order);
@@ -143,6 +152,20 @@ const MyOrder: React.FC = () => {
         next.set(selectedOrderForReview.id, reviewedProducts);
         return next;
       });
+    }
+  };
+
+  // Handle quick review action from table
+  const handleQuickReview = async (order: IOrder) => {
+    // Find the first unreviewed product
+    const unreviewedItem = order.items?.find(item => !isProductReviewed(order.id, item.product_id));
+    
+    if (unreviewedItem) {
+      setSelectedOrderForReview(order);
+      setSelectedProductForReview(unreviewedItem);
+      setReviewModalOpen(true);
+    } else {
+      message.info('Tất cả sản phẩm trong đơn hàng này đã được đánh giá');
     }
   };
 
@@ -177,7 +200,7 @@ const MyOrder: React.FC = () => {
             className="bg-gray-100 border border-gray-200"
           />
           <Space direction="vertical" size={0}>
-            <Text strong className="text-gray-700">{r.id}</Text>
+            <Text strong className="text-gray-700">{r.order_code || r.id}</Text>
             <Text type="secondary" style={{ fontSize: 12 }}>{formatDateVN(r.created_at)}</Text>
             <Text type="secondary" style={{ fontSize: 12 }}>{r.shop?.shop_name}</Text>
           </Space>
@@ -231,17 +254,30 @@ const MyOrder: React.FC = () => {
       title: 'Thao tác',
       key: 'actions',
       fixed: 'right' as const,
-      width: 80,
+      width: 110,
       align: 'center' as const,
       render: (_: any, r: IOrder) => (
-        <Tooltip title="Xem chi tiết">
-          <Button 
-            type="text" 
-            icon={<EyeOutlined className="text-gray-500" />} 
-            onClick={() => { fetchOrderById(r.id); setOpen(true); }}
-            className="hover:!text-blue-600 hover:!bg-blue-50"
-          />
-        </Tooltip>
+        <Space size={4}>
+          {/* Review button for DELIVERED orders with unreviewed products */}
+          {r.status === 'DELIVERED' && hasUnreviewedProducts(r) && (
+            <Tooltip title="Đánh giá sản phẩm">
+              <Button 
+                type="text" 
+                icon={<FormOutlined className="text-orange-500" />} 
+                onClick={() => handleQuickReview(r)}
+                className="hover:!text-orange-600 hover:!bg-orange-50"
+              />
+            </Tooltip>
+          )}
+          <Tooltip title="Xem chi tiết">
+            <Button 
+              type="text" 
+              icon={<EyeOutlined className="text-gray-500" />} 
+              onClick={() => { fetchOrderById(r.id); setOpen(true); }}
+              className="hover:!text-blue-600 hover:!bg-blue-50"
+            />
+          </Tooltip>
+        </Space>
       ),
     },
   ];
@@ -292,6 +328,9 @@ const MyOrder: React.FC = () => {
             columns={columns as any}
             size="middle" // Dùng middle để cân đối, không quá to như default
             scroll={{ x: 1000 }}
+            rowClassName={(record: IOrder) => 
+              hasUnreviewedProducts(record) ? 'bg-orange-50 hover:!bg-orange-100' : ''
+            }
             pagination={{ 
               current: page, 
               pageSize, 
@@ -320,7 +359,7 @@ const MyOrder: React.FC = () => {
             <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
               <div>
                 <Text type="secondary" className="text-xs uppercase block mb-1">Mã đơn hàng</Text>
-                <Text strong copyable>{selectedOrder.id}</Text>
+                <Text strong copyable>{selectedOrder.order_code || selectedOrder.id}</Text>
               </div>
               <div>
                 <Text type="secondary" className="text-xs uppercase block mb-1">Ngày đặt</Text>

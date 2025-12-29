@@ -50,6 +50,10 @@ import VendorChatPage from '@/features/vendors/pages/Chat/VendorChatPage';
 import AdminChatPage from '@/features/admin/pages/Chat/AdminChatPage';
 import AdminReviewPage from '@/features/admin/pages/Reviews/AdminReviewPage';
 import { VendorReviewsPage } from '@/features/vendors/pages/Reviews';
+import { RecommendationManagementPage } from '@/features/admin/pages/Recommendations';
+import AllProductsPage from '@/features/clients/pages/Product/AllProductsPage';
+import AllRecommendationsPage from '@/features/clients/pages/Recommendation/AllRecommendationsPage';
+import SearchPage from '@/features/clients/pages/Search/SearchPage';
 
 const router = createBrowserRouter([
   {
@@ -79,6 +83,7 @@ const router = createBrowserRouter([
           { path: 'notifications', element: <NotificationsPage /> },
           { path: 'customers/messages', element: <AdminChatPage /> },
           { path: 'reviews', element: <AdminReviewPage /> },
+          { path: 'recommendations', element: <RecommendationManagementPage /> },
         ],
       },
     ],
@@ -95,9 +100,12 @@ const router = createBrowserRouter([
         ),
         children: [
           { index: true, element: <HomePage /> },
+          { path: 'search', element: <SearchPage /> },
           { path: 'categories/:slug', element: <ProductByCategory /> },
           { path: 'shops/:id', element: <ProductByShop /> },
+          { path: 'products', element: <AllProductsPage /> },
           { path: 'products/:id', element: <ProductDetailPage /> },
+          { path: 'recommendations', element: <AllRecommendationsPage /> },
           { path: 'account', element: <AccountManagementPage /> },
           { path: 'cart', element: <CartPage /> },
           { path: 'order/confirm/:orderId', element: <OrderConfirmPage /> },

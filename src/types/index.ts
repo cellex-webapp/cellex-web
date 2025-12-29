@@ -496,6 +496,7 @@ declare global {
 
     interface IOrder {
         id: string;
+        order_code: string;
         items: IOrderItem[];
         subtotal: number;
         status: OrderStatus;

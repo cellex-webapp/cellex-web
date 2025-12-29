@@ -72,7 +72,10 @@ const VendorOrdersPage: React.FC = () => {
   const data = useMemo(() => {
     let list = Array.isArray(shopOrders?.content) ? shopOrders!.content : [];
     if (searchId) {
-      list = list.filter(item => item.id.toLowerCase().includes(searchId.toLowerCase()));
+      list = list.filter(item => 
+        item.order_code?.toLowerCase().includes(searchId.toLowerCase()) ||
+        item.id.toLowerCase().includes(searchId.toLowerCase())
+      );
     }
     return list;
   }, [shopOrders, searchId]);
@@ -98,7 +101,7 @@ const VendorOrdersPage: React.FC = () => {
       width: 200,
       render: (_: any, r: IOrder) => (
         <Space direction="vertical" size={0}>
-          <Text strong copyable className="text-gray-700">{r.id}</Text>
+          <Text strong copyable className="text-gray-700">{r.order_code || r.id}</Text>
           <Text type="secondary" style={{ fontSize: 12 }}>{formatDateVN(r.created_at)}</Text>
         </Space>
       )
@@ -257,7 +260,7 @@ const VendorOrdersPage: React.FC = () => {
               <div className="grid grid-cols-2 gap-4 text-sm">
                  <div className="bg-gray-50 p-3 rounded border">
                     <div className="text-gray-500 mb-1">Mã đơn hàng</div>
-                    <div className="font-medium">{selectedOrder.id}</div>
+                    <div className="font-medium">{selectedOrder.order_code || selectedOrder.id}</div>
                  </div>
                  <div className="bg-gray-50 p-3 rounded border">
                     <div className="text-gray-500 mb-1">Ngày đặt</div>
