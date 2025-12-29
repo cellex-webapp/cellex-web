@@ -51,7 +51,7 @@ class WebSocketService {
       // Use SockJS for better compatibility
       webSocketFactory: () => new SockJS(wsUrl),
       connectHeaders: token ? { Authorization: `Bearer ${token}` } : {},
-      debug: (str: string) => { /* console.log('[ws]', str); */ },
+      debug: () => { /* console.log('[ws]', str); */ },
       reconnectDelay: 3000,
     });
 
@@ -75,7 +75,7 @@ class WebSocketService {
           this.client.unsubscribe(this.userQueueSubId);
           this.userQueueSubId = null;
         }
-        for (const [roomId, subId] of this.roomSubs.entries()) {
+        for (const [, subId] of this.roomSubs.entries()) {
           this.client.unsubscribe(subId);
         }
         this.roomSubs.clear();

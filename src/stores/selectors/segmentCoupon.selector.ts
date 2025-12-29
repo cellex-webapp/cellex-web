@@ -1,4 +1,4 @@
-import { RootState } from '@/stores/store';
+import { type RootState } from '@/stores/store';
 
 export const selectSegmentCoupons = (state: RootState) => Array.isArray(state.segmentCoupon.items) ? state.segmentCoupon.items : [];
 export const selectSelectedSegmentCoupon = (state: RootState) => state.segmentCoupon.selected;

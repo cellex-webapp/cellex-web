@@ -15,7 +15,7 @@ const { Title, Text } = Typography;
 
 
 const VendorDashboardPage: React.FC = () => {
-  const { fetchVendorDashboard, vendorDashboard, isLoading, error } = useAnalytics();
+  const { fetchVendorDashboard, vendorDashboard, isLoading } = useAnalytics();
   const { currentShop } = useAuth();
   
   const [params, setParams] = useState({
@@ -40,15 +40,6 @@ const VendorDashboardPage: React.FC = () => {
 
   // Destructure data
   const { shopInfo, revenueStats, orderStatistics, bestSellingProducts, recentOrders } = vendorDashboard || {}; 
-
-  // Xử lý dữ liệu cho Pie Chart trạng thái đơn hàng
-  const orderStatusData = orderStatistics ? [
-    { name: 'Chờ xử lý', value: orderStatistics.pendingOrders, color: '#faad14' },
-    { name: 'Đã xác nhận', value: orderStatistics.confirmedOrders, color: '#1890ff' },
-    { name: 'Đang giao', value: orderStatistics.shippingOrders, color: '#722ed1' },
-    { name: 'Hoàn tất', value: orderStatistics.deliveredOrders, color: '#52c41a' },
-    { name: 'Đã hủy', value: orderStatistics.cancelledOrders, color: '#ff4d4f' },
-  ].filter(item => item.value > 0) : [];
 
   return (
     <div className="space-y-6 p-6 bg-gray-50 min-h-screen">

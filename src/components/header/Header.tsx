@@ -109,9 +109,9 @@ const Header: React.FC<HeaderProps> = ({ hideSearchBar = false }) => {
           </span>
         </div>
 
-        <CategoryMegaMenu />
+        {isAuthenticated && <CategoryMegaMenu />}
 
-        {!hideSearchBar && (
+        {isAuthenticated && !hideSearchBar && (
         <div className="hidden sm:flex items-center flex-1 max-w-[520px] md:max-w-[600px] ml-4 md:ml-8 rounded-lg border border-gray-300 bg-white">
           <form onSubmit={onSearch} className="flex items-center w-full px-3 md:px-4 h-9 md:h-10 gap-2">
             <input

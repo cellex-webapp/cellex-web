@@ -97,7 +97,7 @@ const ChatWindow: React.FC = () => {
         {isLoadingMessages && <div className="text-center py-4"><Spin size="small" tip="Tải tin nhắn cũ..." /></div>}
         
         <div className="flex flex-col gap-1 pb-2">
-          {[...messages].reverse().map((msg, index) => {
+          {[...messages].reverse().map((msg) => {
              return (
                 <MessageBubble 
                   key={msg.id} 

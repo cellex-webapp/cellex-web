@@ -82,7 +82,7 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
   const filterOption = (input: string, option: any) =>
     (option?.children ?? '').toString().toLowerCase().includes(input.toLowerCase());
 
-  const handleUploadChange = async ({ file, fileList: list }: { file: UploadFile; fileList: UploadFile[] }) => {
+  const handleUploadChange = async ({ fileList: list }: { fileList: UploadFile[] }) => {
     let newList = [...list];
     if (newList.length > 0) {
       const last = newList[newList.length - 1];

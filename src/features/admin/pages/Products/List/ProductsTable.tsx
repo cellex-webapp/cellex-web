@@ -1,5 +1,5 @@
-import { Image, Tag, Button, Space, Tooltip, Popconfirm } from 'antd';
-import { EyeOutlined, AppstoreOutlined, CheckCircleOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Image, Tag, Button, Space, Tooltip } from 'antd';
+import { EyeOutlined, AppstoreOutlined, CheckCircleOutlined } from '@ant-design/icons';
 
 export const getAdminProductColumns = (
   onOpenDetail: (id: string) => void,

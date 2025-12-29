@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Input, Button, message, Table } from 'antd';
+import { Input, Button, message } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '@/hooks/useUser';
@@ -7,7 +7,6 @@ import { useDebounce } from '@/hooks/useDebounce';
 import UserTable from './UserTable';
 import UserDetailModal from './UserDetailModal';
 import UserBanReasonModal from './UserBanReasonModal';
-import type { TablePaginationConfig } from 'antd/es/table';
 import { useChat } from '@/hooks/useChat';
 
 const UsersListPage: React.FC = () => {
@@ -97,14 +96,6 @@ const UsersListPage: React.FC = () => {
     } catch (err: any) {
       message.error(typeof err === 'string' ? err : 'Lỗi khi khóa tài khoản');
     }
-  };
-  
-  const handleTableChange = (antdPagination: TablePaginationConfig) => {
-    fetchAllUsers({
-      page: antdPagination.current,
-      limit: antdPagination.pageSize,
-      search: debouncedQ,
-    });
   };
 
   return (

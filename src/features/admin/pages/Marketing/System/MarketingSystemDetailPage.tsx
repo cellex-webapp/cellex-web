@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Typography, Switch, App, Button, Card, Col, Descriptions, Form, Input, message, Row, Spin, Table, Tag, Tooltip, Select, Avatar } from 'antd';
+import { Typography, Switch, App, Button, Card, Col, Descriptions, Form, message, Row, Spin, Table, Tag, Tooltip, Select, Avatar } from 'antd';
 import { SendOutlined } from '@ant-design/icons';
 import { useCoupon } from '@/hooks/useCoupon';
 import type { ColumnsType } from 'antd/es/table';
