@@ -10,7 +10,6 @@ type Props = {
   onSubmit: (e?: React.FormEvent<HTMLFormElement>) => void;
   onForgotPassword?: () => void;
   onSignup?: () => void;
-  onGoogleSignIn?: () => void;
 };
 
 const LoginForm: React.FC<Props> = ({
@@ -22,7 +21,6 @@ const LoginForm: React.FC<Props> = ({
   onSubmit,
   onForgotPassword,
   onSignup,
-  onGoogleSignIn,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   return (
@@ -86,20 +84,7 @@ const LoginForm: React.FC<Props> = ({
         )}
         {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
       </button>
-      <div className="my-2 flex items-center">
-        <hr className="flex-grow border-t border-gray-200" />
-        <span className="mx-2 text-gray-500 text-sm">hoặc</span>
-        <hr className="flex-grow border-t border-gray-200" />
-      </div>
-      <button
-        type="button"
-        className="w-full flex items-center justify-center gap-2 border border-gray-300 text-gray-700 font-semibold py-2.5 rounded-lg bg-white hover:bg-gray-50 transition-colors duration-150 hover:shadow focus:outline-none focus:ring-4 focus:ring-indigo-200/40 cursor-pointer"
-        onClick={onGoogleSignIn}
-      >
-        <svg width="20" height="20" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <g clipPath="url(#clip0_17_40)"><path d="M44.5 20H24V28.5H36.9C35.5 33.1 31.2 36.5 24 36.5C16.3 36.5 10 30.2 10 22.5C10 14.8 16.3 8.5 24 8.5C27.3 8.5 30.2 9.7 32.4 11.7L38.1 6C34.4 2.6 29.5 0.5 24 0.5C11.8 0.5 2 10.3 2 22.5C2 34.7 11.8 44.5 24 44.5C36.2 44.5 46 34.7 46 22.5C46 21.1 45.8 20.5 45.6 19.7L44.5 20Z" fill="#FFC107"/><path d="M6.3 14.1L13.5 19.1C15.3 15.1 19.3 12.5 24 12.5C26.3 12.5 28.4 13.3 30.1 14.7L36.1 8.7C32.9 6 28.7 4.5 24 4.5C16.7 4.5 10.3 9.3 6.3 14.1Z" fill="#FF3D00"/><path d="M24 44.5C31.1 44.5 37.2 41.3 41.1 36.2L34.4 31.1C32.1 32.7 28.9 34.5 24 34.5C19.3 34.5 15.3 31.9 13.5 27.9L6.3 32.9C10.3 37.7 16.7 44.5 24 44.5Z" fill="#4CAF50"/><path d="M44.5 20H24V28.5H36.9C36.2 30.7 34.7 32.7 32.1 34.2L39.1 39.7C42.7 36.5 45.5 30.9 45.5 22.5C45.5 21.1 45.3 20.5 45.1 19.7L44.5 20Z" fill="#1976D2"/></g><defs><clipPath id="clip0_17_40"><rect width="48" height="48" fill="white"/></clipPath></defs></svg>
-        Đăng nhập với Google
-      </button>
+
       <div className="flex justify-between items-center text-sm mt-2">
         <button
           type="button"

@@ -10,6 +10,7 @@ import ShopCard from '@/features/clients/components/Shop/ShopCard';
 import { useCart } from '@/hooks/useCart';
 import CouponList from '@/features/clients/components/Coupon/CouponList';
 import { ProductReviews } from '@/features/clients/components/Review';
+import RecommendedProducts from '@/features/clients/components/Product/RecommendedProducts';
 
 const formatCurrency = (v?: number) => {
     if (v == null) return '';
@@ -308,6 +309,14 @@ const ProductDetailCard: React.FC = () => {
                     currentUser={currentUser}
                     orderIdForReview={orderIdForReview || undefined}
                     showReviewForm={showReviewForm}
+                />
+            </div>
+
+            {/* Recommended Products Section */}
+            <div className="mt-4">
+                <RecommendedProducts
+                    currentProductId={p.id}
+                    shopId={p.shopId}
                 />
             </div>
         </div>

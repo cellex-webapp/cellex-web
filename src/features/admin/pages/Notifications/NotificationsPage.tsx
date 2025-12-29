@@ -113,22 +113,31 @@ const NotificationsPage: React.FC = () => {
                 </Popconfirm>,
               ].filter(Boolean)}
             >
-              <Space direction="vertical" size={0} className="w-full">
-                <Space>
-                  {!item.isRead && <Badge status="processing" />}
-                  <Text strong>{item.title}</Text>
-                  {/* Sử dụng Type mới để render Tag */}
-                  <Tag color={getTagColor(item.type)}>{item.type}</Tag>
+              <div 
+                className={`w-full ${item.actionUrl ? 'cursor-pointer hover:bg-gray-50 -m-3 p-3 rounded transition-colors' : ''}`}
+                onClick={() => {
+                  if (item.actionUrl) {
+                    window.open(item.actionUrl, '_blank', 'noopener,noreferrer');
+                    if (!item.isRead) {
+                      markAsRead(item.id);
+                    }
+                  }
+                }}
+              >
+                <Space direction="vertical" size={0} className="w-full">
+                  <Space>
+                    {!item.isRead && <Badge status="processing" />}
+                    <Text strong>{item.title}</Text>
+                    {/* Sử dụng Type mới để render Tag */}
+                    <Tag color={getTagColor(item.type)}>{item.type}</Tag>
+                  </Space>
+                  <Text>{item.message}</Text>
+                  <Space size="small">
+                    {item.createdAt && <Text type="secondary">Tạo: {new Date(item.createdAt).toLocaleString()}</Text>}
+                    {item.readAt && <Text type="secondary">Đọc: {new Date(item.readAt).toLocaleString()}</Text>}
+                  </Space>
                 </Space>
-                <Text>{item.message}</Text>
-                {item.actionUrl && (
-                  <a href={item.actionUrl} target="_blank" rel="noreferrer" className="text-blue-600">Hành động</a>
-                )}
-                <Space size="small">
-                  {item.createdAt && <Text type="secondary">Tạo: {new Date(item.createdAt).toLocaleString()}</Text>}
-                  {item.readAt && <Text type="secondary">Đọc: {new Date(item.readAt).toLocaleString()}</Text>}
-                </Space>
-              </Space>
+              </div>
             </List.Item>
           )}
         />

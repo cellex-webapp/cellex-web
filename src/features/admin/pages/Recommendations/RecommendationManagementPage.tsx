@@ -2,7 +2,7 @@
  * RecommendationManagementPage - Admin
  * Manage recommendation system: trigger computations, view user recommendations
  */
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import {
   Card,
   Button,
@@ -22,6 +22,7 @@ import {
   Alert,
   Divider,
   Rate,
+  Select,
 } from 'antd';
 import {
   SyncOutlined,
@@ -41,6 +42,7 @@ import type { ColumnsType } from 'antd/es/table';
 import { useRecommendation } from '@/hooks/useRecommendation';
 import { useAppSelector } from '@/hooks/redux';
 import type { IRecommendationResponse, RecommendationReason } from '@/services/recommendation.service';
+import { userService } from '@/services/user.service';
 
 const { Title, Text } = Typography;
 
@@ -70,6 +72,24 @@ const RecommendationManagementPage: React.FC = () => {
   const [viewingUserId, setViewingUserId] = useState<string | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [computedUsers, setComputedUsers] = useState<string[]>([]);
+  const [users, setUsers] = useState<IUser[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+
+  // Fetch users for dropdown
+  useEffect(() => {
+    const fetchUsers = async () => {
+      setLoadingUsers(true);
+      try {
+        const response = await userService.getAllUsers({ page: 0, size: 100 });
+        setUsers(response.result.content);
+      } catch (error) {
+        console.error('Failed to fetch users:', error);
+      } finally {
+        setLoadingUsers(false);
+      }
+    };
+    fetchUsers();
+  }, []);
 
   // Handle compute for specific user
   const handleComputeForUser = useCallback(async () => {
@@ -308,14 +328,21 @@ const RecommendationManagementPage: React.FC = () => {
               Tìm kiếm và quản lý theo người dùng
             </Text>
             <div className="flex flex-col sm:flex-row gap-3">
-              <Input
-                placeholder="Nhập User ID..."
-                prefix={<UserOutlined />}
-                value={searchUserId}
-                onChange={(e) => setSearchUserId(e.target.value)}
-                onPressEnter={handleViewRecommendations}
+              <Select
+                showSearch
+                placeholder="Chọn hoặc nhập tên người dùng..."
+                value={searchUserId || undefined}
+                onChange={(value) => setSearchUserId(value)}
+                loading={loadingUsers}
                 className="flex-1 max-w-md"
                 allowClear
+                filterOption={(input, option) =>
+                  (option?.label?.toString().toLowerCase() ?? '').includes(input.toLowerCase())
+                }
+                options={users.map(user => ({
+                  value: user.id,
+                  label: `${user.fullName || user.email} (${user.email})`,
+                }))}
               />
               <Space wrap>
                 <Button

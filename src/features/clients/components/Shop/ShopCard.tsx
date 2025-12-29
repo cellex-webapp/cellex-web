@@ -1,9 +1,11 @@
 import React, { useEffect } from 'react';
-import { Avatar, Button, Spin } from 'antd';
+import { Avatar, Button, Spin, message } from 'antd';
 import { StarFilled } from '@ant-design/icons';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { formatMonthYear } from '@/utils/date';
 import useShop from '@/hooks/useShop';
+import { useChat } from '@/hooks/useChat';
+import { useAuth } from '@/hooks/useAuth';
 
 interface Props {
   shopId?: string | number;
@@ -23,6 +25,9 @@ const ShopCard: React.FC<Props> = ({
   showViewLink = true,
 }) => {
   const { shop: shopFromStore, fetchShopById, isLoading } = useShop();
+  const { startChatWithUser } = useChat();
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (shopId) {
@@ -31,6 +36,28 @@ const ShopCard: React.FC<Props> = ({
   }, [shopId, fetchShopById]);
 
   const shop = shopProp ?? shopFromStore ?? null;
+
+  const handleChatClick = async () => {
+    if (!isAuthenticated) {
+      message.warning('Vui lòng đăng nhập để chat với shop');
+      navigate('/auth/login');
+      return;
+    }
+
+    const vendorId = (shop as any)?.vendor_id ?? (shop as any)?.vendorId ?? (shop as any)?.userId;
+    if (!vendorId) {
+      message.error('Không tìm thấy thông tin shop');
+      return;
+    }
+
+    try {
+      await startChatWithUser(vendorId);
+      navigate('/account?tab=messages');
+    } catch (error) {
+      console.error('Failed to start chat:', error);
+      message.error('Không thể mở cuộc hội thoại');
+    }
+  };
 
   const name = shop?.shop_name ?? '';
   const logo = shop?.logo_url ?? undefined;
@@ -91,6 +118,7 @@ const ShopCard: React.FC<Props> = ({
             <Button
               size="small"
               className="border border-gray-300 text-gray-700 hover:border-gray-400 hover:text-gray-900 px-4 h-8 text-sm rounded-md"
+              onClick={handleChatClick}
             >
               Chat ngay
             </Button>
@@ -110,8 +138,8 @@ const ShopCard: React.FC<Props> = ({
 
       <div className="flex flex-col gap-y-6 pt-1">
         <div className="flex items-center gap-3">
-          <span className={statLabelClass}>Đánh giá</span>
-          <span className={statValueClass}>{formatNumber(reviewCount)}</span>
+          <span className={statLabelClass}>Đánh giá shop</span>
+          <span className={statValueClass}>{formatNumber((shop as any)?.review_count ?? reviewCount)}</span>
         </div>
 
         <div className="flex items-center gap-3">

@@ -110,7 +110,6 @@ const LoginPage: React.FC = () => {
             onSubmit={onLogin}
             onForgotPassword={() => navigate('/forgot-password')}
             onSignup={() => navigate('/signup')}
-            onGoogleSignIn={() => alert('Tính năng Google chưa khả dụng')}
           />
         </div>
       </div>

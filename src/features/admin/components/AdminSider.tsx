@@ -51,16 +51,9 @@ const MENU_CONFIG = [
     ],
   },
   {
-    key: 'finance', label: 'Tài chính', icon: DollarOutlined,
-    children: [
-      { key: 'finance-revenue', label: 'Doanh thu', path: '/admin/finance/revenue' },
-    ],
-  },
-  {
     key: 'customer', label: 'Chăm sóc Khách hàng', icon: CustomerServiceOutlined,
     children: [
       { key: 'customer-message', label: 'Quản lý tin nhắn', path: '/admin/customers/messages' },
-      { key: 'customer-rating', label: 'Quản lý đánh giá', path: '/admin/customers/ratings' },
       { key: 'customer-reviews', label: 'Kiểm duyệt đánh giá', path: '/admin/reviews' },
     ],
   },
@@ -77,14 +70,6 @@ const MENU_CONFIG = [
       { key: 'recommendation-manage', label: 'Quản lý gợi ý', path: '/admin/recommendations' },
     ],
   },
-  {
-    key: 'data', label: 'Dữ liệu', icon: DatabaseOutlined,
-    children: [
-      { key: 'data-analytics', label: 'Phân tích bán hàng', path: '/admin/data/analytics' },
-      { key: 'data-performance', label: 'Hiệu quả hoạt động', path: '/admin/data/performance' },
-    ],
-  }
-  ,
   {
     key: 'notification', label: 'Thông báo', icon: AppstoreOutlined,
     children: [

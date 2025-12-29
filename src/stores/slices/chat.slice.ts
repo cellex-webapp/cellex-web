@@ -144,7 +144,10 @@ const chatSlice = createSlice({
       }
     },
     receiveRealtimeMessage: (state, action: PayloadAction<IMessage>) => {
-      const newMessage = action.payload;
+      const newMessage = {
+        ...action.payload,
+        senderAvatar: action.payload.senderAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${action.payload.senderId}`
+      };
       if (state.activeRoomId === newMessage.chatRoomId) {
         state.currentRoomMessages.unshift(newMessage); 
       }
@@ -169,7 +172,11 @@ const chatSlice = createSlice({
     });
     builder.addCase(fetchChatRooms.fulfilled, (state, action) => {
       state.isLoadingRooms = false;
-      state.rooms = action.payload.content;
+      // Ensure all rooms have a partnerAvatar fallback
+      state.rooms = action.payload.content.map((room: IChatRoom) => ({
+        ...room,
+        partnerAvatar: room.partnerAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${room.partnerId}`
+      }));
     });
     builder.addCase(fetchChatRooms.rejected, (state, action) => {
       state.isLoadingRooms = false;
@@ -183,10 +190,16 @@ const chatSlice = createSlice({
       state.isLoadingMessages = false;
       const { data, isLoadMore } = action.payload;
       
+      // Add fallback avatar for messages
+      const messagesWithAvatar = data.content.map((msg: IMessage) => ({
+        ...msg,
+        senderAvatar: msg.senderAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${msg.senderId}`
+      }));
+      
       if (isLoadMore) {
-        state.currentRoomMessages = [...state.currentRoomMessages, ...data.content];
+        state.currentRoomMessages = [...state.currentRoomMessages, ...messagesWithAvatar];
       } else {
-        state.currentRoomMessages = data.content;
+        state.currentRoomMessages = messagesWithAvatar;
       }
       
       state.messagePagination = {
@@ -202,7 +215,11 @@ const chatSlice = createSlice({
     });
     builder.addCase(sendMessage.fulfilled, (state, action) => {
       state.isSendingMessage = false;
-      state.currentRoomMessages.unshift(action.payload);
+      const messageWithAvatar = {
+        ...action.payload,
+        senderAvatar: action.payload.senderAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${action.payload.senderId}`
+      };
+      state.currentRoomMessages.unshift(messageWithAvatar);
       const roomIndex = state.rooms.findIndex(r => r.id === action.payload.chatRoomId);
       if (roomIndex !== -1) {
         state.rooms[roomIndex].lastMessage = action.payload.content;
@@ -213,9 +230,13 @@ const chatSlice = createSlice({
     });
 
     builder.addCase(createOrGetRoom.fulfilled, (state, action) => {
-      state.activeRoomId = action.payload.id;
-      if (!state.rooms.find(r => r.id === action.payload.id)) {
-        state.rooms.unshift(action.payload);
+      const newRoom = {
+        ...action.payload,
+        partnerAvatar: action.payload.partnerAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${action.payload.partnerId}`
+      };
+      state.activeRoomId = newRoom.id;
+      if (!state.rooms.find(r => r.id === newRoom.id)) {
+        state.rooms.unshift(newRoom);
       }
     });
 
