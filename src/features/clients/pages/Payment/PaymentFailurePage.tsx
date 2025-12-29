@@ -16,7 +16,7 @@ const useQuery = () => {
 
 const PaymentFailurePage: React.FC = () => {
   const navigate = useNavigate();
-  const { orderId, responseCode, message } = useQuery();
+  const { orderId, message } = useQuery();
 
   return (
     <div className="max-w-xl mx-auto p-4 md:p-8">

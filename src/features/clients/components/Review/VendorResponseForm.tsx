@@ -183,7 +183,7 @@ export const VendorResponseDisplay: React.FC<VendorResponseDisplayProps> = ({
           </div>
           <span className="font-medium text-orange-700">Phản hồi từ Shop</span>
           <span className="text-xs text-gray-500">
-            {response.vendor_name}
+            {response.vendorName}
           </span>
         </div>
 
@@ -226,8 +226,8 @@ export const VendorResponseDisplay: React.FC<VendorResponseDisplayProps> = ({
 
       {/* Date */}
       <div className="mt-2 text-xs text-gray-500">
-        {formatDate(response.created_at)}
-        {response.updated_at && response.updated_at !== response.created_at && (
+        {formatDate(response.createdAt)}
+        {response.updatedAt && response.updatedAt !== response.createdAt && (
           <span className="ml-2">(đã chỉnh sửa)</span>
         )}
       </div>

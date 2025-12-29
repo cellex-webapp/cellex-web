@@ -31,7 +31,7 @@ import { formatDateVN } from '@/utils/date';
 import { useAppSelector } from '@/hooks/redux';
 import { selectAdminOrderPageMeta } from '@/stores/selectors/order.selector';
 
-const { Text, Title } = Typography;
+const { Text } = Typography;
 
 const statusColor: Record<OrderStatus, string> = {
   PENDING: 'gold',

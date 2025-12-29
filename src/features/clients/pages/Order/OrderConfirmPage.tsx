@@ -241,13 +241,6 @@ const OrderConfirmPage: React.FC = () => {
     return () => clearTimeout(timer);
   }, [countdown, paymentMethod, paymentUrl]);
 
-  const cancelCountdown = () => setCountdown(null);
-  const manualRedirect = () => {
-    const target = paymentUrl || localStorage.getItem('pendingVnpayPaymentUrl');
-    if (target) window.location.href = target;
-    else message.error('Không tìm thấy liên kết VNPay');
-  };
-
   if (isLoading && !order) {
     return <div className="flex items-center justify-center h-96"><Spin size="large" /></div>;
   }

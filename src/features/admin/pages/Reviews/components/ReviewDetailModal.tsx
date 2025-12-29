@@ -31,7 +31,7 @@ import { formatDateVN } from '@/utils/date';
 import { ReviewStatusBadge } from './ReviewStatusBadge';
 import { ModerationResultPanel } from './ModerationResultPanel';
 
-const { Text, Paragraph, Title } = Typography;
+const { Text, Paragraph } = Typography;
 
 interface ReviewDetailModalProps {
   review: IAdminReview | null;
@@ -209,7 +209,7 @@ export const ReviewDetailModal: React.FC<ReviewDetailModalProps> = ({
             <div>
               <Text strong>{review.user_name || 'Ẩn danh'}</Text>
               {review.is_verified_purchase && (
-                <span className="inline-flex items-center gap-1 text-xs text-green-600 mt-1 block">
+                <span className="inline-flex items-center gap-1 text-xs text-green-600 mt-1">
                   <CheckCircleOutlined />
                   Đã mua hàng
                 </span>
@@ -354,10 +354,10 @@ export const ReviewDetailModal: React.FC<ReviewDetailModalProps> = ({
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <Text strong className="text-blue-700">
-                    {review.vendor_response.vendor_name}
+                    {review.vendor_response.vendorName}
                   </Text>
                   <Text type="secondary" className="text-xs">
-                    {formatDateVN(review.vendor_response.created_at)}
+                    {formatDateVN(review.vendor_response.createdAt)}
                   </Text>
                 </div>
                 <Paragraph className="!mb-0 text-gray-700">

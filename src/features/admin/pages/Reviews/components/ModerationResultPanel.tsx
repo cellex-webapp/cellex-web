@@ -13,7 +13,6 @@ import {
   InfoCircleOutlined,
   RobotOutlined,
 } from '@ant-design/icons';
-import { formatDateVN } from '@/utils/date';
 
 /**
  * Category labels in Vietnamese
@@ -81,7 +80,7 @@ export const ModerationResultPanel: React.FC<ModerationResultPanelProps> = ({
     );
   }
 
-  const { is_flagged, flagged_categories, category_scores, moderated_at, model_used } = moderationResult;
+  const { is_flagged, flagged_categories, category_scores } = moderationResult;
 
   return (
     <div className={`bg-white rounded-lg border border-gray-200 ${className}`}>

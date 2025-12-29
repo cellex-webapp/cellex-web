@@ -19,11 +19,10 @@ const ProductPageContent: React.FC = () => {
 
     const { products, isLoading, pagination, fetchMyProducts, updateProduct, createProduct, deleteProduct } = useProduct();
 
-    const [shopId, setShopId] = useState<string | null>(null);
     const [shopVerified, setShopVerified] = useState<boolean>(false);
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(50);
-    const [total, setTotal] = useState(0);
+    const [total] = useState(0);
 
     useEffect(() => {
     (async () => {
