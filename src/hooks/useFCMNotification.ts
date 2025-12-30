@@ -165,6 +165,52 @@ export const useFCMNotification = () => {
     }
   }, [fcmToken]);
 
+  /**
+   * Debug function to check Service Worker and FCM status
+   */
+  const debugFCMStatus = useCallback(async () => {
+    console.log('🔍 ========== FCM DEBUG START ==========');
+    
+    // 1. Check Notification permission
+    console.log('1️⃣ Notification Permission:', Notification.permission);
+    
+    // 2. Check Service Worker status
+    if ('serviceWorker' in navigator) {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      console.log('2️⃣ Service Worker Registrations:', registrations.length);
+      registrations.forEach((reg, i) => {
+        console.log(`   SW ${i + 1}:`, {
+          scope: reg.scope,
+          active: reg.active?.state,
+          installing: reg.installing?.state,
+          waiting: reg.waiting?.state,
+        });
+      });
+      
+      const swReady = await navigator.serviceWorker.ready;
+      console.log('3️⃣ SW Ready:', swReady.active?.state);
+    }
+    
+    // 3. Check stored FCM token
+    const storedToken = localStorage.getItem('fcmToken');
+    console.log('4️⃣ Stored FCM Token:', storedToken ? `${storedToken.substring(0, 30)}...` : 'NOT SET');
+    
+    // 4. Check current state
+    console.log('5️⃣ Current State:', {
+      fcmToken: fcmToken ? `${fcmToken.substring(0, 30)}...` : null,
+      permissionStatus,
+      isLoading,
+    });
+    
+    console.log('🔍 ========== FCM DEBUG END ==========');
+    
+    return {
+      permission: Notification.permission,
+      storedToken: storedToken ? true : false,
+      currentToken: fcmToken ? true : false,
+    };
+  }, [fcmToken, permissionStatus, isLoading]);
+
   return {
     fcmToken,
     permissionStatus,
@@ -172,5 +218,6 @@ export const useFCMNotification = () => {
     isSupported: isNotificationSupported(),
     enableNotifications,
     disableNotifications,
+    debugFCMStatus,
   };
 };
