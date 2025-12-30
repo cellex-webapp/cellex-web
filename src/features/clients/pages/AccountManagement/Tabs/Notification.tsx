@@ -77,14 +77,6 @@ const NotificationTab: React.FC = () => {
             >
               <div 
                 className={`w-full ${item.actionUrl ? 'cursor-pointer hover:bg-gray-50 -m-3 p-3 rounded transition-colors' : ''}`}
-                onClick={() => {
-                  if (item.actionUrl) {
-                    window.open(item.actionUrl, '_blank', 'noopener,noreferrer');
-                    if (!item.isRead) {
-                      markAsRead(item.id);
-                    }
-                  }
-                }}
               >
                 <Space direction="vertical" size={0} className="w-full">
                   <Space>
