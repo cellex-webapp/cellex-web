@@ -102,16 +102,26 @@ const OrderConfirmPage: React.FC = () => {
   }, [provinceSelected]);
 
   useEffect(() => {
+    let mounted = true;
     if (orderId) {
-      dispatch(fetchOrderById(orderId));
-      dispatch(fetchAvailableCoupons(orderId));
+      // Fetch order first, then load available coupons tied to that order
+      dispatch(fetchOrderById(orderId))
+        .unwrap()
+        .then(() => {
+          if (mounted) dispatch(fetchAvailableCoupons(orderId));
+        })
+        .catch((err: any) => {
+          // If fetching order fails, coupons are not requested
+          console.error('Failed to fetch order before coupons', err);
+        });
     }
+    return () => { mounted = false; };
   }, [orderId, dispatch]);
 
   const handleApplyCoupon = useCallback(async (code: string) => {
     if (!orderId) return;
     try {
-      await dispatch(applyCouponToOrder({ orderId, body: { code } })).unwrap();
+      await dispatch(applyCouponToOrder({ orderId, body: { couponCode: code } })).unwrap();
       message.success('Áp mã thành công');
     } catch (e: any) {
       message.error(e?.message || 'Không áp được mã');

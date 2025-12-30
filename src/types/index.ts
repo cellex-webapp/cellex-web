@@ -525,7 +525,7 @@ declare global {
     }
 
     interface ApplyCouponRequest {
-        code: string;
+        couponCode: string;
     }
 
     interface CheckoutOrderRequest {
