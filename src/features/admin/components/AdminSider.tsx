@@ -2,8 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Layout, Menu } from 'antd';
 import type { MenuProps } from 'antd';
 import {
-  AppstoreOutlined, ShopOutlined, TeamOutlined, DollarOutlined,
-  CustomerServiceOutlined, TagsOutlined, DatabaseOutlined, PartitionOutlined,
+  AppstoreOutlined, ShopOutlined, TeamOutlined,
+  CustomerServiceOutlined, TagsOutlined, PartitionOutlined,
   BulbOutlined,
 } from '@ant-design/icons';
 import { useLocation, useNavigate } from 'react-router-dom';
