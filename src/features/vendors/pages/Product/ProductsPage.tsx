@@ -77,7 +77,7 @@ const ProductPageContent: React.FC = () => {
 
     const handleSubmit = async (payload: any) => {
         try {
-            if ('id' in payload) {
+            if (payload?.id) {
                 const actionResult: any = await updateProduct(payload.id, payload);
                 unwrapResult(actionResult);
                 message.success('Cập nhật sản phẩm thành công');

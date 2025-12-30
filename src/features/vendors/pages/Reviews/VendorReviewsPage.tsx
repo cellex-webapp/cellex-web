@@ -209,7 +209,7 @@ const VendorReviewsPage: React.FC = () => {
         <Tabs
           activeKey={activeTab}
           onChange={setActiveTab}
-          className="px-4 pt-4"
+          className="px-4! pt-4"
           tabBarExtraContent={
             <Text type="secondary" className="text-sm pr-4">
               Hiển thị {displayReviews.length} / {filteredReviews.length} đánh giá

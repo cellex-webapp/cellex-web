@@ -52,15 +52,18 @@ const ProductFormModal: React.FC<Props> = ({ open, onClose, onSubmit, editingPro
 
     const images = (values.images || []).map((f: UploadFile) => f.originFileObj || f.url || f);
 
-    const payload = {
+    const payload: any = {
       ...values,
-      id: editingProduct?.id, 
       price: Number(values.price),
       saleOff: Number(values.saleOff),
       stockQuantity: Number(values.stockQuantity),
       attributeValues,
-      images, 
+      images,
     };
+
+    if (editingProduct?.id) {
+      payload.id = editingProduct.id;
+    }
 
     delete payload.attributeItems; 
     onSubmit(payload);
