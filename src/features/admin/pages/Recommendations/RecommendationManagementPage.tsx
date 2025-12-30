@@ -6,7 +6,6 @@ import React, { useCallback, useState, useEffect } from 'react';
 import {
   Card,
   Button,
-  Input,
   Table,
   Space,
   Typography,
@@ -80,7 +79,7 @@ const RecommendationManagementPage: React.FC = () => {
     const fetchUsers = async () => {
       setLoadingUsers(true);
       try {
-        const response = await userService.getAllUsers({ page: 0, size: 100 });
+        const response = await userService.getAllUsers({ page: 0, limit: 100 });
         setUsers(response.result.content);
       } catch (error) {
         console.error('Failed to fetch users:', error);
