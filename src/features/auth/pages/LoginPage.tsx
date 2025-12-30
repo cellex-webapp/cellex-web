@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import LoginForm from '../components/LoginForm';
 import { unwrapResult } from '@reduxjs/toolkit';
 import { message } from 'antd';
+import { getErrorMessage } from '@/helpers/errorHandler';
 import { requestNotificationPermission } from '@/config/firebase';
 import notificationService from '@/services/notification.service';
 
@@ -86,7 +87,7 @@ const LoginPage: React.FC = () => {
         navigate('/');
       }
     } catch (rejectedValue) {
-      const errMsg = (rejectedValue as any)?.message || String(rejectedValue) || 'Đăng nhập thất bại';
+      const errMsg = getErrorMessage(rejectedValue) || 'Đăng nhập thất bại';
       message.error(errMsg);
     }
   };

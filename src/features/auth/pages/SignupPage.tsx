@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { unwrapResult } from '@reduxjs/toolkit';
 import { useAuth } from '@/hooks/useAuth';
 import SignupForm from '../components/SignupForm';
+import { getErrorMessage } from '@/helpers/errorHandler';
+import { message } from 'antd';
 
 const SignupPage: React.FC = () => {
   const [fullName, setFullName] = useState('');
@@ -13,7 +15,7 @@ const SignupPage: React.FC = () => {
 
   const navigate = useNavigate();
 
-  const { sendSignupCode, isLoading, error } = useAuth();
+  const { sendSignupCode, isLoading } = useAuth();
 
   const onSignup = async (e?: React.FormEvent<HTMLFormElement>) => {
     if (e) e.preventDefault();
@@ -41,7 +43,8 @@ const SignupPage: React.FC = () => {
       navigate('/otp');
 
     } catch (rejectedValue) {
-      console.error('Failed to send sign-up code:', rejectedValue);
+      const errMsg = getErrorMessage(rejectedValue);
+      message.error(`Đăng ký thất bại: ${errMsg}`);
     }
   };
 
@@ -68,7 +71,6 @@ const SignupPage: React.FC = () => {
             onSubmit={onSignup}
             onLoginLink={() => navigate('/login')}
           />
-          {error && <p className="text-red-500 text-sm mt-4 text-center">{error}</p>}
         </div>
       </div>
     </div>
