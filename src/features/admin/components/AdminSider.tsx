@@ -31,7 +31,7 @@ const MENU_CONFIG = [
     key: 'product', label: 'Quản lý Sản phẩm', icon: ShopOutlined,
     children: [
       { key: 'product-all', label: 'Tất cả sản phẩm', path: '/admin/products' },
-      { key: 'product-violation', label: 'Sản phẩm vi phạm', path: '/admin/products/violations' },
+      // { key: 'product-violation', label: 'Sản phẩm vi phạm', path: '/admin/products/violations' },
       { key: 'order', label: 'Quản lý Đơn hàng', path: '/admin/orders' },
     ],
   },
