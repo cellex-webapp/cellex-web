@@ -146,7 +146,7 @@ const AccountManagementPage: React.FC = () => {
                       <Text type="secondary" className="text-xs">{currentUser?.phoneNumber || ''}</Text>
                     </div>
                   </div>
-                  {(() => {
+                  {/* {(() => {
                     const u = currentUser as any;
                     const points = Number(u?.points) || 0;
                     const pointsToNextLevel = Number(u?.pointsToNextLevel) || 1000;
@@ -158,7 +158,7 @@ const AccountManagementPage: React.FC = () => {
                         </Text>
                       </>
                     );
-                  })()}
+                  })()} */}
                 </div>
             <div className="flex-auto rounded-lg bg-white shadow-sm">
               <Menu
