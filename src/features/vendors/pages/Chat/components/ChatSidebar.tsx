@@ -1,6 +1,6 @@
 import React from 'react';
 import { List, Avatar, Badge, Input, Typography, Spin, Empty } from 'antd';
-import { SearchOutlined } from '@ant-design/icons';
+import { SearchOutlined, RobotOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import { useChat } from '@/hooks/useChat';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
@@ -11,8 +11,22 @@ dayjs.locale('vi');
 
 const { Text } = Typography;
 
-const ChatSidebar: React.FC = () => {
+interface ChatSidebarProps {
+  showAIChat?: boolean;
+  onShowAIChat?: (show: boolean) => void;
+}
+
+const ChatSidebar: React.FC<ChatSidebarProps> = ({ showAIChat = false, onShowAIChat }) => {
   const { rooms, activeRoomId, selectRoom, isLoadingRooms } = useChat();
+
+  const handleAIChatClick = () => {
+    onShowAIChat?.(true);
+  };
+
+  const handleRoomSelect = (roomId: string) => {
+    onShowAIChat?.(false);
+    selectRoom(roomId);
+  };
 
   return (
     <div className="w-80 border-r border-gray-200 h-full flex flex-col bg-white shrink-0">
@@ -26,6 +40,40 @@ const ChatSidebar: React.FC = () => {
       </div>
 
       <div className="flex-1 overflow-y-auto custom-scrollbar">
+        {/* AI Assistant Entry - Always on top with gradient glow effect */}
+        <div 
+          className={`cursor-pointer transition-all px-4 py-3 border-b border-gray-100 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 group ${
+            showAIChat ? 'bg-gradient-to-r from-blue-50 to-purple-50 border-r-4 !border-r-purple-600' : ''
+          }`}
+          onClick={handleAIChatClick}
+        >
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <div className={`w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-600 flex items-center justify-center shadow-lg transition-shadow ${
+                showAIChat ? 'shadow-blue-300/50' : 'group-hover:shadow-blue-300/50'
+              }`}>
+                <RobotOutlined className="text-white text-xl" />
+              </div>
+              <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-400 rounded-full border-2 border-white"></span>
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-0.5">
+                <Text strong className="text-gray-800 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  Cellex AI Assistant
+                </Text>
+                <Badge 
+                  count={<ThunderboltOutlined className="text-yellow-500 text-xs" />} 
+                  className="animate-bounce"
+                />
+              </div>
+              <Text type="secondary" className="text-xs">
+                Hỗ trợ phân tích kinh doanh 24/7
+              </Text>
+            </div>
+          </div>
+        </div>
+
+        {/* Regular chat rooms */}
         {isLoadingRooms && rooms.length === 0 ? (
           <div className="p-8 text-center"><Spin /></div>
         ) : rooms.length === 0 ? (
@@ -37,9 +85,9 @@ const ChatSidebar: React.FC = () => {
             renderItem={(room) => (
               <List.Item 
                 className={`cursor-pointer transition-all !px-4 py-3 border-gray-50 hover:bg-gray-50 ${
-                  activeRoomId === room.id ? 'bg-blue-50/60 border-r-4 !border-r-blue-600' : ''
+                  !showAIChat && activeRoomId === room.id ? 'bg-blue-50/60 border-r-4 !border-r-blue-600' : ''
                 }`}
-                onClick={() => selectRoom(room.id)}
+                onClick={() => handleRoomSelect(room.id)}
               >
                 <List.Item.Meta
                   avatar={

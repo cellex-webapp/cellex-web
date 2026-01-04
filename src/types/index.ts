@@ -1279,6 +1279,84 @@ declare global {
         product_image?: string;
         product_price?: number;
     }
+
+    // ========================= AI Chat System =========================
+    
+    type AIMessageType = 'USER' | 'AI' | 'SYSTEM';
+    type AIResponseType = 'TEXT' | 'PRODUCT_LIST' | 'CHART' | 'TABLE' | 'COUPON' | 'MIXED';
+
+    interface IAIChatRequest {
+        message: string;
+        conversationId?: string;
+        shopId?: string;
+    }
+
+    interface IAIMetadata {
+        productIds?: string[];
+        chartData?: IAIChartData;
+        tableData?: Record<string, any>[];
+        couponSuggestions?: IAICouponSuggestion[];
+        functionCalled?: string;
+    }
+
+    interface IAIChartData {
+        chartType: 'LINE' | 'BAR' | 'PIE';
+        title: string;
+        labels: string[];
+        datasets: IAIChartDataset[];
+    }
+
+    interface IAIChartDataset {
+        label: string;
+        data: number[];
+        backgroundColor?: string;
+        borderColor?: string;
+    }
+
+    interface IAICouponSuggestion {
+        productId: string;
+        productName: string;
+        viewCount: number;
+        purchaseCount: number;
+        suggestedDiscount: number;
+        reason: string;
+    }
+
+    interface IAIChatResponse {
+        message: string;
+        conversationId: string;
+        messageId: string;
+        metadata?: IAIMetadata;
+        responseType: AIResponseType;
+        timestamp: string;
+    }
+
+    interface IAIConversation {
+        id: string;
+        userId: string;
+        title: string;
+        userRole: string;
+        shopId?: string;
+        messageCount: number;
+        lastMessage?: string;
+        lastMessageAt?: string;
+        isActive: boolean;
+        createdAt: string;
+        updatedAt?: string;
+    }
+
+    interface IAIMessage {
+        id: string;
+        userId: string;
+        conversationId: string;
+        messageType: AIMessageType;
+        content: string;
+        userRole: string;
+        shopId?: string;
+        metadata?: Record<string, any>;
+        functionCalled?: string;
+        createdAt: string;
+    }
 }
 
 export { }
