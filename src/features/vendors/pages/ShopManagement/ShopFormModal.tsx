@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Form, Input, Button, Upload, message, Row, Col, Card, Space, Tag, App } from 'antd';
+import { Modal, Form, Input, Button, Upload, message, Row, Col, Card, Space, App } from 'antd';
 import { UploadOutlined, ShopOutlined, EnvironmentOutlined, PhoneOutlined, MailOutlined, PictureOutlined } from '@ant-design/icons';
 import type { UploadFile } from 'antd/es/upload/interface';
 import useShop from '@/hooks/useShop';
 import { AddressSelector } from '@/components/address';
 import type { AddressSelectorValue } from '@/components/address';
-import { addressService } from '@/services/address.service';
+// import { addressService } from '@/services/address.service';
 
 interface ShopFormModalProps {
     shop: IShop | null;
@@ -39,8 +39,8 @@ const ShopFormModal: React.FC<ShopFormModalProps> = ({ shop, open, onClose, onSu
             // Cần mapping từ địa chỉ cũ sang mới nếu shop chưa có new_ward_code
             if (shop.address) {
                 setAddressValue({
-                    newWardCode: shop.address.commune_code || '',
-                    newProvinceCode: shop.address.province_code || '',
+                    newWardCode: shop.address.communeCode || '',
+                    newProvinceCode: shop.address.provinceCode || '',
                     detailAddress: shop.address.street || '',
                 });
             }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Form, Select, Input, Radio, Card, Tag, Space, Spin, message } from 'antd';
-import { EnvironmentOutlined, SwapOutlined } from '@ant-design/icons';
+import { Select, Input, Radio, Card, Tag, Space, Spin, message } from 'antd';
+import { EnvironmentOutlined } from '@ant-design/icons';
 import useAddress from '@/hooks/useAddress';
 
 export interface AddressSelectorValue {
@@ -39,7 +39,7 @@ const AddressSelector: React.FC<AddressSelectorProps> = ({
   required = false,
   showModeSelector = true,
   defaultMode = 'new',
-  layout = 'vertical',
+  // layout = 'vertical',
   size = 'middle',
 }) => {
   const {
@@ -82,7 +82,7 @@ const AddressSelector: React.FC<AddressSelectorProps> = ({
 
   // Synced address info
   const [syncedOldAddress, setSyncedOldAddress] = useState<IOldAddressInfo | null>(null);
-  const [syncedNewAddress, setSyncedNewAddress] = useState<INewAddressInfo | null>(null);
+  // const [syncedNewAddress, setSyncedNewAddress] = useState<INewAddressInfo | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
 
   // Load provinces on mount
@@ -145,7 +145,7 @@ const AddressSelector: React.FC<AddressSelectorProps> = ({
     try {
       const mapping = await mapWardCode(wardId, 'old');
       if (mapping?.new_address) {
-        setSyncedNewAddress(mapping.new_address);
+        // setSyncedNewAddress(mapping.new_address);
         setNewWardCode(mapping.new_address.ward_code);
         
         // Find and set province in new system
@@ -311,7 +311,7 @@ const AddressSelector: React.FC<AddressSelectorProps> = ({
     }
   };
 
-  const isHorizontal = layout === 'horizontal';
+  // const isHorizontal = layout === 'horizontal';
 
   return (
     <div className="address-selector">

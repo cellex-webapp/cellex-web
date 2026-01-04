@@ -34,7 +34,7 @@ const DualAddressInput: React.FC<DualAddressInputProps> = ({
   value,
   onChange,
   disabled = false,
-  showBothModes = true,
+  // showBothModes = true,
   className = '',
   label = 'Địa chỉ',
   required = false,

@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Button, Input, Spin, Avatar, Tooltip, Badge } from 'antd';
+import { Button, Input, Spin, Tooltip, Badge } from 'antd';
 import { 
   SendOutlined, 
   RobotOutlined, 
   PlusOutlined,
   HistoryOutlined,
   ArrowLeftOutlined,
-  StarOutlined
+  // StarOutlined
 } from '@ant-design/icons';
 import { useAIChat } from '@/hooks/useAIChat';
 import AIMessageBubble from '@/features/clients/components/AIChat/AIMessageBubble';

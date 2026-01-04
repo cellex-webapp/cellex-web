@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Form, Input, Button, message, Spin, Row, Col, Card, Space, Upload, Tag } from 'antd';
+import { Modal, Form, Input, Button, message, Spin, Row, Col, Card, Space, Upload } from 'antd';
 import { ShopOutlined, EnvironmentOutlined, PhoneOutlined, MailOutlined, UploadOutlined, PictureOutlined } from '@ant-design/icons';
 import type { UploadFile } from 'antd/es/upload/interface';
 import { shopService } from '@/services/shop.service';
@@ -53,8 +53,8 @@ const ShopFormModal: React.FC<Props> = ({ visible, shopId, onClose, onSuccess })
           // Set address from existing shop
           if (shop.address) {
             setAddressValue({
-              newWardCode: shop.address.commune_code || '',
-              newProvinceCode: shop.address.province_code || '',
+              newWardCode: shop.address.communeCode || '',
+              newProvinceCode: shop.address.provinceCode || '',
               detailAddress: shop.address.street || '',
             });
           }

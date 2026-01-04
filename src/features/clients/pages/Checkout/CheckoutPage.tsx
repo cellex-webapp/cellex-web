@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Card, Radio, Typography, Button, Space, message, Spin, Statistic, Tag, Alert, Divider } from 'antd';
-import { EnvironmentOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
+import { Card, Radio, Typography, Button, Space, message, Spin, Statistic, Alert } from 'antd';
+import { EnvironmentOutlined, EditOutlined } from '@ant-design/icons';
 import { useCart } from '@/hooks/useCart';
 import { useNavigate } from 'react-router-dom';
 import useVnpay from '@/hooks/useVnpay';
@@ -12,7 +12,7 @@ import type { AddressSelectorValue } from '@/components/address';
 const { Title, Text } = Typography;
 
 const CheckoutPage: React.FC = () => {
-  const { currentUser, refreshUser } = useAuth();
+  const { currentUser } = useAuth();
   const navigate = useNavigate();
   const { items, totalPrice, fetchMyCart, isLoading: cartLoading } = useCart();
   const { createPayment, isLoading: paying, error, reset } = useVnpay();
@@ -70,17 +70,9 @@ const CheckoutPage: React.FC = () => {
     setCreatingOrder(true);
     reset();
     try {
-      // Create order from cart with shipping address
-      const shippingAddress = useExistingAddress 
-        ? undefined // Use user's default address
-        : {
-            communeCode: newAddress.newWardCode,
-            detailAddress: newAddress.detailAddress,
-          };
-
+      // Create order from cart
       const createResp = await orderService.createOrderFromCart({ 
         items: items.map(i => ({ productId: i.productId, quantity: i.quantity })),
-        shippingAddress,
       });
       const order = createResp.result as IOrder;
       if (!order?.id) throw new Error('Không tạo được đơn hàng');

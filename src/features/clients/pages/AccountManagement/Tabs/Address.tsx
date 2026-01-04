@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Typography, Form, Button, Space, message, Descriptions, Card, Tag } from 'antd';
-import { EnvironmentOutlined, SwapOutlined } from '@ant-design/icons';
+import { Typography, Button, Space, message, Descriptions, Card, Tag } from 'antd';
+import { EnvironmentOutlined } from '@ant-design/icons';
 import { useAuth } from '@/hooks/useAuth';
 import { useAppDispatch } from '@/hooks/redux';
 import { updateUserProfile } from '@/stores/slices/user.slice';

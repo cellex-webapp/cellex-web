@@ -1,5 +1,5 @@
 import React from 'react';
-import { Avatar, Card, Image, Table, Tag } from 'antd';
+import { Avatar, Card, Table, Tag } from 'antd';
 import { RobotOutlined, UserOutlined, ShoppingOutlined } from '@ant-design/icons';
 import type { AIMessage } from '@/services/ai.service';
 import moment from 'moment-timezone';
