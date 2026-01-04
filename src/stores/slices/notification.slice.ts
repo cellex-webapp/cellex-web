@@ -167,6 +167,15 @@ const notificationSlice = createSlice({
         state.isLoading = false;
         state.unreadCount = action.payload;
       })
+      .addCase(sendBroadcastNotification.fulfilled, (state) => {
+        state.isLoading = false;
+      })
+      .addCase(sendTestNotification.fulfilled, (state) => {
+        state.isLoading = false;
+      })
+      .addCase(sendTestBroadcast.fulfilled, (state) => {
+        state.isLoading = false;
+      })
       .addCase(markNotificationRead.fulfilled, (state, action) => {
         state.isLoading = false;
         state.notifications = state.notifications.map((n: NotificationResponse) =>
