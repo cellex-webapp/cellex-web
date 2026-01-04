@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Form, Input, Button, message, Select, Spin, Row, Col, Card, Space, Upload } from 'antd';
+import { Modal, Form, Input, Button, message, Spin, Row, Col, Card, Space, Upload, Tag } from 'antd';
 import { ShopOutlined, EnvironmentOutlined, PhoneOutlined, MailOutlined, UploadOutlined, PictureOutlined } from '@ant-design/icons';
 import type { UploadFile } from 'antd/es/upload/interface';
 import { shopService } from '@/services/shop.service';
-import { addressService } from '@/services/address.service';
-// import { IAddressDataUnit } from '@/types'; // Assuming types are defined
+import { AddressSelector } from '@/components/address';
+import type { AddressSelectorValue } from '@/components/address';
 
 interface Props {
   visible: boolean;
@@ -19,27 +19,18 @@ const ShopFormModal: React.FC<Props> = ({ visible, shopId, onClose, onSuccess })
   const [fetching, setFetching] = useState(false);
   const [fileList, setFileList] = useState<UploadFile[]>([]);
 
-  const [provinces, setProvinces] = useState<IAddressDataUnit[]>([]);
-  const [communes, setCommunes] = useState<IAddressDataUnit[]>([]);
-  
-  // Use watch to react to form changes
-  const selectedProvince = Form.useWatch('provinceCode', form);
-
-  // --- 1. Helper Functions ---
-  
-  // Define filterOption inside component or move outside if generic
-  const filterOption = (input: string, option: any) => {
-    return (option?.children ?? '').toString().toLowerCase().includes(input.toLowerCase());
-  };
+  // Address state using new dual system
+  const [addressValue, setAddressValue] = useState<AddressSelectorValue>({
+    newWardCode: '',
+    detailAddress: '',
+  });
 
   const handleCancel = () => {
     form.resetFields();
     setFileList([]);
-    setCommunes([]); // Clear communes on close
+    setAddressValue({ newWardCode: '', detailAddress: '' });
     onClose();
   };
-
-  // --- 2. Data Loading Effects ---
 
   // Load Shop Data
   useEffect(() => {
@@ -55,12 +46,18 @@ const ShopFormModal: React.FC<Props> = ({ visible, shopId, onClose, onSuccess })
           form.setFieldsValue({
             shopName: shop.shop_name,
             description: shop.description,
-            provinceCode: shop.address?.province, 
-            communeCode: shop.address?.commune,   
-            detailAddress: shop.address?.street,
             phoneNumber: shop.phone_number,
             email: shop.email,
           });
+
+          // Set address from existing shop
+          if (shop.address) {
+            setAddressValue({
+              newWardCode: shop.address.commune_code || '',
+              newProvinceCode: shop.address.province_code || '',
+              detailAddress: shop.address.street || '',
+            });
+          }
 
           if (shop.logo_url) {
             setFileList([{
@@ -81,43 +78,29 @@ const ShopFormModal: React.FC<Props> = ({ visible, shopId, onClose, onSuccess })
     fetchShop();
   }, [visible, shopId, form]);
 
-  // Load Provinces (Once when modal opens)
-  useEffect(() => {
-    if (visible && provinces.length === 0) {
-      addressService.getProvinces().then((resp: any) => {
-          // Handle potential different response structures
-          const list = Array.isArray(resp) ? resp : resp.result || [];
-          setProvinces(list);
-      });
+  const handleSubmit = async (values: any) => {
+    if (!shopId) return;
+    
+    if (!addressValue.newWardCode) {
+      message.warning('Vui lòng chọn địa chỉ phường/xã');
+      return;
     }
-  }, [visible, provinces.length]);
-
-  // Load Communes when Province changes
-  useEffect(() => {
-    if (!selectedProvince) {
-      setCommunes([]);
+    if (!addressValue.detailAddress?.trim()) {
+      message.warning('Vui lòng nhập địa chỉ chi tiết');
       return;
     }
 
-    // Only fetch if we have a province code
-    addressService.getCommunesByProvinceCode(selectedProvince).then((resp: any) => {
-        const list = Array.isArray(resp) ? resp : resp.result || [];
-        setCommunes(list);
-    });
-  }, [selectedProvince]);
-
-  // --- 3. Handlers ---
-
-  const handleProvinceChange = () => {
-     // Reset commune when province changes
-     form.setFieldValue('communeCode', undefined);
-  };
-
-  const handleSubmit = async (values: any) => {
-    if (!shopId) return;
     setLoading(true);
 
-    const payload: any = { ...values };
+    const payload: any = {
+      shopName: values.shopName,
+      description: values.description,
+      provinceCode: addressValue.newProvinceCode || '',
+      communeCode: addressValue.newWardCode,
+      detailAddress: addressValue.detailAddress,
+      phoneNumber: values.phoneNumber,
+      email: values.email,
+    };
     
     // Handle File Upload
     if (fileList.length > 0 && fileList[0].originFileObj) {
@@ -206,64 +189,25 @@ const ShopFormModal: React.FC<Props> = ({ visible, shopId, onClose, onSuccess })
           </Card>
 
           {/* ADDRESS */}
-          <Card size="small" className="mb-4" title={<Space><EnvironmentOutlined />Địa chỉ</Space>}>
-            <Row gutter={12}>
-              <Col span={12}>
-                <Form.Item
-                  label="Tỉnh/Thành phố"
-                  name="provinceCode"
-                  rules={[{ required: true, message: 'Vui lòng chọn tỉnh/thành phố' }]}
-                >
-                  <Select
-                    placeholder="Chọn tỉnh/thành phố"
-                    onChange={handleProvinceChange}
-                    showSearch
-                    optionFilterProp="children"
-                    filterOption={filterOption} // Now correctly defined
-                  >
-                    {provinces.map((p) => (
-                      <Select.Option key={p.code} value={p.code}>
-                        {p.name}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-              </Col>
-
-              <Col span={12}>
-                <Form.Item
-                  label="Xã/Phường/Thị trấn"
-                  name="communeCode"
-                  rules={[{ required: true, message: 'Vui lòng chọn xã/phường' }]}
-                >
-                  <Select
-                    placeholder="Chọn xã/phường/thị trấn"
-                    disabled={!selectedProvince}
-                    showSearch
-                    optionFilterProp="children"
-                    filterOption={filterOption} // Now correctly defined
-                  >
-                    {communes.map((c) => (
-                      <Select.Option key={c.code} value={c.code}>
-                        {c.name}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-              </Col>
-            </Row>
-
-            <Form.Item
-              label="Địa chỉ chi tiết"
-              name="detailAddress"
-              rules={[{ required: true, message: 'Vui lòng nhập địa chỉ chi tiết' }]}
-              className="mb-0"
-            >
-              <Input
-                prefix={<EnvironmentOutlined />}
-                placeholder="Số nhà, tên đường... (VD: 118 Đường B)"
-              />
-            </Form.Item>
+          <Card 
+            size="small" 
+            className="mb-4" 
+            title={
+              <Space>
+                <EnvironmentOutlined className="text-green-500" />
+                <span>Địa chỉ</span>
+              </Space>
+            }
+          >
+            <AddressSelector
+              value={addressValue}
+              onChange={setAddressValue}
+              required={true}
+              showModeSelector={true}
+              defaultMode="new"
+              layout="horizontal"
+              size="middle"
+            />
           </Card>
 
           {/* CONTACT */}
