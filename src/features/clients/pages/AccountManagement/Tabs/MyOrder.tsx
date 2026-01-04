@@ -452,7 +452,7 @@ const MyOrder: React.FC = () => {
         onCancel={() => setApplyOpen(false)}
         onOk={async () => {
           if (!selectedOrder?.id || !couponCode.trim()) return;
-          await applyCouponToOrder(selectedOrder.id, { code: couponCode.trim() }).unwrap();
+          await applyCouponToOrder(selectedOrder.id, { couponCode: couponCode.trim() }).unwrap();
           message.success('Đã áp dụng mã');
           setApplyOpen(false);
           load();

@@ -43,7 +43,7 @@ const NotificationsPage: React.FC = () => {
   useEffect(() => {
     fetchNotifications(page, size);
     getUnreadCount();
-  }, [fetchNotifications, getUnreadCount, page, size]);
+  }, [page, size]);
 
   const filteredNotifications = useMemo(() => {
     const src = notifications || [];

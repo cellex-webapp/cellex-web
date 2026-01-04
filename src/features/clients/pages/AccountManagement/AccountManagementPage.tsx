@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
-import { Layout, Menu, Button, Typography, Avatar, Progress, Form, Input, theme } from 'antd';
+import { Layout, Menu, Button, Typography, Avatar, Form, Input, theme } from 'antd';
 import {
   UserOutlined,
   SolutionOutlined,
@@ -64,7 +64,7 @@ const AccountManagementPage: React.FC = () => {
   const [activeKey, setActiveKey] = useState('personal-info');
   const [searchParams] = useSearchParams();
   const location = useLocation();
-  const { token } = theme.useToken();
+  // const { token } = theme.useToken();
 
   const handleLogout = useCallback(async () => {
     try {

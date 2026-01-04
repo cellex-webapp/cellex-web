@@ -4,7 +4,7 @@ import { Card, Typography, Spin, List, Row, Col, Statistic, Space, Radio, Button
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch } from '@/stores/store';
 import { fetchOrderById, fetchAvailableCoupons, applyCouponToOrder, removeCouponFromOrder, checkoutOrder } from '@/stores/slices/order.slice';
-import { selectSelectedOrder, selectAvailableCoupons, selectOrderLoading, selectOrderError, selectOrderPaymentUrl } from '@/stores/selectors/order.selector';
+import { selectSelectedOrder, selectAvailableCoupons, selectOrderLoading, selectOrderError } from '@/stores/selectors/order.selector';
 import { useAuth } from '@/hooks/useAuth';
 import { useAppDispatch } from '@/hooks/redux';
 import { updateUserProfile } from '@/stores/slices/user.slice';
@@ -32,12 +32,10 @@ const OrderConfirmPage: React.FC = () => {
   const coupons = useSelector(selectAvailableCoupons);
   const isLoading = useSelector(selectOrderLoading);
   const error = useSelector(selectOrderError);
-  const paymentUrl = useSelector(selectOrderPaymentUrl);
+  
 
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('COD');
   const [submitting, setSubmitting] = useState(false);
-  const [countdown, setCountdown] = useState<number | null>(null);
-  const COUNTDOWN_SECONDS = 6;
 
   // Address management state
   const [isAddressModalVisible, setIsAddressModalVisible] = useState(false);
@@ -69,16 +67,26 @@ const OrderConfirmPage: React.FC = () => {
   }, [currentUser]);
 
   useEffect(() => {
+    let mounted = true;
     if (orderId) {
-      dispatch(fetchOrderById(orderId));
-      dispatch(fetchAvailableCoupons(orderId));
+      // Fetch order first, then load available coupons tied to that order
+      dispatch(fetchOrderById(orderId))
+        .unwrap()
+        .then(() => {
+          if (mounted) dispatch(fetchAvailableCoupons(orderId));
+        })
+        .catch((err: any) => {
+          // If fetching order fails, coupons are not requested
+          console.error('Failed to fetch order before coupons', err);
+        });
     }
+    return () => { mounted = false; };
   }, [orderId, dispatch]);
 
   const handleApplyCoupon = useCallback(async (code: string) => {
     if (!orderId) return;
     try {
-      await dispatch(applyCouponToOrder({ orderId, body: { code } })).unwrap();
+      await dispatch(applyCouponToOrder({ orderId, body: { couponCode: code } })).unwrap();
       message.success('Áp mã thành công');
     } catch (e: any) {
       message.error(e?.message || 'Không áp được mã');
@@ -148,28 +156,22 @@ const OrderConfirmPage: React.FC = () => {
     }
   };
 
-  // Load stored paymentUrl (in case of refresh) if state empty and paymentMethod already VNPAY
-  useEffect(() => {
-    if (paymentMethod === 'VNPAY' && !paymentUrl) {
-      const stored = localStorage.getItem('pendingVnpayPaymentUrl');
-      if (stored) {
-        message.info('Khôi phục phiên thanh toán VNPay trước đó');
-        // We cannot set paymentUrl directly (in slice) here; advise user to nhấn nút chuyển hướng.
-      }
-    }
-  }, [paymentMethod, paymentUrl]);
+  
 
   const handleCheckout = useCallback(async () => {
     if (!orderId) return;
     setSubmitting(true);
     try {
       const action = await dispatch(checkoutOrder({ orderId, body: { paymentMethod } })).unwrap();
-      if (paymentMethod === 'VNPAY' && (action.paymentUrl || paymentUrl)) {
-        const target = action.paymentUrl || paymentUrl!;
-        localStorage.setItem('pendingVnpayPaymentUrl', target);
-        message.success('Tạo liên kết VNPay thành công – sẽ chuyển hướng sau vài giây');
-        setCountdown(COUNTDOWN_SECONDS);
-        return;
+      if (paymentMethod === 'VNPAY') {
+        if (action.paymentUrl) {
+          // Redirect immediately to VNPay without delay or localStorage
+          window.location.href = action.paymentUrl;
+          return;
+        } else {
+          message.error('Không nhận được liên kết VNPay');
+          return;
+        }
       }
       message.success('Đặt hàng thành công');
       navigate('/account?tab=orders#orders');
@@ -180,19 +182,7 @@ const OrderConfirmPage: React.FC = () => {
     }
   }, [dispatch, orderId, paymentMethod, navigate]);
 
-  // Countdown effect for VNPay auto redirect
-  useEffect(() => {
-    if (countdown == null) return;
-    if (countdown <= 0) {
-      const target = paymentUrl || localStorage.getItem('pendingVnpayPaymentUrl');
-      if (paymentMethod === 'VNPAY' && target) {
-        window.location.href = target;
-      }
-      return;
-    }
-    const timer = setTimeout(() => setCountdown(prev => (prev != null ? prev - 1 : null)), 1000);
-    return () => clearTimeout(timer);
-  }, [countdown, paymentMethod, paymentUrl]);
+  
 
   if (isLoading && !order) {
     return <div className="flex items-center justify-center h-96"><Spin size="large" /></div>;
@@ -296,26 +286,7 @@ const OrderConfirmPage: React.FC = () => {
               </Col>
             </Row>
             {error && <Text type="danger">{error}</Text>}
-            {paymentMethod === 'VNPAY' && (paymentUrl || localStorage.getItem('pendingVnpayPaymentUrl')) && (
-              <Space direction="vertical" className="w-full">
-                {countdown != null ? (
-                  <Card size="small" className="bg-indigo-50" bordered={false}>
-                    <Space direction="vertical" size={4}>
-                      <Text>Chuẩn bị chuyển hướng đến cổng VNPay sau <Text strong>{countdown}s</Text>.</Text>
-                      <Space>
-                        {/* <Button type="primary" className="!bg-indigo-600" size="small" onClick={manualRedirect}>Chuyển ngay</Button>
-                        <Button size="small" onClick={cancelCountdown}>Hủy tự động</Button> */}
-                      </Space>
-                    </Space>
-                  </Card>
-                ) : (
-                  <Space>
-                    {/* <Button type="default" onClick={manualRedirect}>Đi tới cổng VNPay</Button>
-                    <Button type="dashed" onClick={() => setCountdown(COUNTDOWN_SECONDS)}>Bắt đầu đếm ngược</Button> */}
-                  </Space>
-                )}
-              </Space>
-            )}
+            
             <Button
               type="primary"
               className="!bg-indigo-600"
