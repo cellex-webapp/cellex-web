@@ -126,10 +126,10 @@ const AccountManagementPage: React.FC = () => {
   };
 
   return (
-    <div className="mx-auto h-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+    <div className="mx-auto h-full max-w-[1600px] px-4 py-6 sm:px-6 lg:px-8">
     <Layout className="h-full flex-col gap-6 !bg-slate-50 md:flex-row">
         <Sider
-          width={300}
+          width={240}
           className="!bg-slate-50"
           breakpoint="lg"
           collapsedWidth="0"
