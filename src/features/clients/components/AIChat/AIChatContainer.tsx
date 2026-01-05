@@ -111,8 +111,8 @@ const AIChatContainer: React.FC<AIChatContainerProps> = ({ onClose, embedded = f
         ];
       default:
         return [
-          'Gợi ý laptop gaming dưới 20 triệu',
-          'So sánh iPhone 15 và Samsung S24',
+          'Gợi ý laptop dưới 30 triệu',
+          'Gợi ý dòng điện thoại cho sinh viên',
           'Điện thoại pin trâu nhất',
           'Sản phẩm đang hot'
         ];
