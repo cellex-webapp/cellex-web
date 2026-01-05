@@ -18,6 +18,12 @@ interface ProductInfo {
   averageRating: number;
   reviewCount: number;
   stockQuantity: number;
+  keyAttributes?: Array<{
+    key: string;
+    name: string;
+    value: string;
+    unit: string;
+  }>;
 }
 
 const AIProductCard: React.FC<AIProductCardProps> = ({ productId }) => {
@@ -29,7 +35,23 @@ const AIProductCard: React.FC<AIProductCardProps> = ({ productId }) => {
     const fetchProduct = async () => {
       try {
         const response = await axiosInstance.get(`/products/${productId}`);
-        setProduct(response.data.result);
+        const productData = response.data.result;
+        
+        // Extract key attributes from attributeValues
+        if (productData.attributeValues) {
+          const keyAttrKeys = ['ram', 'battery', 'screen', 'storage', 'cpu', 'vga'];
+          const keyAttributes = productData.attributeValues
+            .filter((attr: any) => keyAttrKeys.includes(attr.attributeKey))
+            .map((attr: any) => ({
+              key: attr.attributeKey,
+              name: attr.attributeName,
+              value: attr.value,
+              unit: attr.unit || '',
+            }));
+          productData.keyAttributes = keyAttributes;
+        }
+        
+        setProduct(productData);
       } catch (error) {
         console.error('Failed to fetch product:', error);
       } finally {
@@ -89,6 +111,17 @@ const AIProductCard: React.FC<AIProductCardProps> = ({ productId }) => {
         <p className="font-medium text-gray-800 text-sm line-clamp-2 leading-tight min-h-[2.5rem]">
           {product.name}
         </p>
+        
+        {/* Display key attributes if available */}
+        {product.keyAttributes && product.keyAttributes.length > 0 && (
+          <div className="flex flex-wrap gap-1 py-1">
+            {product.keyAttributes.map((attr, idx) => (
+              <Tag key={idx} color="blue" className="text-xs m-0">
+                {attr.name}: {attr.value}{attr.unit}
+              </Tag>
+            ))}
+          </div>
+        )}
         
         <div className="flex items-center gap-1">
           <Rate disabled defaultValue={product.averageRating} className="text-xs" />
