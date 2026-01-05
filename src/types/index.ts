@@ -53,7 +53,132 @@ declare global {
         name: string;
     }
 
+    // ==================== Old Address System (Before 07/2025) ====================
+    
+    interface IOldProvince {
+        id: string;
+        name: string;
+        type: string;
+    }
+
+    interface IOldDistrict {
+        id: string;
+        name: string;
+        type: string;
+        provinceId: string;
+    }
+
+    interface IOldWard {
+        id: string;
+        name: string;
+        type: string;
+        districtId: string;
+        provinceId: string;
+    }
+
+    // ==================== New Address System (After 07/2025) ====================
+    
+    interface INewProvince {
+        province_code: string;
+        name: string;
+        short_name: string;
+        code: string;
+        place_type: string;
+    }
+
+    interface INewWard {
+        ward_code: string;
+        name: string;
+        province_code: string;
+    }
+
+    // ==================== Ward Mapping ====================
+    
+    interface IOldAddressInfo {
+        ward_code: string;
+        ward_name: string;
+        district_name: string;
+        province_name: string;
+        full_address?: string;
+    }
+
+    interface INewAddressInfo {
+        ward_code: string;
+        ward_name: string;
+        province_name: string;
+        full_address?: string;
+    }
+
+    interface IWardMappingRequest {
+        ward_code: string;
+        code_type?: 'old' | 'new';
+    }
+
+    interface IWardMappingResponse {
+        input_type: 'old' | 'new';
+        old_address?: IOldAddressInfo;
+        new_address?: INewAddressInfo;
+        old_wards_merged?: IOldAddressInfo[];
+    }
+
+    // ==================== Dual Address Display ====================
+    
+    interface INewAddressDisplay {
+        province_code: string;
+        province_name: string;
+        ward_code: string;
+        ward_name: string;
+    }
+
+    interface IOldAddressDisplay {
+        province_id: string;
+        province_name: string;
+        district_id: string;
+        district_name: string;
+        ward_id: string;
+        ward_name: string;
+    }
+
+    interface IDualAddressResponse {
+        new_ward_code: string;
+        detail_address?: string;
+        new_address: INewAddressDisplay;
+        old_addresses: IOldAddressDisplay[];
+        full_address_new: string;
+        full_address_old?: string;
+    }
+
+    // ==================== Address Input State ====================
+    
+    interface IOldAddressInputState {
+        provinceId: string;
+        provinceName: string;
+        districtId: string;
+        districtName: string;
+        wardId: string;
+        wardName: string;
+        detailAddress: string;
+    }
+
+    interface INewAddressInputState {
+        provinceCode: string;
+        provinceName: string;
+        wardCode: string;
+        wardName: string;
+        detailAddress: string;
+    }
+
+    interface IDualAddressInputState {
+        mode: 'old' | 'new';
+        oldAddress: IOldAddressInputState;
+        newAddress: INewAddressInputState;
+        isSynced: boolean;
+    }
+
     interface IAddress {
+        provinceCode?: string;
+        communeCode?: string;
+        detailAddress?: string;
         street?: string;
         commune?: string;
         province?: string;
@@ -1278,6 +1403,84 @@ declare global {
         product_name?: string;
         product_image?: string;
         product_price?: number;
+    }
+
+    // ========================= AI Chat System =========================
+    
+    type AIMessageType = 'USER' | 'AI' | 'SYSTEM';
+    type AIResponseType = 'TEXT' | 'PRODUCT_LIST' | 'CHART' | 'TABLE' | 'COUPON' | 'MIXED';
+
+    interface IAIChatRequest {
+        message: string;
+        conversationId?: string;
+        shopId?: string;
+    }
+
+    interface IAIMetadata {
+        productIds?: string[];
+        chartData?: IAIChartData;
+        tableData?: Record<string, any>[];
+        couponSuggestions?: IAICouponSuggestion[];
+        functionCalled?: string;
+    }
+
+    interface IAIChartData {
+        chartType: 'LINE' | 'BAR' | 'PIE';
+        title: string;
+        labels: string[];
+        datasets: IAIChartDataset[];
+    }
+
+    interface IAIChartDataset {
+        label: string;
+        data: number[];
+        backgroundColor?: string;
+        borderColor?: string;
+    }
+
+    interface IAICouponSuggestion {
+        productId: string;
+        productName: string;
+        viewCount: number;
+        purchaseCount: number;
+        suggestedDiscount: number;
+        reason: string;
+    }
+
+    interface IAIChatResponse {
+        message: string;
+        conversationId: string;
+        messageId: string;
+        metadata?: IAIMetadata;
+        responseType: AIResponseType;
+        timestamp: string;
+    }
+
+    interface IAIConversation {
+        id: string;
+        userId: string;
+        title: string;
+        userRole: string;
+        shopId?: string;
+        messageCount: number;
+        lastMessage?: string;
+        lastMessageAt?: string;
+        isActive: boolean;
+        createdAt: string;
+        updatedAt?: string;
+    }
+
+    interface IAIMessage {
+        id: string;
+        userId: string;
+        conversationId: string;
+        messageType: AIMessageType;
+        content: string;
+        userRole: string;
+        shopId?: string;
+        metadata?: Record<string, any>;
+        functionCalled?: string;
+        createdAt: string;
     }
 }
 

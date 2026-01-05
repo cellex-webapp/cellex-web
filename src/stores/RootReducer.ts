@@ -15,6 +15,7 @@ import vnpayReducer from '@/stores/slices/vnpay.slice';
 import analyticsReducer from '@/stores/slices/analytics.slice';
 import chatReducer from '@/stores/slices/chat.slice';
 import recommendationReducer from '@/stores/slices/recommendation.slice';
+import aiReducer from '@/stores/slices/ai.slice';
 
 const rootReducer = combineReducers({
   auth: authReducer,
@@ -33,6 +34,7 @@ const rootReducer = combineReducers({
   analytics: analyticsReducer,
   chat: chatReducer,
   recommendation: recommendationReducer,
+  ai: aiReducer,
 });
 
 export default rootReducer;
