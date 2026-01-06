@@ -84,12 +84,16 @@ export const sendAIMessage = createAsyncThunk<AIChatResponse, AIChatRequest, Thu
   }
 );
 
-export const createAIConversation = createAsyncThunk<AIChatResponse, AIChatRequest, ThunkConfig>(
+export const createAIConversation = createAsyncThunk<
+  { response: AIChatResponse; userMessage: string },
+  AIChatRequest,
+  ThunkConfig
+>(
   'ai/createConversation',
   async (request, { rejectWithValue }) => {
     try {
       const response = await aiService.createConversation(request);
-      return response.result;
+      return { response: response.result, userMessage: request.message };
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Tạo hội thoại thất bại');
     }
@@ -229,21 +233,32 @@ const aiSlice = createSlice({
       })
       .addCase(createAIConversation.fulfilled, (state, action) => {
         state.isSendingMessage = false;
-        state.lastResponse = action.payload;
-        state.activeConversationId = action.payload.conversationId;
+        state.lastResponse = action.payload.response;
+        state.activeConversationId = action.payload.response.conversationId;
+        
+        // Add the user message first
+        const userMessage: AIMessage = {
+          id: `user-${Date.now()}`,
+          userId: '',
+          conversationId: action.payload.response.conversationId,
+          messageType: 'USER',
+          content: action.payload.userMessage,
+          userRole: '',
+          createdAt: new Date().toISOString(),
+        };
         
         // Add the AI response message
         const aiMessage: AIMessage = {
           id: `ai-${Date.now()}`,
           userId: '',
-          conversationId: action.payload.conversationId,
+          conversationId: action.payload.response.conversationId,
           messageType: 'AI',
-          content: action.payload.message,
+          content: action.payload.response.message,
           userRole: '',
-          metadata: action.payload.metadata as any,
-          createdAt: action.payload.timestamp,
+          metadata: action.payload.response.metadata as any,
+          createdAt: action.payload.response.timestamp,
         };
-        state.currentMessages = [aiMessage];
+        state.currentMessages = [userMessage, aiMessage];
       })
       .addCase(createAIConversation.rejected, (state, action) => {
         state.isSendingMessage = false;
