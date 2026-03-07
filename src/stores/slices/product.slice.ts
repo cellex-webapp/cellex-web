@@ -9,6 +9,9 @@ type ThunkConfig = { state: RootState; rejectValue: string };
 interface ProductState {
   products: IProduct[];
   selectedProduct: IProduct | null;
+  comparisonData: IProductComparisonResponse | null;
+  isComparing: boolean;
+  compareList: IProduct[];
   pagination: {
     page: number;
     limit: number;
@@ -21,6 +24,9 @@ interface ProductState {
 const initialState: ProductState = {
   products: [],
   selectedProduct: null,
+  comparisonData: null,
+  isComparing: false,
+  compareList: [],
   pagination: { page: 1, limit: 10, total: 0 },
   isLoading: false,
   error: null,
@@ -146,12 +152,35 @@ export const deleteProductById = createAsyncThunk<string, string, ThunkConfig>(
   }
 );
 
+export const fetchProductComparison = createAsyncThunk<IProductComparisonResponse, string[], ThunkConfig>(
+  'product/compare',
+  async (productIds, { rejectWithValue }) => {
+    try {
+      const resp = await productService.compareProducts(productIds);
+      return resp.result;
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
+    }
+  }
+);
+
 const productSlice = createSlice({
   name: 'product',
   initialState,
   reducers: {
     clearSelectedProduct: (state) => {
       state.selectedProduct = null;
+    },
+    addToCompareList: (state, action: { payload: IProduct }) => {
+      if (state.compareList.length < 4 && !state.compareList.find(p => p.id === action.payload.id)) {
+        state.compareList.push(action.payload);
+      }
+    },
+    removeFromCompareList: (state, action: { payload: string }) => {
+      state.compareList = state.compareList.filter(p => p.id !== action.payload);
+    },
+    clearCompareList: (state) => {
+      state.compareList = [];
     }
   },
   extraReducers: (builder) => {
@@ -185,6 +214,19 @@ const productSlice = createSlice({
         if (state.selectedProduct?.id === action.payload) {
           state.selectedProduct = null;
         }
+      })
+
+      .addCase(fetchProductComparison.pending, (state) => {
+        state.isComparing = true;
+        state.error = null;
+      })
+      .addCase(fetchProductComparison.fulfilled, (state, action) => {
+        state.isComparing = false;
+        state.comparisonData = action.payload;
+      })
+      .addCase(fetchProductComparison.rejected, (state, action) => {
+        state.isComparing = false;
+        state.error = (action.payload as string) || 'Lỗi khi so sánh sản phẩm';
       })
 
       .addMatcher(
@@ -225,5 +267,5 @@ const productSlice = createSlice({
   },
 });
 
-export const { clearSelectedProduct } = productSlice.actions;
+export const { clearSelectedProduct, addToCompareList, removeFromCompareList, clearCompareList } = productSlice.actions;
 export default productSlice.reducer;

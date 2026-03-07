@@ -14,7 +14,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ roles }) => {
     const r = (role || '').toLowerCase();
     if (r === 'admin') return '/admin';
     if (r === 'vendor') return '/vendor';
-    return '/client';
+    return '/';
   };
 
   if (!isAuthenticated) {
