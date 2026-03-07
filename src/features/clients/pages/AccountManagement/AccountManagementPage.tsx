@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
-import { Layout, Menu, Button, Typography, Avatar, Form, Input, theme } from 'antd';
+import { Layout, Menu, Button, Typography, Avatar, Form, Input } from 'antd';
 import {
   UserOutlined,
   SolutionOutlined,
@@ -25,8 +25,6 @@ const { Content, Sider } = Layout;
 const { Title, Text } = Typography;
 
 const PersonalInfo: React.FC<{ user?: IUser | null }> = ({ user }) => {
-  const { token } = theme.useToken();
-
   const avatar = user?.avatarUrl;
   const name = user?.fullName || user?.email || 'Người dùng';
   const phone = user?.phoneNumber || '';
@@ -34,7 +32,7 @@ const PersonalInfo: React.FC<{ user?: IUser | null }> = ({ user }) => {
 
   return (
     <div className="flex w-full flex-col items-center px-4 py-2">
-      <Title level={4} style={{ marginBottom: token.marginLG }}>Thông tin cá nhân</Title>
+      <Title level={4}>Thông tin cá nhân</Title>
       <Avatar size={128} src={avatar} className="mb-8" />
       <Form layout="vertical" style={{ maxWidth: '450px', width: '100%' }}>
         <Form.Item label={<Text strong>Họ và tên</Text>}>
@@ -128,10 +126,10 @@ const AccountManagementPage: React.FC = () => {
   };
 
   return (
-    <div className="mx-auto h-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+    <div className="mx-auto h-full max-w-[1600px] px-4 py-6 sm:px-6 lg:px-8">
     <Layout className="h-full flex-col gap-6 !bg-slate-50 md:flex-row">
         <Sider
-          width={300}
+          width={240}
           className="!bg-slate-50"
           breakpoint="lg"
           collapsedWidth="0"

@@ -35,7 +35,7 @@ const LoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
 
   const navigate = useNavigate();
-  const { login, isLoading } = useAuth();
+  const { login, isLoading, refreshUser } = useAuth();
 
   const onLogin = async (e?: React.FormEvent<HTMLFormElement>) => {
     if (e) e.preventDefault();
@@ -43,6 +43,9 @@ const LoginPage: React.FC = () => {
     try {
       const actionResult = await login({ email, password });
       const authResult = unwrapResult(actionResult);
+
+      // Fetch full user profile including address from backend
+      await refreshUser();
 
       // Auto-request notification permission after successful login
       try {

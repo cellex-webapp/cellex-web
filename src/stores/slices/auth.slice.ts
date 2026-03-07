@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk, type PayloadAction, isPending, isRejectedWithValue } from '@reduxjs/toolkit';
 import { authService } from '@/services/auth.service';
+import { userService } from '@/services/user.service';
 import { updateUserProfile } from './user.slice';
 import { getErrorMessage } from '@/helpers/errorHandler';
 
@@ -76,6 +77,18 @@ export const verifySignupCode = createAsyncThunk<void, IVerifySignupCodePayload,
   }
 );
 
+export const fetchCurrentUser = createAsyncThunk<IUser, void, ThunkConfig>(
+  'auth/fetchCurrentUser',
+  async (_, { rejectWithValue }) => {
+    try {
+      const resp = await userService.getCurrentUserProfile();
+      return resp.result;
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
+    }
+  }
+);
+
 const authSlice = createSlice({
   name: 'auth',
   initialState,
@@ -98,6 +111,11 @@ const authSlice = createSlice({
           state.user = { ...state.user, ...action.payload };
           localStorage.setItem('user', JSON.stringify(state.user));
         }
+      })
+
+      .addCase(fetchCurrentUser.fulfilled, (state, action) => {
+        state.user = action.payload;
+        localStorage.setItem('user', JSON.stringify(action.payload));
       })
 
       .addCase(login.fulfilled, (state, action: PayloadAction<AuthResult>) => {

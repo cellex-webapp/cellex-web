@@ -1,5 +1,5 @@
 import { useAppSelector, useAppDispatch } from '@/hooks/redux';
-import { login, logout, sendSignupCode, verifySignupCode } from '@/stores/slices/auth.slice';
+import { login, logout, sendSignupCode, verifySignupCode, fetchCurrentUser } from '@/stores/slices/auth.slice';
 import {
   selectIsAuthenticated,
   selectCurrentShop,
@@ -35,6 +35,14 @@ export const useAuth = () => {
     return dispatch(verifySignupCode(data));
   };
 
+  const refreshUser = async () => {
+    try {
+      await dispatch(fetchCurrentUser()).unwrap();
+    } catch (error) {
+      console.error('Failed to refresh user:', error);
+    }
+  };
+
   return {
     isAuthenticated,
     currentUser,
@@ -46,5 +54,6 @@ export const useAuth = () => {
     logout: handleLogout,
     sendSignupCode: handleSendSignupCode,
     verifySignupCode: handleVerifySignupCode,
+    refreshUser,
   };
 };

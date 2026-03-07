@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Form, Input, Button, Upload, message, Row, Col, Card, Space, Select, App } from 'antd';
+import { Modal, Form, Input, Button, Upload, message, Row, Col, Card, Space, App } from 'antd';
 import { UploadOutlined, ShopOutlined, EnvironmentOutlined, PhoneOutlined, MailOutlined, PictureOutlined } from '@ant-design/icons';
 import type { UploadFile } from 'antd/es/upload/interface';
 import useShop from '@/hooks/useShop';
-import { addressService } from '@/services/address.service';
+import { AddressSelector } from '@/components/address';
+import type { AddressSelectorValue } from '@/components/address';
+// import { addressService } from '@/services/address.service';
 
 interface ShopFormModalProps {
     shop: IShop | null;
@@ -17,59 +19,30 @@ const ShopFormModal: React.FC<ShopFormModalProps> = ({ shop, open, onClose, onSu
     const [form] = Form.useForm();
     const [fileList, setFileList] = useState<UploadFile[]>([]);
 
-    const [provinces, setProvinces] = useState<IAddressDataUnit[]>([]);
-    const [communes, setCommunes] = useState<IAddressDataUnit[]>([]);
-    const [provincesLoading, setProvincesLoading] = useState(false);
-    const [communesLoading, setCommunesLoading] = useState(false);
-    const [selectedProvinceCode, setSelectedProvinceCode] = useState<string | undefined>();
+    // Address state using new dual system
+    const [addressValue, setAddressValue] = useState<AddressSelectorValue>({
+        newWardCode: '',
+        detailAddress: '',
+    });
 
+    // Load existing shop address when editing
     useEffect(() => {
-        (async () => {
-            setProvincesLoading(true);
-            try {
-                const resp = await addressService.getProvinces();
-                setProvinces(resp.result || []);
-            } catch (e) {
-                message.error("Không thể tải danh sách tỉnh/thành");
-            }
-            setProvincesLoading(false);
-        })();
-    }, []);
-
-    useEffect(() => {
-        if (!selectedProvinceCode) {
-            setCommunes([]);
-            return;
-        }
-        (async () => {
-            setCommunesLoading(true);
-            try {
-                const resp = await addressService.getCommunesByProvinceCode(selectedProvinceCode);
-                setCommunes(resp.result || []);
-            } catch (e) {
-                message.error("Không thể tải danh sách xã/phường");
-            }
-            setCommunesLoading(false);
-        })();
-    }, [selectedProvinceCode]);
-
-    useEffect(() => {
-        if (open && shop && provinces.length > 0) {
-            const provinceName = shop.address?.province;
-            const matchingProvince = provinces.find(p => p.name === provinceName);
-            const provinceCode = matchingProvince?.code;
-
+        if (open && shop) {
             form.setFieldsValue({
                 shopName: shop.shop_name,
                 description: shop.description,
-                detailAddress: shop.address?.street,
                 phoneNumber: shop.phone_number,
                 email: shop.email,
-                provinceCode: provinceCode,
             });
 
-            if (provinceCode) {
-                setSelectedProvinceCode(provinceCode);
+            // Set address from existing shop - use commune_code as new ward code
+            // Cần mapping từ địa chỉ cũ sang mới nếu shop chưa có new_ward_code
+            if (shop.address) {
+                setAddressValue({
+                    newWardCode: shop.address.communeCode || '',
+                    newProvinceCode: shop.address.provinceCode || '',
+                    detailAddress: shop.address.street || '',
+                });
             }
 
             if (shop.logo_url) {
@@ -80,29 +53,27 @@ const ShopFormModal: React.FC<ShopFormModalProps> = ({ shop, open, onClose, onSu
         } else if (!shop) {
             form.resetFields();
             setFileList([]);
+            setAddressValue({ newWardCode: '', detailAddress: '' });
         }
-    }, [shop, provinces, form, open]);
-
-    useEffect(() => {
-        if (open && shop && communes.length > 0) {
-            const communeName = shop.address?.commune;
-            const matchingCommune = communes.find(c => c.name === communeName);
-            const communeCode = matchingCommune?.code;
-
-            if (communeCode) {
-                form.setFieldsValue({ communeCode: communeCode });
-            }
-        }
-    }, [shop, communes, form, open]);
+    }, [shop, form, open]);
 
     const handleFinish = async (values: any) => {
+        if (!addressValue.newWardCode) {
+            message.warning('Vui lòng chọn địa chỉ phường/xã');
+            return;
+        }
+        if (!addressValue.detailAddress?.trim()) {
+            message.warning('Vui lòng nhập địa chỉ chi tiết');
+            return;
+        }
+
         try {
             const payload: IUpdateMyShopPayload = {
                 shopName: values.shopName,
                 description: values.description,
-                provinceCode: values.provinceCode,
-                communeCode: values.communeCode,
-                detailAddress: values.detailAddress,
+                provinceCode: addressValue.newProvinceCode || '',
+                communeCode: addressValue.newWardCode,
+                detailAddress: addressValue.detailAddress,
                 phoneNumber: values.phoneNumber,
                 email: values.email,
                 logo: fileList.length > 0 && fileList[0].originFileObj ? fileList[0].originFileObj : undefined,
@@ -121,6 +92,13 @@ const ShopFormModal: React.FC<ShopFormModalProps> = ({ shop, open, onClose, onSu
         }
     };
 
+    const handleClose = () => {
+        form.resetFields();
+        setFileList([]);
+        setAddressValue({ newWardCode: '', detailAddress: '' });
+        onClose();
+    };
+
     return (
         <Modal
             title={
@@ -132,7 +110,7 @@ const ShopFormModal: React.FC<ShopFormModalProps> = ({ shop, open, onClose, onSu
                 </Space>
             }
             open={open}
-            onCancel={onClose}
+            onCancel={handleClose}
             footer={null}
             destroyOnClose
             width={900}
@@ -146,42 +124,29 @@ const ShopFormModal: React.FC<ShopFormModalProps> = ({ shop, open, onClose, onSu
                                 <Input size="large" placeholder="Tên cửa hàng" />
                             </Form.Item>
                             <Form.Item name="description" label="Mô tả">
-                                <Input.TextArea size="large" rows={3} placeholder="Mô tả về cửa hàng" />
+                                <Input.TextArea size="large" rows={3} placeholder="Mô tả về cửa hàng" showCount maxLength={500} />
                             </Form.Item>
                         </Card>
 
-                        <Card size="small" className="mb-4" title={<Space><EnvironmentOutlined />Địa chỉ</Space>}>
-                            <Row gutter={16}>
-                                <Col xs={24} md={12}>
-                                    <Form.Item name="provinceCode" label="Tỉnh/Thành phố" rules={[{ required: true }]}>
-                                        <Select
-                                            size="large"
-                                            showSearch
-                                            placeholder="Chọn tỉnh/thành"
-                                            loading={provincesLoading}
-                                            optionFilterProp="label"
-                                            onChange={(code) => setSelectedProvinceCode(code)}
-                                            options={provinces.map(p => ({ label: p.name, value: p.code }))}
-                                        />
-                                    </Form.Item>
-                                </Col>
-                                <Col xs={24} md={12}>
-                                    <Form.Item name="communeCode" label="Xã/Phường" rules={[{ required: true }]}>
-                                        <Select
-                                            size="large"
-                                            showSearch
-                                            placeholder="Chọn xã/phường"
-                                            loading={communesLoading}
-                                            disabled={!selectedProvinceCode}
-                                            optionFilterProp="label"
-                                            options={communes.map(c => ({ label: c.name, value: c.code }))}
-                                        />
-                                    </Form.Item>
-                                </Col>
-                            </Row>
-                            <Form.Item name="detailAddress" label="Địa chỉ chi tiết" rules={[{ required: true }]}>
-                                <Input size="large" placeholder="Số nhà, tên đường..." />
-                            </Form.Item>
+                        <Card 
+                            size="small" 
+                            className="mb-4" 
+                            title={
+                                <Space>
+                                    <EnvironmentOutlined className="text-green-500" />
+                                    <span>Địa chỉ</span>
+                                </Space>
+                            }
+                        >
+                            <AddressSelector
+                                value={addressValue}
+                                onChange={setAddressValue}
+                                required={true}
+                                showModeSelector={true}
+                                defaultMode="new"
+                                layout="horizontal"
+                                size="large"
+                            />
                         </Card>
 
                         <Card size="small" className="mb-4" title={<Space><PhoneOutlined />Thông tin liên hệ</Space>}>
@@ -219,7 +184,7 @@ const ShopFormModal: React.FC<ShopFormModalProps> = ({ shop, open, onClose, onSu
 
                 <Form.Item className="mt-4">
                     <div className="flex justify-end gap-2">
-                        <Button size="large" onClick={onClose} disabled={isLoading}>
+                        <Button size="large" onClick={handleClose} disabled={isLoading}>
                             Hủy
                         </Button>
                         <Button
