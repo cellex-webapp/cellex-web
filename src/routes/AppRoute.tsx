@@ -54,6 +54,7 @@ import { RecommendationManagementPage } from '@/features/admin/pages/Recommendat
 import AllProductsPage from '@/features/clients/pages/Product/AllProductsPage';
 import AllRecommendationsPage from '@/features/clients/pages/Recommendation/AllRecommendationsPage';
 import SearchPage from '@/features/clients/pages/Search/SearchPage';
+import CompareProductsPage from '@/features/clients/pages/Product/CompareProductsPage';
 import AIChatPage from '@/features/clients/pages/AIChatPage';
 
 const router = createBrowserRouter([
@@ -113,6 +114,7 @@ const router = createBrowserRouter([
           { path: 'payment/vnpay/return', element: <VnpayReturnPage /> },
           { path: 'payment/failure', element: <PaymentFailurePage /> },
           { path: 'payment/success', element: <PaymentSuccessPage /> },
+          { path: 'compare', element: <CompareProductsPage /> },
           { path: 'ai-chat', element: <AIChatPage /> },
         ],
       },

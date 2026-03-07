@@ -16,3 +16,7 @@ export const selectProductPagination = createSelector(
   [selectProductState], 
   (s) => s.pagination
 );
+
+export const selectComparisonData = createSelector([selectProductState], (s) => s.comparisonData);
+export const selectIsComparing = createSelector([selectProductState], (s) => s.isComparing);
+export const selectCompareList = createSelector([selectProductState], (s) => s.compareList);

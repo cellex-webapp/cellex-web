@@ -20,6 +20,8 @@ declare global {
     type PartnerRole = 'ADMIN' | 'USER' | 'VENDOR';
     type MessageType = 'TEXT' | 'IMAGE' | 'FILE' | 'SYSTEM';
     type MessageStatus = 'SENT' | 'DELIVERED' | 'READ';
+    type AIMessageType = 'USER' | 'AI' | 'SYSTEM';
+    type AIResponseType = 'TEXT' | 'PRODUCT_LIST' | 'CHART' | 'TABLE' | 'COUPON' | 'MIXED';
 
     interface IPaginatedResult<T> {
         content: T[];
@@ -1248,7 +1250,7 @@ declare global {
     }
 
     // ========================= Review System =========================
-    type ReviewStatus = 
+    type ReviewStatus =
         | 'PENDING_MODERATION'      // Đang chờ kiểm duyệt tự động
         | 'APPROVED'                // Đã được duyệt tự động
         | 'REJECTED_AUTO'           // Bị từ chối bởi hệ thống tự động
@@ -1358,7 +1360,7 @@ declare global {
     }
 
     // ========================= Admin Review Management =========================
-    
+
     /**
      * Statistics for review moderation dashboard
      */
@@ -1405,10 +1407,42 @@ declare global {
         product_price?: number;
     }
 
+    // src/types/product.d.ts (hoặc thêm vào file type hiện tại)
+
+    export interface IProductSummary {
+        id: string;
+        name: string;
+        image: string;
+        price: number;
+        finalPrice: number;
+        saleOff: number;
+        averageRating: number;
+        savedAmount: number;
+    }
+
+    export interface IComparisonRow {
+        attributeName: string;
+        dataType: string;
+        sortOrder: number;
+        isHighlight: boolean;
+        values: Record<string, string>; // Map<productId, displayValue>
+        isDifferent: boolean;
+        bestProductId: string | null;
+    }
+
+    export interface IPriceSummary {
+        lowestPriceProductId: string;
+        lowestFinalPrice: number;
+        highestSavingsProductId: string;
+        highestSavingsAmount: number;
+    }
+
+    export interface IProductComparisonResponse {
+        products: IProductSummary[];
+        technicalSpecs: IComparisonRow[];
+        priceSummary: IPriceSummary;
+    }
     // ========================= AI Chat System =========================
-    
-    type AIMessageType = 'USER' | 'AI' | 'SYSTEM';
-    type AIResponseType = 'TEXT' | 'PRODUCT_LIST' | 'CHART' | 'TABLE' | 'COUPON' | 'MIXED';
 
     interface IAIChatRequest {
         message: string;

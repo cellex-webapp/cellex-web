@@ -57,6 +57,13 @@ export const productService = {
     const response = await axiosInstance.delete<IApiResponse<string>>(`/products/${productId}`);
     return response.data;
   },
+
+  compareProducts: async (productIds: string[]) => {
+    const response = await axiosInstance.get<IApiResponse<IProductComparisonResponse>>('/products/compare', {
+      params: { ids: productIds.join(',') },
+    });
+    return response.data;
+  }
 };
 
 export default productService;
