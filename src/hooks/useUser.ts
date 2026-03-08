@@ -6,7 +6,11 @@ import {
   fetchUserById,
   banUser,
   unbanUser,
-  updateUserProfile, 
+  updateUserProfile,
+  fetchMyAddresses,
+  createMyAddress,
+  updateMyAddress,
+  deleteMyAddress
 } from '@/stores/slices/user.slice';
 import {
   selectAllUsers,
@@ -14,6 +18,7 @@ import {
   selectUserIsLoading,
   selectUserError,
   selectUserPagination,
+  selectMyAddresses
 } from '@/stores/selectors/user.selector';
 
 export const useUser = () => {
@@ -21,9 +26,10 @@ export const useUser = () => {
 
   const users = useAppSelector(selectAllUsers);
   const selectedUser = useAppSelector(selectSelectedUser);
-  const pagination = useAppSelector(selectUserPagination); 
+  const pagination = useAppSelector(selectUserPagination);
   const isLoading = useAppSelector(selectUserIsLoading);
   const error = useAppSelector(selectUserError);
+  const myAddresses = useAppSelector(selectMyAddresses);
 
   const handleAddUser = useCallback((payload: IAddAccountPayload) => {
     return dispatch(addUserAccount(payload));
@@ -49,10 +55,26 @@ export const useUser = () => {
     return dispatch(updateUserProfile(payload));
   }, [dispatch]);
 
+  const handleFetchMyAddresses = useCallback(() => {
+    return dispatch(fetchMyAddresses());
+  }, [dispatch]);
+
+  const handleCreateMyAddress = useCallback((payload: ICreateUserAddressPayload) => {
+    return dispatch(createMyAddress(payload)).unwrap(); // Dùng unwrap để bắt lỗi ở Component
+  }, [dispatch]);
+
+  const handleUpdateMyAddress = useCallback((id: string, payload: IUpdateUserAddressPayload) => {
+    return dispatch(updateMyAddress({ id, payload })).unwrap();
+  }, [dispatch]);
+
+  const handleDeleteMyAddress = useCallback((id: string) => {
+    return dispatch(deleteMyAddress(id)).unwrap();
+  }, [dispatch]);
+
   return {
     users,
     selectedUser,
-    pagination, 
+    pagination,
     isLoading,
     error,
     addUserAccount: handleAddUser,
@@ -60,6 +82,11 @@ export const useUser = () => {
     fetchUserById: handleFetchUserById,
     banUser: handleBanUser,
     unbanUser: handleUnbanUser,
-    updateUserProfile: handleUpdateProfile, 
+    updateUserProfile: handleUpdateProfile,
+    myAddresses,
+    fetchMyAddresses: handleFetchMyAddresses,
+    createMyAddress: handleCreateMyAddress,
+    updateMyAddress: handleUpdateMyAddress,
+    deleteMyAddress: handleDeleteMyAddress,
   };
 };

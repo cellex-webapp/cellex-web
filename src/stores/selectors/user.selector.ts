@@ -27,3 +27,8 @@ export const selectUserPagination = createSelector(
   [selectUser],
   (userState) => userState.pagination
 );
+
+export const selectMyAddresses = createSelector(
+  [selectUser],
+  (userState) => Array.isArray(userState.myAddresses) ? userState.myAddresses : []
+);

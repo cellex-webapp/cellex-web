@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk, isPending, isRejectedWithValue } from '@reduxjs/toolkit';
 import { userService } from '@/services/user.service';
+import { userAddressService } from '@/services/address.service';
 import { getErrorMessage } from '@/helpers/errorHandler';
 import { store } from '@/stores/store';
 
@@ -9,6 +10,7 @@ type ThunkConfig = { state: RootState; rejectValue: string };
 interface UserState {
   users: IUser[];
   selectedUser: IUser | null;
+  myAddresses: IUserAddress[];
   pagination: { page: number; limit: number; total: number };
   isLoading: boolean;
   error: string | null;
@@ -17,6 +19,7 @@ interface UserState {
 const initialState: UserState = {
   users: [],
   selectedUser: null,
+  myAddresses: [],
   pagination: { page: 1, limit: 10, total: 0 },
   isLoading: false,
   error: null,
@@ -101,6 +104,53 @@ export const unbanUser = createAsyncThunk<IUser, string, ThunkConfig>(
   }
 );
 
+export const fetchMyAddresses = createAsyncThunk<IUserAddress[], void, ThunkConfig>(
+  'user/fetchMyAddresses',
+  async (_, { rejectWithValue }) => {
+    try {
+      const resp = await userAddressService.getMyAddresses();
+      return resp.result || [];
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
+    }
+  }
+);
+
+export const createMyAddress = createAsyncThunk<IUserAddress, ICreateUserAddressPayload, ThunkConfig>(
+  'user/createMyAddress',
+  async (payload, { rejectWithValue }) => {
+    try {
+      const resp = await userAddressService.createAddress(payload);
+      return resp.result;
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
+    }
+  }
+);
+
+export const updateMyAddress = createAsyncThunk<IUserAddress, { id: string; payload: IUpdateUserAddressPayload }, ThunkConfig>(
+  'user/updateMyAddress',
+  async ({ id, payload }, { rejectWithValue }) => {
+    try {
+      const resp = await userAddressService.updateAddress(id, payload);
+      return resp.result;
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
+    }
+  }
+);
+
+export const deleteMyAddress = createAsyncThunk<string, string, ThunkConfig>(
+  'user/deleteMyAddress',
+  async (id, { rejectWithValue }) => {
+    try {
+      await userAddressService.deleteAddress(id);
+      return id; // Trả về ID để xóa khỏi state
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
+    }
+  }
+);
 // --- SLICE ---
 
 const userSlice = createSlice({
@@ -132,6 +182,33 @@ const userSlice = createSlice({
         state.isLoading = false;
         state.users.unshift(action.payload);
         state.pagination.total = (state.pagination.total || 0) + 1;
+      })
+
+      .addCase(fetchMyAddresses.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.myAddresses = action.payload;
+      })
+      .addCase(createMyAddress.fulfilled, (state, action) => {
+        state.isLoading = false;
+        // Nếu địa chỉ mới là mặc định, gỡ mặc định của các địa chỉ cũ
+        if (action.payload.default) {
+          state.myAddresses.forEach(addr => addr.default = false);
+        }
+        state.myAddresses.unshift(action.payload);
+      })
+      .addCase(updateMyAddress.fulfilled, (state, action) => {
+        state.isLoading = false;
+        if (action.payload.default) {
+          state.myAddresses.forEach(addr => addr.default = false);
+        }
+        const index = state.myAddresses.findIndex(addr => addr.id === action.payload.id);
+        if (index !== -1) {
+          state.myAddresses[index] = action.payload;
+        }
+      })
+      .addCase(deleteMyAddress.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.myAddresses = state.myAddresses.filter(addr => addr.id !== action.payload);
       })
 
       .addMatcher(
