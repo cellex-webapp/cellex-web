@@ -56,7 +56,7 @@ declare global {
     }
 
     // ==================== Old Address System (Before 07/2025) ====================
-    
+
     interface IOldProvince {
         id: string;
         name: string;
@@ -79,7 +79,7 @@ declare global {
     }
 
     // ==================== New Address System (After 07/2025) ====================
-    
+
     interface INewProvince {
         province_code: string;
         name: string;
@@ -95,7 +95,7 @@ declare global {
     }
 
     // ==================== Ward Mapping ====================
-    
+
     interface IOldAddressInfo {
         ward_code: string;
         ward_name: string;
@@ -124,7 +124,7 @@ declare global {
     }
 
     // ==================== Dual Address Display ====================
-    
+
     interface INewAddressDisplay {
         province_code: string;
         province_name: string;
@@ -151,7 +151,7 @@ declare global {
     }
 
     // ==================== Address Input State ====================
-    
+
     interface IOldAddressInputState {
         provinceId: string;
         provinceName: string;
@@ -1515,6 +1515,38 @@ declare global {
         metadata?: Record<string, any>;
         functionCalled?: string;
         createdAt: string;
+    }
+
+    interface IUserAddress {
+        id: string;
+        user_id: string;
+        tag?: string;
+        street: string;
+        commune: string;
+        province: string;
+        province_code: string;
+        commune_code: string;
+        country: string;
+        full_address: string;
+        default: boolean;
+        created_at: string;
+        updated_at: string;
+    }
+
+    interface ICreateUserAddressPayload {
+        communeCode: string;
+        provinceCode?: string;
+        detailAddress: string;
+        tag?: string;
+        isDefault?: boolean;
+    }
+
+    interface IUpdateUserAddressPayload {
+        communeCode?: string;
+        provinceCode?: string;
+        detailAddress?: string;
+        tag?: string;
+        isDefault?: boolean;
     }
 }
 
