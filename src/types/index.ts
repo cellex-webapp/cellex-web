@@ -22,6 +22,7 @@ declare global {
     type MessageStatus = 'SENT' | 'DELIVERED' | 'READ';
     type AIMessageType = 'USER' | 'AI' | 'SYSTEM';
     type AIResponseType = 'TEXT' | 'PRODUCT_LIST' | 'CHART' | 'TABLE' | 'COUPON' | 'MIXED';
+    type LivestreamStatus = 'PENDING' | 'LIVE' | 'ENDED';
 
     interface IPaginatedResult<T> {
         content: T[];
@@ -1547,6 +1548,26 @@ declare global {
         detailAddress?: string;
         tag?: string;
         isDefault?: boolean;
+    }
+
+    interface ILivestreamSession {
+        id: string;
+        vendorId: string;
+        vendorName: string;
+        title: string;
+        thumbnail: string;
+        status: LivestreamStatus;
+        roomId: string;
+        zegoToken: string;
+        startedAt?: string;
+    }
+
+    interface ILivestreamState {
+        activeSessions: ILivestreamSession[];
+        currentSession: ILivestreamSession | null;
+        viewerToken: string | null;
+        isLoading: boolean;
+        error: string | null;
     }
 }
 
