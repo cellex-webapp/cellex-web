@@ -16,6 +16,7 @@ import analyticsReducer from '@/stores/slices/analytics.slice';
 import chatReducer from '@/stores/slices/chat.slice';
 import recommendationReducer from '@/stores/slices/recommendation.slice';
 import aiReducer from '@/stores/slices/ai.slice';
+import livestreamReducer from '@/stores/slices/livestream.slice';
 
 const rootReducer = combineReducers({
   auth: authReducer,
@@ -35,6 +36,7 @@ const rootReducer = combineReducers({
   chat: chatReducer,
   recommendation: recommendationReducer,
   ai: aiReducer,
+  livestream: livestreamReducer,
 });
 
 export default rootReducer;

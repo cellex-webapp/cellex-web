@@ -56,6 +56,8 @@ import AllRecommendationsPage from '@/features/clients/pages/Recommendation/AllR
 import SearchPage from '@/features/clients/pages/Search/SearchPage';
 import CompareProductsPage from '@/features/clients/pages/Product/CompareProductsPage';
 import AIChatPage from '@/features/clients/pages/AIChatPage';
+import LiveViewer from '@/features/clients/pages/Livestream/LiveViewer';
+import ActiveSessionsPage from '@/features/clients/pages/Livestream/ActiveSessionsPage';
 
 const router = createBrowserRouter([
   {
@@ -116,6 +118,8 @@ const router = createBrowserRouter([
           { path: 'payment/success', element: <PaymentSuccessPage /> },
           { path: 'compare', element: <CompareProductsPage /> },
           { path: 'ai-chat', element: <AIChatPage /> },
+          { path: 'livestreams', element: <ActiveSessionsPage /> },
+          { path: 'live-viewer/:sessionId/:roomId', element: <LiveViewer /> }
         ],
       },
     ],
