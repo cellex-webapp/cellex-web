@@ -17,8 +17,12 @@ const LiveViewer: React.FC = () => {
   const [isInitializing, setIsInitializing] = useState(true);
 
   const { currentUser } = useAuth();
+  const isJoinedRef = useRef(false);
 
   useEffect(() => {
+    // 1. Kiểm tra: Nếu chưa có user hoặc ĐÃ VÀO PHÒNG RỒI thì dừng lại ngay!
+    if (!currentUser?.id || isJoinedRef.current) return;
+
     let zp: ZegoUIKitPrebuilt | null = null;
 
     const initZegoCloud = async () => {
@@ -26,18 +30,17 @@ const LiveViewer: React.FC = () => {
 
       try {
         setIsInitializing(true);
+        // Đánh dấu là đã bắt đầu quá trình vào phòng
+        isJoinedRef.current = true;
 
         const token = await fetchViewerToken(sessionId);
-
-        if (!token) {
-          throw new Error("Không lấy được token xác thực từ máy chủ.");
-        }
+        if (!token) throw new Error("Không lấy được token xác thực từ máy chủ.");
 
         const kitToken = ZegoUIKitPrebuilt.generateKitTokenForProduction(
           ZEGO_APP_ID,
           token,
           roomId,
-          currentUser?.id || `viewer_${Date.now()}`, // Fallback nếu không có user ID
+          currentUser?.id.toString() || `user_${Date.now()}`,
           currentUser?.fullName
         );
 
@@ -47,19 +50,17 @@ const LiveViewer: React.FC = () => {
           container: containerRef.current,
           scenario: {
             mode: ZegoUIKitPrebuilt.LiveStreaming,
-            config: {
-              role: ZegoUIKitPrebuilt.Audience, // Khán giả (không bật được camera)
-            },
+            config: { role: ZegoUIKitPrebuilt.Audience },
           },
-          showPreJoinView: false, // Bỏ qua màn hình test thiết bị
-          onLeaveRoom: () => {
-            // Khi người dùng bấm nút Thoát (Leave) trên UI của Zego
-            navigate('/'); 
-          },
+          showPreJoinView: false,
+          onLeaveRoom: () => { navigate('/'); },
         });
+
       } catch (err: any) {
         console.error("Lỗi khởi tạo ZegoCloud:", err);
         setInitError(err.message || "Không thể kết nối vào phòng Live lúc này.");
+        // Nếu lỗi thì mở chốt cho phép thử lại
+        isJoinedRef.current = false; 
       } finally {
         setIsInitializing(false);
       }
@@ -67,14 +68,15 @@ const LiveViewer: React.FC = () => {
 
     initZegoCloud();
 
-    // Cleanup khi component bị hủy (người dùng back ra ngoài)
+    // 2. CLEANUP FUNCTION: Xóa dấu vết khi người dùng back ra ngoài
     return () => {
       if (zp) {
         zp.destroy();
       }
-      clearSession(); // Xóa state trong Redux
+      isJoinedRef.current = false; // Reset lính gác
+      clearSession();
     };
-  }, [sessionId, roomId, fetchViewerToken, clearSession, navigate]);
+  }, [sessionId, roomId, currentUser?.id]);
 
   // UI khi có lỗi
   if (initError) {
