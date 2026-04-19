@@ -10,9 +10,10 @@ const { Content } = Layout;
 const ClientLayout: React.FC = () => {
   const location = useLocation();
   const isHomePage = location.pathname === '/';
+  const isLiveViewerPage = location.pathname.startsWith('/live-viewer/');
   const contentRef = useRef<HTMLDivElement | null>(null);
   const { compareList } = useProduct();
-  const hasCompareWidget = compareList.length > 0;
+  const hasCompareWidget = !isLiveViewerPage && compareList.length > 0;
 
   useEffect(() => {
     if (contentRef.current) {
@@ -21,6 +22,29 @@ const ClientLayout: React.FC = () => {
       window.scrollTo({ top: 0, behavior: 'auto' });
     }
   }, [location.pathname]);
+
+  useEffect(() => {
+    if (!isLiveViewerPage) return;
+
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+      document.documentElement.style.overflow = previousHtmlOverflow;
+    };
+  }, [isLiveViewerPage]);
+
+  if (isLiveViewerPage) {
+    return (
+      <div className="h-screen w-full overflow-hidden">
+        <Outlet />
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen w-full">
@@ -35,7 +59,7 @@ const ClientLayout: React.FC = () => {
           </Content>
         </Layout>
       </Layout>
-      <CompareWidget />
+      {!isLiveViewerPage && <CompareWidget />}
     </div>
   );
 };

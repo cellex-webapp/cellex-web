@@ -9,6 +9,11 @@ export const livestreamService = {
   getViewerToken: async (sessionId: string) => {
     const response = await axiosInstance.get<IApiResponse<string>>(`/livestream/sessions/${sessionId}/viewer-token`);
     return response.data;
+  },
+
+  getSessionProducts: async (sessionId: string) => {
+    const response = await axiosInstance.get<IApiResponse<IProduct[]>>(`/livestream/sessions/${sessionId}/products`);
+    return response.data;
   }
 };
 

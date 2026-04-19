@@ -127,6 +127,24 @@ class WebSocketService {
       this.roomSubs.delete(roomId);
     }
   }
+
+  subscribeLiveEvents(sessionId: string) {
+    if (!this.client || !sessionId) return;
+    const subId = `live_events_${sessionId}`;
+    if (this.roomSubs.has(subId)) return;
+    
+    const sub = this.client.subscribe(`/topic/live/${sessionId}/events`, (message) => {
+      try {
+        const body = JSON.parse(message.body);
+        if (this.onEvent) {
+          this.onEvent(body);
+        }
+      } catch (e) {
+        console.warn('[ws] Failed to parse live event', e);
+      }
+    });
+    this.roomSubs.set(subId, sub.id);
+  }
 }
 
 export const wsService = new WebSocketService();
