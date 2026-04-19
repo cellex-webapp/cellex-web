@@ -1566,6 +1566,7 @@ declare global {
         activeSessions: ILivestreamSession[];
         currentSession: ILivestreamSession | null;
         viewerToken: string | null;
+        sessionProducts: IProduct[];
         isLoading: boolean;
         error: string | null;
     }

@@ -29,10 +29,24 @@ export const fetchViewerToken = createAsyncThunk(
   }
 );
 
+export const fetchSessionProducts = createAsyncThunk(
+  'livestream/fetchSessionProducts',
+  async (sessionId: string, { rejectWithValue }) => {
+    try {
+      const response = await livestreamService.getSessionProducts(sessionId);
+      if (isSuccessResponse(response.code)) return response.result;
+      return rejectWithValue(response.message || 'Lỗi tải sản phẩm phiên livestream');
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Lỗi tải sản phẩm phiên livestream');
+    }
+  }
+);
+
 const initialState: ILivestreamState = {
   activeSessions: [],
   currentSession: null,
   viewerToken: null,
+  sessionProducts: [],
   isLoading: false,
   error: null,
 };
@@ -44,6 +58,7 @@ const livestreamSlice = createSlice({
     clearCurrentSession: (state) => {
       state.currentSession = null;
       state.viewerToken = null;
+      state.sessionProducts = [];
     }
   },
   extraReducers: (builder) => {
@@ -71,6 +86,19 @@ const livestreamSlice = createSlice({
         state.viewerToken = action.payload;
       })
       .addCase(fetchViewerToken.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      })
+      // Xử lý Session Products
+      .addCase(fetchSessionProducts.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchSessionProducts.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.sessionProducts = action.payload;
+      })
+      .addCase(fetchSessionProducts.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
       });
