@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useNotification } from '@/hooks/useNotification';
 import { useChat } from '@/hooks/useChat';
 import logo from '@/assets/logo/cellex.png';
-import { SearchOutlined, UserOutlined, ShoppingCartOutlined, BellOutlined, MessageOutlined, AudioOutlined } from '@ant-design/icons';
+import { SearchOutlined, UserOutlined, ShoppingCartOutlined, BellOutlined, MessageOutlined, AudioOutlined, VideoCameraOutlined } from '@ant-design/icons';
 import { Badge } from 'antd';
 import { CategoryMegaMenu } from '@/features/clients/components/Category/CategoryMegaMenu';
 import { useCart } from '@/hooks/useCart';
@@ -168,6 +168,15 @@ const Header: React.FC<HeaderProps> = ({ hideSearchBar = false }) => {
                     <BellOutlined className="text-sm md:text-lg" />
                   </button>
                 </Badge>
+
+                <button
+                  type="button"
+                  aria-label="Livestream"
+                  onClick={() => navigate('/livestreams')}
+                  className="p-3 rounded-full bg-indigo-600 !text-white hover:brightness-90 cursor-pointer"
+                >
+                  <VideoCameraOutlined className="text-sm md:text-lg" />
+                </button>
 
                 <Link to="/account" className="inline-flex items-center justify-center w-10 h-10 md:w-12 md:h-12 rounded-full bg-indigo-50 hover:bg-indigo-100 no-underline !cursor-pointer">
                   <UserOutlined className="text-indigo-600 text-sm md:text-lg" />
