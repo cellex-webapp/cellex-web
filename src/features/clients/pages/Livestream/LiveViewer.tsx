@@ -22,26 +22,26 @@ import orderService from '@/services/order.service';
 const ZEGO_APP_ID = Number(import.meta.env.VITE_ZEGO_APP_ID);
 const PLACEHOLDER_IMAGE = 'https://via.placeholder.com/80';
 
-const getProductImage = (product: IProduct | null) => {
+const getProductImage = (product: ILivestreamProduct | null) => {
   const firstImage = product?.images?.[0];
   if (typeof firstImage === 'string') return firstImage;
   return PLACEHOLDER_IMAGE;
 };
 
-const getProductPriceLabel = (product: IProduct | null) => {
+const getProductPriceLabel = (product: ILivestreamProduct | null) => {
   const value = product?.finalPrice ?? product?.price;
   if (typeof value !== 'number') return 'Liên hệ';
   return `${value.toLocaleString()}đ`;
 };
 
-const getOriginalPriceLabel = (product: IProduct | null) => {
+const getOriginalPriceLabel = (product: ILivestreamProduct | null) => {
   if (product?.finalPrice && product?.price && product.finalPrice < product.price) {
     return `${product.price.toLocaleString()}đ`;
   }
   return null;
 };
 
-const getDiscountPercent = (product: IProduct | null) => {
+const getDiscountPercent = (product: ILivestreamProduct | null) => {
   if (product?.finalPrice && product?.price && product.finalPrice < product.price) {
     return Math.round((1 - product.finalPrice / product.price) * 100);
   }
@@ -83,7 +83,7 @@ const LiveBadge: React.FC = () => (
 
 /* ─── Pinned Product Card ─── */
 interface PinnedProductCardProps {
-  product: IProduct;
+  product: ILivestreamProduct;
   onClose: () => void;
   onBuyNow: (id: string) => void;
 }
@@ -147,7 +147,7 @@ const PinnedProductCard: React.FC<PinnedProductCardProps> = ({ product, onClose,
       {/* Buy Button */}
       <div className="px-3 pb-3">
         <button
-          onClick={() => onBuyNow(product.id)}
+          onClick={() => onBuyNow(product.productId)}
           className="w-full py-2.5 rounded-xl font-bold text-sm text-white flex items-center justify-center gap-2 transition-all duration-200 active:scale-95"
           style={{
             background: 'linear-gradient(90deg, #e11d48, #f97316)',
@@ -165,7 +165,7 @@ const PinnedProductCard: React.FC<PinnedProductCardProps> = ({ product, onClose,
 
 /* ─── Drawer Product Item ─── */
 interface DrawerProductItemProps {
-  product: IProduct;
+  product: ILivestreamProduct;
   onAddToCart: (id: string) => void;
   onBuyNow: (id: string) => void;
 }
@@ -204,13 +204,13 @@ const DrawerProductItem: React.FC<DrawerProductItemProps> = ({ product, onAddToC
           </div>
           <div className="flex gap-2">
             <button
-              onClick={() => onAddToCart(product.id)}
+              onClick={() => onAddToCart(product.productId)}
               className="flex-1 text-xs font-semibold py-1.5 px-2 rounded-lg border border-red-400 text-red-500 hover:bg-red-50 transition-colors duration-150 flex items-center justify-center gap-1"
             >
               <ShoppingCartOutlined /> Thêm giỏ
             </button>
             <button
-              onClick={() => onBuyNow(product.id)}
+              onClick={() => onBuyNow(product.productId)}
               className="flex-1 text-xs font-bold py-1.5 px-2 rounded-lg text-white transition-all duration-150 active:scale-95"
               style={{ background: 'linear-gradient(90deg, #e11d48, #f97316)' }}
             >
@@ -239,7 +239,7 @@ const LiveViewer: React.FC = () => {
   const isJoinedRef = useRef(false);
 
   const [isBagOpen, setIsBagOpen] = useState(false);
-  const [pinnedProduct, setPinnedProduct] = useState<IProduct | null>(null);
+  const [pinnedProduct, setPinnedProduct] = useState<ILivestreamProduct | null>(null);
 
   const handleAddToCart = async (productId: string) => {
     try {
@@ -269,9 +269,23 @@ const LiveViewer: React.FC = () => {
     if (!sessionId) return;
     wsService.connect((event: any) => {
       if (event.type === 'PIN_PRODUCT') {
+        // event.productId = productId thật, event.livestreamProductId = id join-table
         dispatch(fetchProductById(event.productId))
           .unwrap()
-          .then((prod) => setPinnedProduct(prod));
+          .then((prod) => {
+            const pinned: ILivestreamProduct = {
+              id: event.livestreamProductId ?? prod.id,
+              productId: prod.id,
+              name: prod.name,
+              price: prod.price,
+              finalPrice: prod.finalPrice,
+              saleOff: prod.saleOff,
+              images: prod.images,
+              stockQuantity: prod.stockQuantity,
+              averageRating: prod.averageRating,
+            };
+            setPinnedProduct(pinned);
+          });
       } else if (event.type === 'UNPIN_PRODUCT') {
         setPinnedProduct(null);
       }

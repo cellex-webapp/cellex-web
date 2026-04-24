@@ -1562,11 +1562,28 @@ declare global {
         startedAt?: string;
     }
 
+    /** Sản phẩm thuộc một phiên livestream.
+     *  `id` là livestreamProductId (bản ghi join-table).
+     *  `productId` là ID của sản phẩm thật — dùng field này khi gọi API đặt hàng / thêm giỏ. */
+    interface ILivestreamProduct {
+        /** ID của bản ghi livestream_product (join-table) */
+        id: string;
+        /** ID của sản phẩm thật — dùng khi gọi order / cart API */
+        productId: string;
+        name: string;
+        price: number;
+        finalPrice: number;
+        saleOff?: number;
+        images?: string[];
+        stockQuantity?: number;
+        averageRating?: number;
+    }
+
     interface ILivestreamState {
         activeSessions: ILivestreamSession[];
         currentSession: ILivestreamSession | null;
         viewerToken: string | null;
-        sessionProducts: IProduct[];
+        sessionProducts: ILivestreamProduct[];
         isLoading: boolean;
         error: string | null;
     }
