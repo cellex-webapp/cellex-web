@@ -7,6 +7,7 @@ import {
   ShopOutlined,
   TeamOutlined,
   CustomerServiceOutlined,
+  RobotOutlined,
 } from '@ant-design/icons';
 
 const { Sider } = Layout;
@@ -60,6 +61,14 @@ const MENU_CONFIG = [
     icon: TeamOutlined,
     children: [
       { key: 'shop-profile', label: 'Hồ sơ shop', path: '/vendor/shop' },
+    ],
+  },
+  {
+    key: 'ai',
+    label: 'AI Assistant',
+    icon: RobotOutlined,
+    children: [
+      { key: 'ai-chat', label: 'Trò chuyện AI', path: '/vendor/ai-chat' },
     ],
   },
 ];

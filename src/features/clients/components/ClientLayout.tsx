@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import Header from '@/components/header/Header';
 import CompareWidget from '@/components/CompareWidget/CompareWidget';
+import AIFloatingButton from '@/features/clients/components/AIChat/AIFloatingButton';
 import { useProduct } from '@/hooks/useProduct';
 import { Layout } from 'antd';
 
@@ -60,6 +61,7 @@ const ClientLayout: React.FC = () => {
         </Layout>
       </Layout>
       {!isLiveViewerPage && <CompareWidget />}
+      {!isLiveViewerPage && <AIFloatingButton />}
     </div>
   );
 };

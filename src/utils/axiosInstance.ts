@@ -56,7 +56,7 @@ axiosInstance.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
     
-    // If sending FormData, remove the default Content-Type header
+    // If sending FormData, remove the default Content-Type headeruh
     // to let the browser set it with the proper boundary
     if (config.data instanceof FormData) {
       delete config.headers['Content-Type'];
