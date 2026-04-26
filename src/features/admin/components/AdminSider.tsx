@@ -4,7 +4,7 @@ import type { MenuProps } from 'antd';
 import {
   AppstoreOutlined, ShopOutlined, TeamOutlined,
   CustomerServiceOutlined, TagsOutlined, PartitionOutlined,
-  BulbOutlined,
+  BulbOutlined, RobotOutlined,
 } from '@ant-design/icons';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -55,6 +55,12 @@ const MENU_CONFIG = [
     children: [
       { key: 'customer-message', label: 'Quản lý tin nhắn', path: '/admin/customers/messages' },
       { key: 'customer-reviews', label: 'Kiểm duyệt đánh giá', path: '/admin/reviews' },
+    ],
+  },
+  {
+    key: 'ai', label: 'AI Assistant', icon: RobotOutlined,
+    children: [
+      { key: 'ai-chat', label: 'Trò chuyện AI', path: '/admin/ai-chat' },
     ],
   },
   {
