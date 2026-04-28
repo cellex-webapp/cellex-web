@@ -420,6 +420,37 @@ declare global {
         purchaseCount: number;
         shopInfo?: IShop;
         categoryInfo?: ICategory;
+        variationOptions?: IProductVariationOption[];
+        skus?: IProductSku[];
+    }
+
+    interface IProductVariationOption {
+        name: string;
+        values: string[];
+    }
+
+    interface IProductSku {
+        id: string;
+        skuCode: string;
+        variationData: Record<string, string>;
+        imageUrl?: string;
+        price: number;
+        onHandStock: number;
+        reservedStock: number;
+        safetyStock: number;
+        availableStock: number;
+        isActive: boolean;
+    }
+
+    interface IProductSkuPayload {
+        skuCode?: string;
+        variationData: Record<string, string>;
+        imageUrl?: string;
+        price?: number | string;
+        onHandStock?: number | string;
+        reservedStock?: number | string;
+        safetyStock?: number | string;
+        isActive?: boolean;
     }
 
     interface ICreateProductPayload {
@@ -430,6 +461,8 @@ declare global {
         saleOff?: string | number;
         stockQuantity: string | number;
         attributeValues?: Array<{ attributeId: string; value: string }> | string;
+        variationOptions?: IProductVariationOption[] | string;
+        skus?: IProductSkuPayload[] | string;
         isPublished?: boolean | string;
         images?: File[];
     }
@@ -442,22 +475,27 @@ declare global {
         saleOff?: string | number;
         stockQuantity?: string | number;
         attributeValues?: Array<{ attributeId: string; value: string }> | string;
+        variationOptions?: IProductVariationOption[] | string;
+        skus?: IProductSkuPayload[] | string;
         isPublished?: boolean | string;
         images?: File[];
     }
 
     interface IAddToCartRequest {
         productId: string;
+        skuId?: string;
         quantity: number;
     }
 
     interface IUpdateCartItemQuantityRequest {
         productId: string;
+        skuId?: string;
         action: CartUpdateAction;
     }
 
     interface ISetCartItemQuantityRequest {
         productId: string;
+        skuId?: string;
         quantity: number;
     }
 
@@ -467,6 +505,9 @@ declare global {
 
     interface ICartItem {
         productId: string;
+        skuId?: string;
+        skuCode?: string;
+        variationData?: Record<string, string>;
         productName: string;
         productImage: string;
         quantity: number;
@@ -492,6 +533,133 @@ declare global {
         cart: ICart | null;
         isLoading: boolean;
         error: string | null;
+    }
+
+    interface ISupplier {
+        id: string;
+        shopId: string;
+        supplierName: string;
+        phoneNumber: string;
+        email?: string;
+        address?: string;
+        taxCode: string;
+        createdAt?: string;
+        updatedAt?: string;
+    }
+
+    interface ICreateSupplierPayload {
+        shopId?: string;
+        supplierName: string;
+        phoneNumber: string;
+        email?: string;
+        address?: string;
+        taxCode: string;
+    }
+
+    interface IUpdateSupplierPayload {
+        supplierName?: string;
+        phoneNumber?: string;
+        email?: string;
+        address?: string;
+        taxCode?: string;
+    }
+
+    interface IInventorySkuSearchItem {
+        skuId: string;
+        skuCode: string;
+        productId: string;
+        productName: string;
+        productImage?: string;
+        price: number;
+        onHandStock: number;
+        reservedStock: number;
+        availableStock: number;
+        safetyStock: number;
+        variationData?: Record<string, string>;
+    }
+
+    interface IInventoryImportItemPayload {
+        skuId: string;
+        quantity: number;
+        importPrice: number;
+    }
+
+    interface IInventoryImportPayload {
+        shopId?: string;
+        supplierId: string;
+        items: IInventoryImportItemPayload[];
+        note?: string;
+    }
+
+    interface IInventoryImportItemResult {
+        skuId: string;
+        skuCode: string;
+        quantity: number;
+        importPrice: number;
+        onHandStock: number;
+        reservedStock: number;
+        availableStock: number;
+    }
+
+    interface IInventoryImportResult {
+        referenceId: string;
+        supplierId: string;
+        supplierName: string;
+        totalItems: number;
+        totalQuantity: number;
+        totalImportAmount: number;
+        importedAt: string;
+        items: IInventoryImportItemResult[];
+    }
+
+    interface IInventoryImportHistoryItem {
+        referenceId: string;
+        supplierId: string;
+        supplierName?: string;
+        totalQuantity: number;
+        totalImportAmount: number;
+        importedAt: string;
+    }
+
+    interface IInventoryCheckItemPayload {
+        skuId: string;
+        actualStock: number;
+        reason?: string;
+    }
+
+    interface IInventoryCheckPayload {
+        shopId?: string;
+        items: IInventoryCheckItemPayload[];
+    }
+
+    interface IInventoryCheckItemResult {
+        skuId: string;
+        skuCode: string;
+        systemStock: number;
+        actualStock: number;
+        difference: number;
+        reason?: string;
+        onHandStock: number;
+        reservedStock: number;
+        availableStock: number;
+    }
+
+    interface IInventoryCheckResult {
+        checkId: string;
+        shopId: string;
+        status: string;
+        createdAt: string;
+        totalAdjustedQuantity: number;
+        items: IInventoryCheckItemResult[];
+    }
+
+    interface IInventoryCheckHistoryItem {
+        checkCode: string;
+        shopId: string;
+        status: string;
+        createdAt: string;
+        totalAdjustedQuantity: number;
+        reason?: string;
     }
 
     interface CreateCampaignRequest {
@@ -611,6 +779,9 @@ declare global {
         quantity: number;
         subtotal: number;
         product_id: string;
+        sku_id?: string;
+        sku_code?: string;
+        variation_data?: Record<string, string>;
         product_name: string;
         product_image?: string;
     }
@@ -667,6 +838,7 @@ declare global {
 
     interface CartOrderItemRequest {
         productId: string;
+        skuId?: string;
         quantity: number;
     }
     interface CreateOrderFromCartRequest {

@@ -8,6 +8,7 @@ import {
   TeamOutlined,
   CustomerServiceOutlined,
   RobotOutlined,
+  DatabaseOutlined,
 } from '@ant-design/icons';
 
 const { Sider } = Layout;
@@ -61,6 +62,16 @@ const MENU_CONFIG = [
     icon: TeamOutlined,
     children: [
       { key: 'shop-profile', label: 'Hồ sơ shop', path: '/vendor/shop' },
+    ],
+  },
+  {
+    key: 'inventory',
+    label: 'Quản lý Kho',
+    icon: DatabaseOutlined,
+    children: [
+      { key: 'inventory-suppliers', label: 'Nhà cung cấp', path: '/vendor/suppliers' },
+      { key: 'inventory-import', label: 'Nhập kho', path: '/vendor/inventory/import' },
+      { key: 'inventory-check', label: 'Kiểm kê kho', path: '/vendor/inventory/check' },
     ],
   },
   {

@@ -60,6 +60,9 @@ import AdminAIChatPage from '@/features/admin/pages/AIChat/AdminAIChatPage';
 import VendorAIChatPage from '@/features/vendors/pages/AIChat/VendorAIChatPage';
 import LiveViewer from '@/features/clients/pages/Livestream/LiveViewer';
 import ActiveSessionsPage from '@/features/clients/pages/Livestream/ActiveSessionsPage';
+import SuppliersPage from '@/features/admin/pages/Inventory/SuppliersPage';
+import InventoryImportPage from '@/features/admin/pages/Inventory/InventoryImportPage';
+import InventoryCheckPage from '@/features/admin/pages/Inventory/InventoryCheckPage';
 
 const router = createBrowserRouter([
   {
@@ -86,6 +89,9 @@ const router = createBrowserRouter([
           { path: 'marketing/system/:id', element: <CampaignDetailPage /> },
           { path: 'marketing/segment', element: <SegmentCouponsPage /> },
           { path: 'customer-segments', element: <CustomerSegmentPage /> },
+          { path: 'suppliers', element: <SuppliersPage /> },
+          { path: 'inventory/import', element: <InventoryImportPage /> },
+          { path: 'inventory/check', element: <InventoryCheckPage /> },
           { path: 'notifications', element: <NotificationsPage /> },
           { path: 'customers/messages', element: <AdminChatPage /> },
           { path: 'reviews', element: <AdminReviewPage /> },
@@ -146,6 +152,9 @@ const router = createBrowserRouter([
           { path: 'reviews', element: <VendorReviewsPage /> },
           { path: 'rating', element: <VendorReviewsPage /> },
           { path: 'ai-chat', element: <VendorAIChatPage /> },
+          { path: 'suppliers', element: <SuppliersPage /> },
+          { path: 'inventory/import', element: <InventoryImportPage /> },
+          { path: 'inventory/check', element: <InventoryCheckPage /> },
         ],
       },
     ],

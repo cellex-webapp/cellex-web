@@ -4,7 +4,7 @@ import type { MenuProps } from 'antd';
 import {
   AppstoreOutlined, ShopOutlined, TeamOutlined,
   CustomerServiceOutlined, TagsOutlined, PartitionOutlined,
-  BulbOutlined, RobotOutlined,
+  BulbOutlined, RobotOutlined, DatabaseOutlined,
 } from '@ant-design/icons';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -48,6 +48,14 @@ const MENU_CONFIG = [
     children: [
       { key: 'store-all', label: 'Tất cả cửa hàng', path: '/admin/shops' },
       { key: 'store-requests', label: 'Yêu cầu mở cửa hàng', path: '/admin/shops/pending' },
+    ],
+  },
+  {
+    key: 'inventory', label: 'Theo dõi kho', icon: DatabaseOutlined,
+    children: [
+      { key: 'inventory-suppliers', label: 'Nhà cung cấp', path: '/admin/suppliers' },
+      { key: 'inventory-import', label: 'Theo dõi nhập kho', path: '/admin/inventory/import' },
+      { key: 'inventory-check', label: 'Theo dõi kiểm kê', path: '/admin/inventory/check' },
     ],
   },
   {

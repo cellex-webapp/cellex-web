@@ -17,6 +17,14 @@ const formatCurrency = (v?: number) => {
     return v.toLocaleString('vi-VN') + ' đ';
 };
 
+const normalizeText = (value?: string) => (value || '').trim().toLowerCase();
+
+const getSkuVariationValue = (sku: IProductSku, optionName: string) => {
+    const entries = Object.entries(sku.variationData || {});
+    const matched = entries.find(([key]) => normalizeText(key) === normalizeText(optionName));
+    return matched?.[1];
+};
+
 const PlaceholderImage: React.FC = () => (
     <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400">
         <div className="text-center">
@@ -37,7 +45,7 @@ const ProductDetailCard: React.FC = () => {
     const { selectedProduct, isLoading, fetchProductById } = useProduct();
     const { addToCart, isLoading: cartLoading } = useCart();
     const [imgIndex, setImgIndex] = useState(0);
-    const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string>>({});
+    const [selectedVariations, setSelectedVariations] = useState<Record<string, string>>({});
     
     // Get current user from localStorage (would be better from Redux in real app)
     const currentUser = useMemo(() => {
@@ -60,6 +68,9 @@ const ProductDetailCard: React.FC = () => {
 
     const p = selectedProduct as IProduct | undefined;
     const images = p?.images && p.images.length > 0 ? p.images : [];
+    const variationOptions = p?.variationOptions ?? [];
+    const hasVariantSkus = (p?.skus?.length ?? 0) > 0;
+    const requiresVariationSelection = hasVariantSkus && variationOptions.length > 0;
 
     const salePercent = p && p.price ? Math.round(((p.price - (p.finalPrice ?? p.price)) / (p.price || 1)) * 100) : 0;
 
@@ -78,27 +89,64 @@ const ProductDetailCard: React.FC = () => {
         }
     }, [p?.categoryId, getHighlightAttributes]);
 
+    useEffect(() => {
+        if (!p || variationOptions.length === 0) {
+            setSelectedVariations({});
+            return;
+        }
+
+        const defaults: Record<string, string> = {};
+        variationOptions.forEach((option) => {
+            if (option.values?.length) {
+                defaults[option.name] = option.values[0];
+            }
+        });
+        setSelectedVariations(defaults);
+    }, [p?.id, variationOptions]);
+
+    const selectedSku = useMemo(() => {
+        if (!p?.skus || p.skus.length === 0) return undefined;
+        if (variationOptions.length === 0) return p.skus[0];
+
+        const allSelected = variationOptions.every((option) => !!selectedVariations[option.name]);
+        if (!allSelected) return undefined;
+
+        return p.skus.find((sku) => variationOptions.every((option) => {
+            const selectedValue = selectedVariations[option.name];
+            const skuValue = getSkuVariationValue(sku, option.name);
+            return normalizeText(selectedValue) === normalizeText(skuValue);
+        }));
+    }, [p?.skus, variationOptions, selectedVariations]);
+
+    const displayPrice = selectedSku?.price ?? p?.finalPrice ?? p?.price ?? 0;
+    const displayStock = selectedSku?.availableStock ?? p?.stockQuantity ?? 0;
+
     const canBuy = useMemo(() => {
         if (!p) return false;
-        if (p.stockQuantity <= 0) return false;
+        if (requiresVariationSelection && !selectedSku) return false;
+        if (displayStock <= 0) return false;
         return true;
-    }, [p]);
+    }, [p, requiresVariationSelection, selectedSku, displayStock]);
 
     const [quantity, setQuantity] = useState<number>(1);
 
     useEffect(() => {
         setQuantity(1);
-    }, [p?.id]);
+    }, [p?.id, selectedSku?.id]);
 
     const handleAddToCart = async (goCheckout?: boolean) => {
         if (!p) return;
+        if (requiresVariationSelection && !selectedSku) {
+            message.warning('Vui lòng chọn đầy đủ biến thể sản phẩm');
+            return;
+        }
         if (quantity <= 0) {
             message.warning('Vui lòng chọn số lượng hợp lệ');
             return;
         }
-        if (quantity > p.stockQuantity) {
-            message.error(`Số lượng tồn kho chỉ còn ${p.stockQuantity} sản phẩm.`);
-            setQuantity(p.stockQuantity);
+        if (quantity > displayStock) {
+            message.error(`Số lượng tồn kho chỉ còn ${displayStock} sản phẩm.`);
+            setQuantity(displayStock);
             return;
         }
         try {
@@ -108,6 +156,7 @@ const ProductDetailCard: React.FC = () => {
                     items: [
                         {
                             productId: p.id,
+                            skuId: selectedSku?.id,
                             quantity: quantity
                         }
                     ]
@@ -121,7 +170,7 @@ const ProductDetailCard: React.FC = () => {
                     message.error('Không tạo được đơn hàng');
                 }
             } else {
-                const action = await addToCart({ productId: p.id, quantity });
+                const action = await addToCart({ productId: p.id, skuId: selectedSku?.id, quantity });
                 unwrapResult(action as any);
                 message.success('Đã thêm vào giỏ hàng');
             }
@@ -145,18 +194,24 @@ const ProductDetailCard: React.FC = () => {
                     <div>
                         <div className="relative bg-white rounded-lg overflow-hidden mb-4">
                             <div className="w-full aspect-square flex items-center justify-center bg-white">
-                                {images.length > 0 ? (
+                                {selectedSku?.imageUrl ? (
+                                    <img
+                                        src={selectedSku.imageUrl}
+                                        alt={p.name}
+                                        className="w-full h-full object-contain"
+                                    />
+                                ) : images.length > 0 ? (
                                     <img
                                         src={images[imgIndex]}
                                         alt={p.name}
-                                        className="w-full h-full"
+                                        className="w-full h-full object-contain"
                                     />
                                 ) : (
                                     <PlaceholderImage />
                                 )}
                             </div>
 
-                            {images.length > 1 && (
+                            {!selectedSku?.imageUrl && images.length > 1 && (
                                 <>
                                     <button
                                         onClick={() => setImgIndex((i) => (i - 1 + images.length) % images.length)}
@@ -175,7 +230,7 @@ const ProductDetailCard: React.FC = () => {
                                 </>
                             )}
 
-                            {images.length > 1 && (
+                            {!selectedSku?.imageUrl && images.length > 1 && (
                                 <div className="absolute left-1/2 -translate-x-1/2 bottom-4 flex items-center gap-2">
                                     {images.map((_, i) => (
                                         <button
@@ -188,32 +243,68 @@ const ProductDetailCard: React.FC = () => {
                                     ))}
                                 </div>
                             )}
+                            
+                            {selectedSku?.imageUrl && (
+                                <div className="absolute bottom-4 right-4 bg-indigo-600 text-white text-[10px] px-2 py-1 rounded-full font-bold uppercase tracking-wider">
+                                    Ảnh biến thể
+                                </div>
+                            )}
                         </div>
                     </div>
 
+
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900 mb-4">{p.name}</h1>
+
+                        {variationOptions.length > 0 && (
+                            <div className="mb-5">
+                                {variationOptions.map((option) => (
+                                    <div key={option.name} className="mb-4 last:mb-0">
+                                        <div className="text-sm font-medium text-gray-700 mb-2">{option.name}</div>
+                                        <div className="flex flex-wrap gap-2">
+                                            {(option.values || []).map((value) => {
+                                                const isSelected = selectedVariations[option.name] === value;
+                                                return (
+                                                    <button
+                                                        key={`${option.name}-${value}`}
+                                                        onClick={() => setSelectedVariations((prev) => ({
+                                                            ...prev,
+                                                            [option.name]: value,
+                                                        }))}
+                                                        className={`px-4 py-2 rounded-md border text-sm font-medium transition-colors ${isSelected
+                                                            ? 'border-blue-600 bg-blue-50 text-blue-600'
+                                                            : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
+                                                            }`}
+                                                    >
+                                                        {value}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                ))}
+                                {requiresVariationSelection && !selectedSku && (
+                                    <div className="text-sm text-orange-600 mt-2">Vui lòng chọn đúng tổ hợp biến thể khả dụng.</div>
+                                )}
+                                {selectedSku && (
+                                    <div className="text-sm text-gray-600 mt-2">SKU: {selectedSku.skuCode}</div>
+                                )}
+                            </div>
+                        )}
 
                         {attributeGroups && Object.entries(attributeGroups).map(([groupName, values]) => (
                             <div key={groupName} className="mb-4">
                                 <div className="text-sm font-medium text-gray-700 mb-2">{groupName}</div>
                                 <div className="flex flex-wrap gap-2">
                                     {values.map((av) => {
-                                        const isSelected = selectedAttributes[groupName] === av.value;
                                         return (
-                                            <button
+                                            <Tag
                                                 key={av.attributeId}
-                                                onClick={() => setSelectedAttributes(prev => ({
-                                                    ...prev,
-                                                    [groupName]: av.value
-                                                }))}
-                                                className={`px-4 py-2 rounded-md border text-sm font-medium transition-colors ${isSelected
-                                                    ? 'border-blue-600 bg-blue-50 text-blue-600'
-                                                    : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
-                                                    }`}
+                                                color="default"
+                                                className="!m-0"
                                             >
                                                 {av.value} {av.unit ? `${av.unit}` : ''}
-                                            </button>
+                                            </Tag>
                                         );
                                     })}
                                 </div>
@@ -223,9 +314,9 @@ const ProductDetailCard: React.FC = () => {
                         <div className="mb-6">
                             <div className="flex items-end gap-3 mb-2">
                                 <div className="text-3xl font-bold text-red-600">
-                                    {formatCurrency(p.finalPrice)}
+                                    {formatCurrency(displayPrice)}
                                 </div>
-                                {p.saleOff !== 0 && (
+                                {!selectedSku && p.saleOff !== 0 && (
                                     <>
                                         <div className="text-lg text-gray-400 line-through mb-1">
                                             {formatCurrency(p.price)}
@@ -239,6 +330,7 @@ const ProductDetailCard: React.FC = () => {
                             <Tag color="orange" className="text-xs">
                                 + 5.000 Điểm thưởng
                             </Tag>
+                            <div className="text-sm text-gray-600 mt-2">Tồn kho khả dụng: {displayStock}</div>
                         </div>
 
                         <div className="flex items-center gap-3">
@@ -254,7 +346,7 @@ const ProductDetailCard: React.FC = () => {
                                 <span className="text-sm text-gray-600">Số lượng</span>
                                 <InputNumber
                                     min={1}
-                                    max={p.stockQuantity}
+                                    max={Math.max(1, displayStock)}
                                     value={quantity}
                                     onChange={(v) => setQuantity(Number(v) || 1)}
                                     style={{ width: 90 }}

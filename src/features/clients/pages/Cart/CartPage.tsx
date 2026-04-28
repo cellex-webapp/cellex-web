@@ -8,12 +8,14 @@ import orderService from '@/services/order.service';
 
 const { Title, Text } = Typography;
 
+const getCartItemKey = (productId: string, skuId?: string) => `${productId}::${skuId || 'base'}`;
+
 const CartPageContent: React.FC = () => {
     const { modal } = App.useApp();
     const navigate = useNavigate();
     const { currentUser } = useAuth();
 
-    const { items, isLoading, totalItems, totalPrice, fetchMyCart, setQuantity, removeFromCart, clearCart } = useCart();
+    const { items, isLoading, totalItems, totalPrice, fetchMyCart, setQuantity, clearCart } = useCart();
 
     const [tempQuantities, setTempQuantities] = useState<Record<string, number>>({});
 
@@ -26,16 +28,17 @@ const CartPageContent: React.FC = () => {
     useEffect(() => {
         const newTemps: Record<string, number> = {};
         items.forEach(item => {
-            newTemps[item.productId] = item.quantity;
+            newTemps[getCartItemKey(item.productId, item.skuId)] = item.quantity;
         });
         setTempQuantities(newTemps);
     }, [items]);
 
-    const handleQuantityChange = (productId: string, value: number | null) => {
+    const handleQuantityChange = (productId: string, skuId: string | undefined, value: number | null) => {
+        const itemKey = getCartItemKey(productId, skuId);
         const newQuantity = value === null ? 0 : value;
         setTempQuantities(prev => ({
             ...prev,
-            [productId]: newQuantity,
+            [itemKey]: newQuantity,
         }));
     };
 
@@ -44,8 +47,9 @@ const CartPageContent: React.FC = () => {
         try { return value.toLocaleString('vi-VN') + ' ₫'; } catch { return String(value); }
     };
 
-    const handleQuantityBlur = async (productId: string, stockQuantity: number) => {
-        let quantity = tempQuantities[productId];
+    const handleQuantityBlur = async (productId: string, skuId: string | undefined, stockQuantity: number) => {
+        const itemKey = getCartItemKey(productId, skuId);
+        let quantity = tempQuantities[itemKey];
 
         if (quantity === undefined || quantity < 0) {
             quantity = 0;
@@ -55,22 +59,22 @@ const CartPageContent: React.FC = () => {
             quantity = stockQuantity;
         }
 
-        setTempQuantities(prev => ({ ...prev, [productId]: quantity }));
+        setTempQuantities(prev => ({ ...prev, [itemKey]: quantity }));
 
         try {
-            await setQuantity({ productId, quantity }).unwrap();
+            await setQuantity({ productId, skuId, quantity }).unwrap();
             if (quantity === 0) {
                 message.success('Đã xóa sản phẩm khỏi giỏ hàng');
             } else {
                 message.success('Cập nhật số lượng thành công');
             }
         } catch (err) {
-            const originalItem = items.find(i => i.productId === productId);
-            setTempQuantities(prev => ({ ...prev, [productId]: originalItem?.quantity ?? 1 }));
+            const originalItem = items.find(i => i.productId === productId && (i.skuId || undefined) === skuId);
+            setTempQuantities(prev => ({ ...prev, [itemKey]: originalItem?.quantity ?? 1 }));
         }
     };
 
-    const handleRemoveItem = (productId: string) => {
+    const handleRemoveItem = (productId: string, skuId?: string) => {
         modal.confirm({
             title: 'Xóa sản phẩm?',
             centered: true,
@@ -80,7 +84,7 @@ const CartPageContent: React.FC = () => {
             cancelText: 'Hủy',
             onOk: async () => {
                 try {
-                    await removeFromCart({ productIds: [productId] }).unwrap();
+                    await setQuantity({ productId, skuId, quantity: 0 }).unwrap();
                     message.success('Đã xóa sản phẩm');
                 } catch (err) {
                 }
@@ -144,6 +148,7 @@ const CartPageContent: React.FC = () => {
                             renderItem={(item) => {
                                 const unitPrice = item.price ?? 0;
                                 const availableStock = item.availableStock ?? 0;
+                                const itemKey = getCartItemKey(item.productId, item.skuId);
                                 return (
                                     <List.Item>
                                         <Row gutter={16} align="middle" className="w-full flex-nowrap">
@@ -157,6 +162,16 @@ const CartPageContent: React.FC = () => {
 
                                             <Col flex={1} className="min-w-0">
                                                 <Text strong className="line-clamp-2 mb-1">{item.productName}</Text>
+                                                {item.skuCode && (
+                                                    <div className="mt-1">
+                                                        <Tag color="blue" className="!mr-0">SKU: {item.skuCode}</Tag>
+                                                    </div>
+                                                )}
+                                                {item.variationData && Object.keys(item.variationData).length > 0 && (
+                                                    <div className="text-xs text-gray-500 mt-1">
+                                                        {Object.entries(item.variationData).map(([key, value]) => `${key}: ${value}`).join(' | ')}
+                                                    </div>
+                                                )}
                                                 <div className="mt-1">
                                                     <Text type="secondary" style={{ fontSize: 12 }}>Tồn kho: {availableStock}</Text>
                                                     {!item.isAvailable && <Tag color="red" className="ml-2">Ngừng kinh doanh</Tag>}
@@ -175,10 +190,10 @@ const CartPageContent: React.FC = () => {
                                                 <InputNumber
                                                     min={0}
                                                     max={availableStock}
-                                                    value={tempQuantities[item.productId]}
-                                                    onChange={(value) => handleQuantityChange(item.productId, value)}
-                                                    onBlur={() => handleQuantityBlur(item.productId, availableStock)}
-                                                    onPressEnter={() => handleQuantityBlur(item.productId, availableStock)}
+                                                    value={tempQuantities[itemKey]}
+                                                    onChange={(value) => handleQuantityChange(item.productId, item.skuId, value)}
+                                                    onBlur={() => handleQuantityBlur(item.productId, item.skuId, availableStock)}
+                                                    onPressEnter={() => handleQuantityBlur(item.productId, item.skuId, availableStock)}
                                                     style={{ width: 80 }}
                                                     disabled={isLoading}
                                                 />
@@ -189,7 +204,7 @@ const CartPageContent: React.FC = () => {
                                                     type="text"
                                                     danger
                                                     icon={<DeleteOutlined />}
-                                                    onClick={() => handleRemoveItem(item.productId)}
+                                                    onClick={() => handleRemoveItem(item.productId, item.skuId)}
                                                 />
                                             </Col>
                                         </Row>
@@ -228,7 +243,9 @@ const CartPageContent: React.FC = () => {
                             disabled={isLoading || items.length === 0}
                             onClick={async () => {
                                 try {
-                                    const resp = await orderService.createOrderFromCart({ items: items.map(i => ({ productId: i.productId, quantity: i.quantity })) });
+                                    const resp = await orderService.createOrderFromCart({
+                                        items: items.map((i) => ({ productId: i.productId, skuId: i.skuId, quantity: i.quantity })),
+                                    });
                                     const order = resp.result as IOrder;
                                     if (order?.id) {
                                         message.success('Tạo đơn hàng thành công');
