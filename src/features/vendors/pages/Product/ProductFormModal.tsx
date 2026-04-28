@@ -76,7 +76,12 @@ const ProductFormModal: React.FC<Props> = ({ open, onClose, onSubmit, editingPro
       payload.skus = values.skus || [];
       
       if (payload.skus.length === 0) {
-        message.error('Vui lòng tạo ít nhất 1 SKU cho sản phẩm có biến thể');
+        const hasOptions = values.variationOptions && values.variationOptions.some((opt: any) => opt.name && opt.values?.length > 0);
+        if (hasOptions) {
+          message.error('Vui lòng nhấn nút "Tạo/Cập nhật danh sách SKU" để tạo các biến thể trước khi lưu');
+        } else {
+          message.error('Vui lòng tạo ít nhất 1 SKU cho sản phẩm có biến thể');
+        }
         return;
       }
     } else {
@@ -150,6 +155,8 @@ const ProductFormModal: React.FC<Props> = ({ open, onClose, onSubmit, editingPro
             </div>
           </div>
         }>
+          <Form.Item name="variationOptions" noStyle hidden><div /></Form.Item>
+          <Form.Item name="skus" noStyle hidden><div /></Form.Item>
           {!hasVariants && (
             <Row gutter={16}>
                <Col span={6}>

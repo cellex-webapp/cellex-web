@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Button, Input, InputNumber, Row, Col, Table, Space, Card, Tag, Typography, message, Upload, Tooltip } from 'antd';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Button, Input, InputNumber, Row, Col, Table, Space, Card, Tag, Typography, message, Upload, Tooltip, Form } from 'antd';
 import { PlusOutlined, DeleteOutlined, PictureOutlined, LoadingOutlined } from '@ant-design/icons';
 import type { FormInstance } from 'antd';
 import { uploadService } from '@/services/upload.service';
@@ -15,6 +15,16 @@ const ProductVariantEditor: React.FC<Props> = ({ form, initialSkus = [] }) => {
   const [variationOptions, setVariationOptions] = useState<IProductVariationOption[]>([]);
   const [skus, setSkus] = useState<IProductSkuPayload[]>([]);
   const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
+  
+  // Lấy ảnh từ form để làm fallback
+  const productImages = Form.useWatch('images', form);
+  const mainProductImage = useMemo(() => {
+    if (!productImages || productImages.length === 0) return null;
+    const first = productImages[0];
+    if (first.url) return first.url;
+    if (first.originFileObj) return URL.createObjectURL(first.originFileObj);
+    return null;
+  }, [productImages]);
 
   useEffect(() => {
     const formVariationOptions = form.getFieldValue('variationOptions') || [];
@@ -180,6 +190,13 @@ const ProductVariantEditor: React.FC<Props> = ({ form, initialSkus = [] }) => {
           <div className="relative group cursor-pointer w-12 h-12 border border-dashed border-gray-300 rounded flex items-center justify-center overflow-hidden hover:border-indigo-500 transition-colors bg-gray-50">
             {url ? (
               <img src={url} alt="Variant" className="w-full h-full object-cover" />
+            ) : mainProductImage ? (
+              <div className="relative w-full h-full">
+                <img src={mainProductImage} alt="Product Fallback" className="w-full h-full object-cover opacity-50" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <PictureOutlined className="text-gray-400 text-lg" />
+                </div>
+              </div>
             ) : (
               uploadingIndex === index ? <LoadingOutlined className="text-indigo-500" /> : <PictureOutlined className="text-gray-400 text-lg" />
             )}
