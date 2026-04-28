@@ -72,7 +72,7 @@ const CheckoutPage: React.FC = () => {
     try {
       // Create order from cart
       const createResp = await orderService.createOrderFromCart({ 
-        items: items.map(i => ({ productId: i.productId, quantity: i.quantity })),
+        items: items.map((i) => ({ productId: i.productId, skuId: i.skuId, quantity: i.quantity })),
       });
       const order = createResp.result as IOrder;
       if (!order?.id) throw new Error('Không tạo được đơn hàng');
