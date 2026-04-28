@@ -94,8 +94,9 @@ const AIFloatingButton: React.FC = () => {
     };
   }, [isDragging, isResizing, handleMouseMove, handleMouseUp]);
 
-  // Don't show on the AI chat page itself
-  if (location.pathname === '/ai-chat') {
+  // Don't show on the AI chat page itself or on account messages tab
+  if (location.pathname === '/ai-chat' || 
+      (location.pathname.includes('/account') && location.search.includes('tab=messages'))) {
     return null;
   }
 
@@ -114,7 +115,7 @@ const AIFloatingButton: React.FC = () => {
         }}
       >
         {!isOpen && (
-          <Tooltip title="Trò chuyện với AI" placement="left">
+          <Tooltip placement="left">
             <button
               id="ai-chat-floating-btn"
               onClick={handleClick}

@@ -184,8 +184,8 @@ const AccountManagementPage: React.FC = () => {
           </div>
         </Sider>
 
-        <Content className="overflow-y-auto !bg-slate-50">
-          <div className="min-h-full rounded-lg bg-white p-6 shadow-2xl ring-1 ring-black/5">
+        <Content className="overflow-y-hidden !bg-slate-50">
+          <div className="min-h-full rounded-lg bg-white shadow-2xl ring-1 ring-black/5">
             <div id={activeKey}>
               {renderContent()}
             </div>

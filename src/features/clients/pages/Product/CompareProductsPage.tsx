@@ -86,12 +86,12 @@ const CompareProductsPage: React.FC = () => {
                     </div>
 
                     {/* Badge Best Price / Best Savings */}
-                    <div className="mt-3 flex flex-col gap-1 w-full">
+                    <div className="mt-3 flex flex-col gap-1">
                       {priceSummary.lowestPriceProductId === product.id && (
-                        <Tag color="green" className="w-full text-center m-0">Giá tốt nhất</Tag>
+                        <Tag color="green" className="!text-center !flex !items-center !justify-center">Giá tốt nhất</Tag>
                       )}
                       {priceSummary.highestSavingsProductId === product.id && priceSummary.highestSavingsAmount > 0 && (
-                        <Tag color="volcano" className="w-full text-center m-0">Tiết kiệm nhất</Tag>
+                        <Tag color="volcano" className="!text-center !flex !items-center !justify-center">Tiết kiệm nhất</Tag>
                       )}
                     </div>
                   </div>

@@ -144,12 +144,12 @@ const AIChatWindow: React.FC<AIChatWindowProps> = ({ onBack }) => {
             </div>
             <span className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-white"></span>
           </div>
-          <div>
-            <h3 className="font-bold text-white m-0 text-base flex items-center gap-2">
+          <div className="flex flex-col leading-tight">
+            <h3 className="font-bold text-white mt-4 text-sm flex items-center gap-2">
               Cellex AI Assistant
               <Badge count="AI" style={{ backgroundColor: '#f59e0b' }} />
             </h3>
-            <span className="text-xs text-white/80">Powered by Gemini</span>
+            <span className="text-xs text-white/80 mt-[-3px]">Powered by Cellex</span>
           </div>
         </div>
         
@@ -193,7 +193,7 @@ const AIChatWindow: React.FC<AIChatWindowProps> = ({ onBack }) => {
         )}
 
         {/* Main chat area */}
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1/2 max-h-7/8 flex flex-col overflow-hidden">
           {/* Messages */}
           <div 
             className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar"
@@ -292,7 +292,7 @@ const AIChatWindow: React.FC<AIChatWindowProps> = ({ onBack }) => {
                 <Button
                   type="primary"
                   shape="circle"
-                  size="large"
+                  size="middle"
                   icon={<SendOutlined />}
                   onClick={handleSend}
                   loading={isSending}

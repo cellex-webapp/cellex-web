@@ -222,7 +222,7 @@ const ProductVariantEditor: React.FC<Props> = ({ form, initialSkus = [] }) => {
       ),
     },
     {
-      title: 'Mã SKU (tùy chọn)',
+      title: 'Mã SKU',
       dataIndex: 'skuCode',
       key: 'skuCode',
       width: 180,
@@ -230,7 +230,7 @@ const ProductVariantEditor: React.FC<Props> = ({ form, initialSkus = [] }) => {
         <Input
           value={text}
           onChange={(e) => updateSku(index, 'skuCode', e.target.value)}
-          placeholder="Hệ thống tự tạo"
+          placeholder="Nhập mã SKU"
           className="text-xs"
         />
       ),

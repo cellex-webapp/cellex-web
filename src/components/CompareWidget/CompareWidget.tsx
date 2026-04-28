@@ -74,7 +74,7 @@ const CompareWidget: React.FC = () => {
                     />
                   </Tooltip>
                   <div 
-                    className="absolute -top-2 -right-2 bg-white rounded-full cursor-pointer shadow-sm hover:scale-110 transition-transform"
+                    className="absolute top-0 right-0 bg-white rounded-full cursor-pointer shadow-sm hover:scale-110 transition-transform"
                     onClick={() => removeFromCompareList(product.id)}
                   >
                     <CloseCircleOutlined className="text-red-500 text-base" />

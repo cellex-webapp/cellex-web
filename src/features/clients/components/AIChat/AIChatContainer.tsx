@@ -265,9 +265,9 @@ const AIChatContainer: React.FC<AIChatContainerProps> = ({ onClose, embedded = f
           </div>
 
           {/* Input area */}
-          <div className="bg-white border-t border-gray-200 p-4">
+          <div className="bg-white border-t border-gray-200">
             <div className="max-w-3xl mx-auto">
-              <div className="flex items-end gap-3 bg-gray-50 rounded-2xl border border-gray-200 focus-within:border-blue-400 focus-within:bg-white focus-within:shadow-md transition-all p-2">
+              <div className="flex items-center gap-3 bg-gray-50 rounded-2xl border border-gray-200 focus-within:border-blue-400 focus-within:bg-white focus-within:shadow-md transition-all p-2">
                 <Input.TextArea 
                   ref={inputRef}
                   value={inputValue}

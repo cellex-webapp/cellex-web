@@ -1,7 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert, App, Button, Card, Form, Input, Modal, Space, Table, Typography } from 'antd';
+import { Alert, App, Button, Card, Col, Form, Input, Modal, Row, Space, Table, Typography } from 'antd';
 import { EditOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
+import { AddressSelector } from '@/components/address';
+import type { AddressSelectorValue } from '@/components/address';
 import useSupplier from '@/hooks/useSupplier';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -21,6 +23,10 @@ const SuppliersPageContent: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState<ISupplier | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [addressValue, setAddressValue] = useState<AddressSelectorValue>({
+    newWardCode: '',
+    detailAddress: '',
+  });
 
   const loadSuppliers = useCallback(async () => {
     await fetchSuppliers({
@@ -40,6 +46,10 @@ const SuppliersPageContent: React.FC = () => {
   const openCreateModal = () => {
     setEditingSupplier(null);
     form.resetFields();
+    setAddressValue({
+      newWardCode: '',
+      detailAddress: '',
+    });
     setIsModalOpen(true);
   };
 
@@ -50,8 +60,11 @@ const SuppliersPageContent: React.FC = () => {
       supplierName: supplier.supplierName,
       phoneNumber: supplier.phoneNumber,
       email: supplier.email,
-      address: supplier.address,
       taxCode: supplier.taxCode,
+    });
+    setAddressValue({
+      newWardCode: '',
+      detailAddress: supplier.address || '',
     });
     setIsModalOpen(true);
   };
@@ -61,13 +74,21 @@ const SuppliersPageContent: React.FC = () => {
     try {
       const values = await form.validateFields();
       setSubmitting(true);
+      const normalizedAddress = addressValue.fullAddressNew?.trim()
+        || addressValue.detailAddress.trim()
+        || editingSupplier?.address?.trim()
+        || undefined;
 
       if (editingSupplier) {
-        await updateSupplier(editingSupplier.id, values);
+        await updateSupplier(editingSupplier.id, {
+          ...values,
+          address: normalizedAddress,
+        });
         message.success('Cập nhật nhà cung cấp thành công');
       } else {
         await createSupplier({
           ...values,
+          address: normalizedAddress,
           shopId: currentShop?.id,
         });
         message.success('Tạo nhà cung cấp thành công');
@@ -192,24 +213,66 @@ const SuppliersPageContent: React.FC = () => {
           onCancel={() => setIsModalOpen(false)}
           onOk={handleSubmit}
           confirmLoading={submitting}
+          cancelText="Hủy"
           okText={editingSupplier ? 'Cập nhật' : 'Tạo mới'}
+          width={760}
+          destroyOnClose
         >
-          <Form form={form} layout="vertical">
-            <Form.Item name="supplierName" label="Tên nhà cung cấp" rules={[{ required: true, message: 'Nhập tên nhà cung cấp' }]}>
-              <Input placeholder="VD: Công ty TNHH ABC" />
-            </Form.Item>
-            <Form.Item name="phoneNumber" label="Số điện thoại" rules={[{ required: true, message: 'Nhập số điện thoại' }]}>
-              <Input placeholder="VD: 0901234567" />
-            </Form.Item>
-            <Form.Item name="email" label="Email" rules={[{ type: 'email', message: 'Email không hợp lệ' }]}>
-              <Input placeholder="VD: supplier@example.com" />
-            </Form.Item>
-            <Form.Item name="taxCode" label="Mã số thuế" rules={[{ required: true, message: 'Nhập mã số thuế' }]}>
-              <Input placeholder="VD: 0312345678" />
-            </Form.Item>
-            <Form.Item name="address" label="Địa chỉ">
-              <Input.TextArea rows={3} placeholder="Địa chỉ nhà cung cấp" />
-            </Form.Item>
+          <Form form={form} layout="vertical" className="pt-2">
+            <div className="mb-5 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+              <div className="mb-4">
+                <Typography.Title level={5} className="!mb-1">
+                  Thông tin chung
+                </Typography.Title>
+                <Typography.Text type="secondary">
+                  Cung cấp tên, liên hệ và mã số thuế của nhà cung cấp.
+                </Typography.Text>
+              </div>
+
+              <Row gutter={16}>
+                <Col xs={24} md={12}>
+                  <Form.Item name="supplierName" label="Tên nhà cung cấp" rules={[{ required: true, message: 'Nhập tên nhà cung cấp' }]}>
+                    <Input placeholder="VD: Công ty TNHH ABC" size="large" />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={12}>
+                  <Form.Item name="phoneNumber" label="Số điện thoại" rules={[{ required: true, message: 'Nhập số điện thoại' }]}>
+                    <Input placeholder="VD: 0901234567" size="large" />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={12}>
+                  <Form.Item name="email" label="Email" rules={[{ type: 'email', message: 'Email không hợp lệ' }]}>
+                    <Input placeholder="VD: supplier@example.com" size="large" />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={12}>
+                  <Form.Item name="taxCode" label="Mã số thuế" rules={[{ required: true, message: 'Nhập mã số thuế' }]}>
+                    <Input placeholder="VD: 0312345678" size="large" />
+                  </Form.Item>
+                </Col>
+              </Row>
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 bg-white p-4">
+              <div className="mb-4">
+                <Typography.Title level={5} className="!mb-1">
+                  Địa chỉ
+                </Typography.Title>
+                <Typography.Text type="secondary">
+                  Chọn địa chỉ mới hoặc địa chỉ cũ để đồng bộ sang chuỗi địa chỉ chuẩn.
+                </Typography.Text>
+              </div>
+
+              <AddressSelector
+                value={addressValue}
+                onChange={setAddressValue}
+                required
+                showModeSelector={true}
+                defaultMode="new"
+                layout="vertical"
+                size="middle"
+              />
+            </div>
           </Form>
         </Modal>
       )}
