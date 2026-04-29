@@ -25,7 +25,7 @@ const HomePage: React.FC = () => {
 				<CategoryList title="Danh mục sản phẩm" />
 				<RecommendationSectionPreview 
 					title="Dành riêng cho bạn" 
-					maxItems={12}
+					maxItems={10}
 					viewAllLink="/recommendations"
 				/>
 				<ProductListPreview 

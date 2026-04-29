@@ -47,16 +47,16 @@ const RecommendationSectionPreview: React.FC<Props> = ({
   // Initial fetch
   useEffect(() => {
     if (isAuthenticated && !hasLoaded) {
-      fetchMyRecommendations({ limit: maxItems + 10 }); // Fetch a bit more to know if there are more
+      fetchMyRecommendations({ limit: 50 }); // Fetch 50 items (backend default)
       setHasLoaded(true);
     }
-  }, [isAuthenticated, hasLoaded, maxItems, fetchMyRecommendations]);
+  }, [isAuthenticated, hasLoaded, fetchMyRecommendations]);
 
   // Retry on error
   const handleRetry = useCallback(() => {
     clearError();
-    fetchMyRecommendations({ limit: maxItems + 10 });
-  }, [clearError, fetchMyRecommendations, maxItems]);
+    fetchMyRecommendations({ limit: 50 });
+  }, [clearError, fetchMyRecommendations]);
 
   // Don't render if not authenticated
   if (!isAuthenticated) {
