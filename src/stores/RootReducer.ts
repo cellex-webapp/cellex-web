@@ -17,6 +17,8 @@ import chatReducer from '@/stores/slices/chat.slice';
 import recommendationReducer from '@/stores/slices/recommendation.slice';
 import aiReducer from '@/stores/slices/ai.slice';
 import livestreamReducer from '@/stores/slices/livestream.slice';
+import shopThemeReducer from '@/stores/slices/shopTheme.slice';
+import { shopApi } from '@/stores/api/shopApi.slice';
 
 const rootReducer = combineReducers({
   auth: authReducer,
@@ -37,6 +39,8 @@ const rootReducer = combineReducers({
   recommendation: recommendationReducer,
   ai: aiReducer,
   livestream: livestreamReducer,
+  shopTheme: shopThemeReducer,
+  [shopApi.reducerPath]: shopApi.reducer,
 });
 
 export default rootReducer;

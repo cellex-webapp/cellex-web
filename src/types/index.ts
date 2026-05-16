@@ -904,6 +904,41 @@ declare global {
         error: string | null;
     }
 
+    interface ILayoutSection {
+        id: string;
+        type: string;
+        [key: string]: any;
+    }
+
+    interface ILayoutConfig {
+        header?: { backgroundColor?: string; height?: number; [key: string]: any };
+        footer?: { show?: boolean; backgroundColor?: string; [key: string]: any };
+        sections?: ILayoutSection[];
+        [key: string]: any;
+    }
+
+    interface ITheme {
+        id: string;
+        shopId: string;
+        primaryColor: string;
+        secondaryColor: string;
+        fontFamily: string;
+        layoutConfig: ILayoutConfig;
+        isPublished: boolean;
+        createdAt: string;
+        updatedAt: string;
+    }
+
+    interface ICreateThemePayload {
+        primaryColor: string;
+        secondaryColor: string;
+        fontFamily: string;
+        layoutConfig?: ILayoutConfig;
+        isPublished?: boolean;
+    }
+
+    interface IUpdateThemePayload extends Partial<ICreateThemePayload> {}
+
     // Segment Coupons
     interface CreateSegmentCouponRequest {
         segmentId: string;
