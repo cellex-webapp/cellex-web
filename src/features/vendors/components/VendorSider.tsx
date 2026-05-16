@@ -62,6 +62,7 @@ const MENU_CONFIG = [
     icon: TeamOutlined,
     children: [
       { key: 'shop-profile', label: 'Hồ sơ shop', path: '/vendor/shop' },
+      { key: 'shop-theme', label: 'Giao diện shop', path: '/vendor/shop/theme' },
     ],
   },
   {

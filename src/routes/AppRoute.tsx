@@ -31,13 +31,14 @@ import OrderConfirmPage from '@/features/clients/pages/Order/OrderConfirmPage';
 import PaymentFailurePage from '@/features/clients/pages/Payment/PaymentFailurePage';
 import PaymentSuccessPage from '@/features/clients/pages/Payment/PaymentSuccessPage';
 import ProductByCategory from '@/features/clients/pages/Product/ProductByCategory';
-import ProductByShop from '@/features/clients/pages/Product/ProductByShop';
+import ShopFrontPage from '@/features/clients/pages/ShopFront/ShopFrontPage';
 import AttributeByCategoryPage from '@/features/admin/pages/Categories/Attributes/AttributeByCategoryPage';
 import CartPage from '@/features/clients/pages/Cart/CartPage';
 import MarketingSystemListPage from '@/features/admin/pages/Marketing/System/MarketingSystemPage';
 import CampaignDetailPage from '@/features/admin/pages/Marketing/System/MarketingSystemDetailPage';
 import SegmentCouponsPage from '@/features/admin/pages/Marketing/Segment/SegmentCouponsPage';
 import ShopManagementPage from '@/features/vendors/pages/ShopManagement/ShopManagementPage';
+import ShopThemeBuilderPage from '@/features/vendors/pages/ShopTheme/ShopThemeBuilderPage';
 import CustomerSegmentPage from '@/features/admin/pages/CustomerSegment/CustomerSegmentPage';
 import AdminOrdersPage from '@/features/admin/pages/Orders/OrdersPage';
 import VendorOrdersPage from '@/features/vendors/pages/Order/OrdersPage';
@@ -115,7 +116,7 @@ const router = createBrowserRouter([
           { index: true, element: <HomePage /> },
           { path: 'search', element: <SearchPage /> },
           { path: 'categories/:slug', element: <ProductByCategory /> },
-          { path: 'shops/:id', element: <ProductByShop /> },
+          { path: 'shops/:shopId', element: <ShopFrontPage /> },
           { path: 'products', element: <AllProductsPage /> },
           { path: 'products/:id', element: <ProductDetailPage /> },
           { path: 'recommendations', element: <AllRecommendationsPage /> },
@@ -147,6 +148,7 @@ const router = createBrowserRouter([
           { path: 'orders', element: <VendorOrdersPage /> },
           { path: 'orders/shipping', element: <VendorOrdersPage /> },
           { path: 'shop', element: <ShopManagementPage /> },
+          { path: 'shop/theme', element: <ShopThemeBuilderPage /> },
           { path: 'notifications', element: <VendorNotificationsPage /> },
           { path: 'chat', element: <VendorChatPage /> },
           { path: 'reviews', element: <VendorReviewsPage /> },
