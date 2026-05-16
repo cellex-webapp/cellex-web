@@ -1,23 +1,29 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Skeleton, Button, Result } from 'antd';
-import { ArrowLeftOutlined, ShopOutlined } from '@ant-design/icons';
+import { Skeleton } from 'antd';
+import { ArrowLeftOutlined } from '@ant-design/icons';
 import { useGetPublicShopThemeQuery } from '@/stores/api/shopApi.slice';
+import useShop from '@/hooks/useShop';
+import ShopCard from '@/features/clients/components/Shop/ShopCard';
+import ProductByShop from '@/features/clients/pages/Product/ProductByShop';
 import ShopThemeProvider from './providers/ShopThemeProvider';
 import DynamicRenderer from './components/DynamicRenderer';
 
-const ShopFrontPageContent: React.FC = () => {
-  const { shopId } = useParams<{ shopId: string }>();
+const ShopFrontPageContent: React.FC<{ shopId: string }> = ({ shopId }) => {
+  const { shop: shopData, fetchShopById } = useShop();
+
+  useEffect(() => {
+    fetchShopById(shopId);
+  }, [shopId, fetchShopById]);
 
   const {
     data: themeResponse,
     isLoading,
     isError,
-  } = useGetPublicShopThemeQuery(shopId!, {
-    skip: !shopId,
-  });
+  } = useGetPublicShopThemeQuery(shopId);
 
   const theme = themeResponse?.result;
+  const shopName = shopData?.shop_name ?? 'MyShop';
 
   /* ---------- Loading ---------- */
   if (isLoading) {
@@ -34,22 +40,12 @@ const ShopFrontPageContent: React.FC = () => {
     );
   }
 
-  /* ---------- Error / No theme ---------- */
+  /* ---------- No theme — fallback to ShopCard + ProductByShop ---------- */
   if (isError || !theme) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <Result
-          icon={<ShopOutlined className="text-slate-300" />}
-          title="Cửa hàng chưa có giao diện"
-          subTitle="Chủ cửa hàng đang thiết lập giao diện. Vui lòng quay lại sau."
-          extra={
-            <Link to="/">
-              <Button type="primary" icon={<ArrowLeftOutlined />} size="large">
-                Về trang chủ
-              </Button>
-            </Link>
-          }
-        />
+      <div className="max-w-6xl mx-auto py-6 space-y-6">
+        <ShopCard shopId={shopId} showViewLink={false} />
+        <ProductByShop />
       </div>
     );
   }
@@ -77,7 +73,7 @@ const ShopFrontPageContent: React.FC = () => {
             <ArrowLeftOutlined className="mr-2" />
             Quay lại
           </Link>
-          <span className="font-bold text-lg tracking-wide">MyShop</span>
+          <span className="font-bold text-lg tracking-wide">{shopName}</span>
           <div className="w-16" />
         </div>
       </header>
@@ -85,18 +81,18 @@ const ShopFrontPageContent: React.FC = () => {
       {/* Block content */}
       <main className="flex-1" style={{ backgroundColor: 'var(--shop-secondary)' }}>
         <div className="max-w-6xl mx-auto px-4 py-6">
-          <DynamicRenderer blocks={blocks} />
+          <DynamicRenderer blocks={blocks} shopId={shopId} />
         </div>
+        <ProductByShop hideShopCard />
       </main>
-
-      {/* Shop footer */}
-      <footer className="text-center text-xs py-6" style={{ backgroundColor: '#333', color: '#999' }}>
-        © {new Date().getFullYear()} MyShop — Powered by Cellex
-      </footer>
     </ShopThemeProvider>
   );
 };
 
-const ShopFrontPage: React.FC = () => <ShopFrontPageContent />;
+const ShopFrontPage: React.FC = () => {
+  const { shopId } = useParams<{ shopId: string }>();
+  if (!shopId) return null;
+  return <ShopFrontPageContent key={shopId} shopId={shopId} />;
+};
 
 export default ShopFrontPage;

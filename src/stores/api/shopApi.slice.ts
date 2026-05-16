@@ -4,8 +4,8 @@ export const shopApi = createApi({
   reducerPath: 'shopApi',
   baseQuery: fetchBaseQuery({
     baseUrl: import.meta.env.VITE_API_BASE_URL || '',
-    prepareHeaders: (headers, { getState }) => {
-      const token = (getState() as any).auth?.accessToken;
+    prepareHeaders: (headers) => {
+      const token = localStorage.getItem('accessToken');
       if (token) {
         headers.set('Authorization', `Bearer ${token}`);
       }

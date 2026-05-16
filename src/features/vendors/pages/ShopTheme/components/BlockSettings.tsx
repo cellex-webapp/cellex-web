@@ -114,10 +114,6 @@ const BlockSettings: React.FC<BlockSettingsProps> = ({
         {/* ---- Banner fields ---- */}
         {block.type === 'banner' && (
           <>
-            <Form.Item name="imageUrl" label="Ảnh Banner" className="mb-2">
-              <Input placeholder="Nhập URL ảnh hoặc tải lên bên dưới" allowClear />
-            </Form.Item>
-
             <Form.Item className="mb-3">
               <Upload
                 name="file"

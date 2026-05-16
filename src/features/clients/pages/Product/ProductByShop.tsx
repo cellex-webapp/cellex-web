@@ -5,7 +5,11 @@ import ProductCard from '@/features/clients/components/Product/ProductCard';
 import ShopCard from '@/features/clients/components/Shop/ShopCard';
 import { useProduct } from '@/hooks/useProduct';
 
-const ProductByShop: React.FC = () => {
+interface ProductByShopProps {
+  hideShopCard?: boolean;
+}
+
+const ProductByShop: React.FC<ProductByShopProps> = ({ hideShopCard = false }) => {
   const params = useParams<Record<string, string | undefined>>();
   const shopIdParam = params.shopId ?? params.id ?? undefined;
 
@@ -39,9 +43,11 @@ const ProductByShop: React.FC = () => {
 
   return (
     <div className="max-w-6xl mx-auto py-6 space-y-6">
-      <div>
-        <ShopCard shopId={shopIdParam} showViewLink={false} />
-      </div>
+      {!hideShopCard && (
+        <div>
+          <ShopCard shopId={shopIdParam} showViewLink={false} />
+        </div>
+      )}
 
       <div className="bg-white rounded-lg p-4">
         {error && (

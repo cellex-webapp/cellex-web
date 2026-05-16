@@ -4,9 +4,10 @@ import ProductGridBlock from './blocks/ProductGridBlock';
 
 interface DynamicRendererProps {
   blocks: ILayoutSection[];
+  shopId: string;
 }
 
-const DynamicRenderer: React.FC<DynamicRendererProps> = ({ blocks }) => {
+const DynamicRenderer: React.FC<DynamicRendererProps> = ({ blocks, shopId }) => {
   if (!blocks?.length) {
     return (
       <div className="text-center py-16 text-gray-400">
@@ -19,16 +20,20 @@ const DynamicRenderer: React.FC<DynamicRendererProps> = ({ blocks }) => {
   return (
     <div className="flex flex-col gap-0">
       {blocks.map((block: ILayoutSection) => {
-        const childProps = {
-          data: { ...block },
-        };
+        const blockData = ((block as any).data ?? block) as Record<string, any>;
 
         switch (block.type) {
           case 'banner':
-            return <HeroBannerBlock key={block.id} {...childProps} />;
+            return <HeroBannerBlock key={block.id} data={blockData} />;
 
           case 'grid':
-            return <ProductGridBlock key={block.id} {...childProps} />;
+            return (
+              <ProductGridBlock
+                key={block.id}
+                data={blockData}
+                shopId={shopId}
+              />
+            );
 
           default:
             return null;

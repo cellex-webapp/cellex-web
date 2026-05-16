@@ -27,7 +27,7 @@ const initialState: ProductState = {
   comparisonData: null,
   isComparing: false,
   compareList: [],
-  pagination: { page: 1, limit: 10, total: 0 },
+  pagination: { page: 1, limit: 50, total: 0 },
   isLoading: false,
   error: null,
 };
