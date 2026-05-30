@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Typography, Card, Space, Badge, Button, Input, Tabs, List, Tag, Popconfirm, Pagination } from 'antd';
 import { useNotification } from '@/hooks/useNotification';
+import { useNavigate } from 'react-router-dom';
 
 const { Title, Text } = Typography;
 
@@ -27,6 +28,7 @@ const NotificationTab: React.FC = () => {
   const [size, setSize] = useState(10);
   const [query, setQuery] = useState('');
   const [tab, setTab] = useState<'ALL' | 'UNREAD'>('ALL');
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchNotifications(0, size);
@@ -75,8 +77,19 @@ const NotificationTab: React.FC = () => {
                 <Popconfirm title="Xóa thông báo?" onConfirm={() => deleteNotification(item.id)}><Button danger size="small" type="link">Xóa</Button></Popconfirm>,
               ].filter(Boolean)}
             >
-              <div 
+              <div
                 className={`w-full ${item.actionUrl ? 'cursor-pointer hover:bg-gray-50 -m-3 p-3 rounded transition-colors' : ''}`}
+                onClick={() => {
+                  if (!item.actionUrl) return;
+                  if (item.actionUrl.startsWith('http')) {
+                    window.open(item.actionUrl, '_blank', 'noopener,noreferrer');
+                  } else {
+                    navigate(item.actionUrl);
+                  }
+                  if (!item.isRead) {
+                    markAsRead(item.id);
+                  }
+                }}
               >
                 <Space direction="vertical" size={0} className="w-full">
                   <Space>

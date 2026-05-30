@@ -13,7 +13,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ roles }) => {
   const roleToHome = (role?: UserRole) => {
     const r = (role || '').toLowerCase();
     if (r === 'admin') return '/admin';
-    if (r === 'vendor') return '/vendor';
+    if (r === 'vendor' || r === 'staff') return '/vendor';
     return '/';
   };
 

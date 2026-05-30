@@ -96,7 +96,7 @@ const livestreamSlice = createSlice({
       })
       .addCase(fetchSessionProducts.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.sessionProducts = action.payload;
+        state.sessionProducts = action.payload as ILivestreamProduct[];
       })
       .addCase(fetchSessionProducts.rejected, (state, action) => {
         state.isLoading = false;

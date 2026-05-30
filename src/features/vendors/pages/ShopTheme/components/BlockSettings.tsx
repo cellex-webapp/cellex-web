@@ -3,7 +3,7 @@ import {
   App, Button, Divider, Form, Input, InputNumber, Spin, Typography, Upload,
 } from 'antd';
 import { ArrowLeftOutlined, PlusOutlined, SettingOutlined } from '@ant-design/icons';
-import type { UploadFile, RcFile } from 'antd/es/upload';
+import type { RcFile } from 'antd/es/upload';
 import uploadService from '@/services/upload.service';
 import type { CanvasBlock } from '../ShopThemeBuilderPage';
 

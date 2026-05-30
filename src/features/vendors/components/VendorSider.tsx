@@ -10,8 +10,13 @@ import {
   RobotOutlined,
   DatabaseOutlined,
 } from '@ant-design/icons';
+import { useAuth } from '@/hooks/useAuth';
 
 const { Sider } = Layout;
+
+type VendorSiderProps = {
+  staffPermissions: string[];
+};
 
 const MENU_CONFIG = [
   {
@@ -76,6 +81,16 @@ const MENU_CONFIG = [
     ],
   },
   {
+    key: 'staff',
+    label: 'Quản lý nhân viên',
+    icon: TeamOutlined,
+    children: [
+      { key: 'staff-roles', label: 'Vai trò', path: '/vendor/staff/roles' },
+      { key: 'staff-members', label: 'Nhân viên', path: '/vendor/staff/members' },
+      { key: 'staff-invitations', label: 'Lời mời', path: '/vendor/staff/invitations' },
+    ],
+  },
+  {
     key: 'ai',
     label: 'AI Assistant',
     icon: RobotOutlined,
@@ -96,10 +111,13 @@ MENU_CONFIG.forEach(parent => {
   }
 });
 
-const VendorSider: React.FC = () => {
+const VendorSider: React.FC<VendorSiderProps> = ({ staffPermissions }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { currentUser } = useAuth();
   const [openKeys, setOpenKeys] = useState<string[]>([]);
+
+  const hasPrefix = (prefix: string) => currentUser?.role !== 'STAFF' || staffPermissions.some(p => p.startsWith(prefix));
 
   const activeKeys = useMemo(() => {
     const match = pathKeyMap.get(location.pathname);
@@ -112,13 +130,25 @@ const VendorSider: React.FC = () => {
   useEffect(() => { setOpenKeys(activeKeys.open); }, [activeKeys.open]);
 
   const menuItems = useMemo(() => {
-    return MENU_CONFIG.map(item => ({
+    const filtered = MENU_CONFIG.filter((item) => {
+      if (item.key === 'product') return hasPrefix('PRODUCT:');
+      if (item.key === 'order') return hasPrefix('ORDER:');
+      if (item.key === 'inventory') return hasPrefix('INVENTORY:') || hasPrefix('SUPPLIER:');
+      if (item.key === 'customer') return hasPrefix('CHAT:') || hasPrefix('REVIEW:');
+      if (item.key === 'shop') return hasPrefix('SHOP:') || hasPrefix('SHOP_THEME:');
+      if (item.key === 'staff') return currentUser?.role !== 'STAFF';
+      if (item.key === 'ai') return currentUser?.role !== 'STAFF' || hasPrefix('CHAT:');
+      if (item.key === 'notification') return currentUser?.role !== 'STAFF';
+      if (item.key === 'dashboard') return currentUser?.role !== 'STAFF' || hasPrefix('ANALYTICS:');
+      return true;
+    });
+    return filtered.map(item => ({
       ...item,
       label: <span className="font-semibold">{item.label}</span>,
       icon: item.icon ? <item.icon /> : null,
       children: item.children?.map(child => ({ ...child, label: child.label })),
     }));
-  }, []);
+  }, [currentUser?.role, staffPermissions]);
 
   const handleMenuClick: MenuProps['onClick'] = ({ key }) => {
     for (const parent of MENU_CONFIG) {

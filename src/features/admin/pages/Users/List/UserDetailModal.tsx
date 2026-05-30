@@ -28,6 +28,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ userId, open, onClose
     const roleConfig = {
       ADMIN: { color: 'red', label: 'Admin' },
       VENDOR: { color: 'blue', label: 'Vendor' },
+      STAFF: { color: 'geekblue', label: 'Staff' },
       USER: { color: 'green', label: 'User' },
     };
     const config = roleConfig[role] || { color: 'default', label: role };

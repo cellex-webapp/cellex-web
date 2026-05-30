@@ -1,5 +1,5 @@
 declare global {
-    type UserRole = 'ADMIN' | 'USER' | 'VENDOR';
+    type UserRole = 'ADMIN' | 'USER' | 'VENDOR' | 'STAFF';
     type StatusVerification = 'PENDING' | 'APPROVED' | 'REJECTED';
     type DataType = 'TEXT' | 'NUMBER' | 'BOOLEAN' | 'SELECT' | 'MULTI_SELECT';
     type CartUpdateAction = 'INCREASE' | 'DECREASE';
@@ -17,7 +17,7 @@ declare global {
     type TrendType = 'UP' | 'DOWN' | 'STABLE';
     type MetricType = 'NUMBER' | 'CURRENCY';
     type ChartType = 'LINE' | 'AREA' | 'BAR' | 'PIE';
-    type PartnerRole = 'ADMIN' | 'USER' | 'VENDOR';
+    type PartnerRole = 'ADMIN' | 'USER' | 'VENDOR' | 'STAFF';
     type MessageType = 'TEXT' | 'IMAGE' | 'FILE' | 'SYSTEM';
     type MessageStatus = 'SENT' | 'DELIVERED' | 'READ';
     type AIMessageType = 'USER' | 'AI' | 'SYSTEM';

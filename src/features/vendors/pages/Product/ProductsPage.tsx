@@ -7,6 +7,7 @@ import ProductFormModal from './ProductFormModal';
 import ProductDetailModal from './ProductDetailModal';
 import { shopService } from '@/services/shop.service';
 import { useDebounce } from '@/hooks/useDebounce';
+import { usePermission } from '@/hooks/usePermission';
 
 const ProductPageContent: React.FC = () => {
     const { message, modal } = App.useApp();
@@ -18,6 +19,10 @@ const ProductPageContent: React.FC = () => {
     const debouncedQ = useDebounce(q, 350);
 
     const { products, isLoading, pagination, fetchMyProducts, updateProduct, createProduct, deleteProduct } = useProduct();
+    const canCreate = usePermission('PRODUCT:CREATE');
+    const canUpdate = usePermission('PRODUCT:UPDATE');
+    const canDelete = usePermission('PRODUCT:DELETE');
+    const noPermissionTitle = 'Bạn không có quyền này';
 
     const [shopVerified, setShopVerified] = useState<boolean>(false);
     const [page, setPage] = useState(1);
@@ -207,28 +212,34 @@ const ProductPageContent: React.FC = () => {
             fixed: 'right',
             render: (_: any, record: IProduct) => (
                 <Space size="small">
-                    <Tooltip title="Chỉnh sửa">
-                        <Button
-                            type="text"
-                            size="small"
-                            icon={<EditOutlined className='!text-blue-500' />}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                handleOpenModalForEdit(record);
-                            }}
-                        />
+                    <Tooltip title={canUpdate ? 'Chỉnh sửa' : noPermissionTitle}>
+                        <span>
+                            <Button
+                                type="text"
+                                size="small"
+                                disabled={!canUpdate}
+                                icon={<EditOutlined className='!text-blue-500' />}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleOpenModalForEdit(record);
+                                }}
+                            />
+                        </span>
                     </Tooltip>
-                    <Tooltip title="Xóa">
-                        <Button
-                            type="text"
-                            size="small"
-                            danger
-                            icon={<DeleteOutlined className='!text-red-500' />}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                handleDelete(record.id);
-                            }}
-                        />
+                    <Tooltip title={canDelete ? 'Xóa' : noPermissionTitle}>
+                        <span>
+                            <Button
+                                type="text"
+                                size="small"
+                                danger
+                                disabled={!canDelete}
+                                icon={<DeleteOutlined className='!text-red-500' />}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDelete(record.id);
+                                }}
+                            />
+                        </span>
                     </Tooltip>
                 </Space>
             ),
@@ -240,19 +251,21 @@ const ProductPageContent: React.FC = () => {
             <div className="bg-white rounded-lg p-4 shadow-sm">
                 <div className="mb-4 flex items-center justify-between gap-3">
                     <h3 className="text-xl font-semibold text-gray-800">Quản lý Sản phẩm</h3>
-                    <Tooltip title={shopVerified ? 'Tạo sản phẩm mới' : 'Cửa hàng chưa được xác minh - không thể tạo sản phẩm'}>
-                        <Button
-                            type="primary"
-                            className="!bg-indigo-600"
-                            icon={<PlusOutlined />}
-                            disabled={!shopVerified}
-                            onClick={() => {
-                                setEditingProduct(null);
-                                setModalOpen(true);
-                            }}
-                        >
-                            Thêm sản phẩm
-                        </Button>
+                    <Tooltip title={!canCreate ? noPermissionTitle : (shopVerified ? 'Tạo sản phẩm mới' : 'Cửa hàng chưa được xác minh - không thể tạo sản phẩm')}>
+                        <span>
+                            <Button
+                                type="primary"
+                                className="!bg-indigo-600"
+                                icon={<PlusOutlined />}
+                                disabled={!shopVerified || !canCreate}
+                                onClick={() => {
+                                    setEditingProduct(null);
+                                    setModalOpen(true);
+                                }}
+                            >
+                                Thêm sản phẩm
+                            </Button>
+                        </span>
                     </Tooltip>
                 </div>
 
