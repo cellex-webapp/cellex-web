@@ -84,7 +84,7 @@ const LoginPage: React.FC = () => {
       const role = (authResult.user?.role || '').toLowerCase();
       if (role === 'admin') {
         navigate('/admin');
-      } else if (role === 'vendor') {
+      } else if (role === 'vendor' || role === 'staff') {
         navigate('/vendor');
       } else {
         navigate('/');

@@ -64,6 +64,10 @@ import ActiveSessionsPage from '@/features/clients/pages/Livestream/ActiveSessio
 import SuppliersPage from '@/features/admin/pages/Inventory/SuppliersPage';
 import InventoryImportPage from '@/features/admin/pages/Inventory/InventoryImportPage';
 import InventoryCheckPage from '@/features/admin/pages/Inventory/InventoryCheckPage';
+import StaffRolesPage from '@/features/vendors/pages/Staff/StaffRolesPage';
+import StaffMembersPage from '@/features/vendors/pages/Staff/StaffMembersPage';
+import StaffInvitationsPage from '@/features/vendors/pages/Staff/StaffInvitationsPage';
+import InvitationsPage from '@/pages/InvitationsPage';
 
 const router = createBrowserRouter([
   {
@@ -121,6 +125,7 @@ const router = createBrowserRouter([
           { path: 'products/:id', element: <ProductDetailPage /> },
           { path: 'recommendations', element: <AllRecommendationsPage /> },
           { path: 'account', element: <AccountManagementPage /> },
+          { path: 'invitations', element: <InvitationsPage /> },
           { path: 'cart', element: <CartPage /> },
           { path: 'order/confirm/:orderId', element: <OrderConfirmPage /> },
           { path: 'payment/vnpay/return', element: <VnpayReturnPage /> },
@@ -135,7 +140,7 @@ const router = createBrowserRouter([
     ],
   },
   {
-    element: <ProtectedRoute roles={['VENDOR']} />,
+    element: <ProtectedRoute roles={['VENDOR', 'STAFF']} />,
     children: [
       {
         path: '/vendor',
@@ -157,6 +162,9 @@ const router = createBrowserRouter([
           { path: 'suppliers', element: <SuppliersPage /> },
           { path: 'inventory/import', element: <InventoryImportPage /> },
           { path: 'inventory/check', element: <InventoryCheckPage /> },
+          { path: 'staff/roles', element: <StaffRolesPage /> },
+          { path: 'staff/members', element: <StaffMembersPage /> },
+          { path: 'staff/invitations', element: <StaffInvitationsPage /> },
         ],
       },
     ],

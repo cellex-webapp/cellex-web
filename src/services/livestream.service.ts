@@ -12,7 +12,7 @@ export const livestreamService = {
   },
 
   getSessionProducts: async (sessionId: string) => {
-    const response = await axiosInstance.get<IApiResponse<IProduct[]>>(`/livestream/sessions/${sessionId}/products`);
+    const response = await axiosInstance.get<IApiResponse<ILivestreamProduct[]>>(`/livestream/sessions/${sessionId}/products`);
     return response.data;
   }
 };
