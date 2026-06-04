@@ -1,6 +1,8 @@
 import AppRoute from './routes/AppRoute';
 import { App as AntApp, message } from 'antd'; 
 
+import { PendingPaymentProvider } from './contexts/PendingPaymentContext';
+
 function App() {
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -13,7 +15,9 @@ function App() {
   return (
     <AntApp>
       {contextHolder}
-      <AppRoute />
+      <PendingPaymentProvider>
+        <AppRoute />
+      </PendingPaymentProvider>
     </AntApp>
   );
 }

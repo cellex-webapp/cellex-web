@@ -819,6 +819,7 @@ declare global {
         confirmed_at: string | null;
         shipping_at: string | null;
         delivered_at: string | null;
+        payment_expires_at: string | null;
         created_at: string;
         updated_at: string;
     }

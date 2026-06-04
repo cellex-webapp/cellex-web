@@ -77,6 +77,16 @@ export const orderService = {
     const resp = await axiosInstance.get<IApiResponse<IPage<IOrder>>>('/orders/admin/all', { params });
     return resp.data;
   },
+
+  // PENDING PAYMENT
+  getPendingPaymentOrders: async (): Promise<IOrder[]> => {
+    const resp = await axiosInstance.get<IOrder[]>('/orders/pending-payment');
+    return resp.data;
+  },
+  getRepaymentUrl: async (orderId: string): Promise<any> => {
+    const resp = await axiosInstance.post<any>(`/orders/pending-payment/${orderId}/payment-url`);
+    return resp.data;
+  },
 };
 
 export default orderService;

@@ -7,6 +7,7 @@ import logo from '@/assets/logo/cellex.png';
 import { SearchOutlined, UserOutlined, ShoppingCartOutlined, BellOutlined, MessageOutlined, AudioOutlined, VideoCameraOutlined } from '@ant-design/icons';
 import { Badge } from 'antd';
 import { CategoryMegaMenu } from '@/features/clients/components/Category/CategoryMegaMenu';
+import ImageSearch from '@/features/clients/components/Search/ImageSearch';
 import { useCart } from '@/hooks/useCart';
 import { useVoiceSearch } from '@/hooks/useVoiceSearch';
 
@@ -136,6 +137,14 @@ const Header: React.FC<HeaderProps> = ({ hideSearchBar = false }) => {
                 <AudioOutlined className="text-base md:text-lg" />
               </button>
             )}
+            <ImageSearch 
+              onResults={(products) => {
+                navigate('/search', { state: { imageSearchResults: products } });
+              }}
+              onLoading={() => {
+                // Có thể xử lý loading ở header nếu cần
+              }}
+            />
             <button type="submit" aria-label="Tìm kiếm" className="text-gray-500 hover:text-gray-700">
               <SearchOutlined className="text-base md:text-lg" />
             </button>
