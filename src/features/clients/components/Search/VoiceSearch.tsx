@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useVoiceSearch } from '@/hooks/useVoiceSearch';
+import ImageSearch from './ImageSearch';
 
 interface VoiceSearchProps {
 	onSearch?: (query: string) => void;
@@ -162,6 +163,16 @@ const VoiceSearch: React.FC<VoiceSearchProps> = ({
 							)}
 						</button>
 					)}
+
+					{/* Image Search Button */}
+					<div className="mr-2">
+						<ImageSearch 
+							onResults={(products) => {
+								navigate('/search', { state: { imageSearchResults: products } });
+							}}
+							onLoading={() => {}}
+						/>
+					</div>
 
 					{/* Search Button */}
 					<button

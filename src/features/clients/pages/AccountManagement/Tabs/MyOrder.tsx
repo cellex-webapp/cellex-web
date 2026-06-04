@@ -6,6 +6,7 @@ import { formatDateVN } from '@/utils/date';
 import { useAppSelector } from '@/hooks/redux';
 import { selectMyOrderPageMeta } from '@/stores/selectors/order.selector';
 import { reviewService } from '@/services/review.service';
+import { orderService } from '@/services/order.service';
 import { ReviewForm } from '@/features/clients/components/Review';
 
 const { Title, Text } = Typography;
@@ -430,7 +431,20 @@ const MyOrder: React.FC = () => {
             <div className="pt-4 grid grid-cols-2 gap-3">
                {selectedOrder.status === 'PENDING' && (
                  <>
-                   <Button block type="primary" size="large" onClick={() => doCheckout(selectedOrder.id)}>Thanh toán ngay</Button>
+                   {selectedOrder.payment_method === 'VNPAY' ? (
+                     <Button block type="primary" size="large" onClick={async () => {
+                       try {
+                         const resp = await orderService.getRepaymentUrl(selectedOrder.id);
+                         if (resp?.paymentUrl) {
+                           window.location.href = resp.paymentUrl;
+                         }
+                       } catch (error) {
+                         message.error('Không thể tạo lại link thanh toán. Đơn hàng có thể đã hết hạn.');
+                       }
+                     }}>Thanh toán ngay</Button>
+                   ) : (
+                     <Button block type="primary" size="large" onClick={() => doCheckout(selectedOrder.id)}>Xác nhận đặt hàng</Button>
+                   )}
                    <Button block danger size="large" onClick={() => doCancel(selectedOrder.id)}>Hủy đơn</Button>
                    {/* <Button block onClick={() => { setCouponCode(''); setApplyOpen(true); }}>Áp mã giảm giá</Button> */}
                    {selectedOrder.coupon_code && <Button block danger onClick={() => removeCouponFromOrder(selectedOrder.id)}>Gỡ mã</Button>}
