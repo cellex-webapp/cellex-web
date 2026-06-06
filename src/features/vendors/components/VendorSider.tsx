@@ -51,6 +51,7 @@ const MENU_CONFIG = [
     children: [
       { key: 'customer-message', label: 'Quản lý tin nhắn', path: '/vendor/chat' },
       { key: 'customer-rating', label: 'Quản lý đánh giá', path: '/vendor/reviews' },
+      { key: 'customer-warranty', label: 'Quản lý bảo hành', path: '/vendor/warranty' },
     ],
   },
   {
@@ -134,7 +135,7 @@ const VendorSider: React.FC<VendorSiderProps> = ({ staffPermissions }) => {
       if (item.key === 'product') return hasPrefix('PRODUCT:');
       if (item.key === 'order') return hasPrefix('ORDER:');
       if (item.key === 'inventory') return hasPrefix('INVENTORY:') || hasPrefix('SUPPLIER:');
-      if (item.key === 'customer') return hasPrefix('CHAT:') || hasPrefix('REVIEW:');
+      if (item.key === 'customer') return hasPrefix('CHAT:') || hasPrefix('REVIEW:') || hasPrefix('WARRANTY:');
       if (item.key === 'shop') return hasPrefix('SHOP:') || hasPrefix('SHOP_THEME:');
       if (item.key === 'staff') return currentUser?.role !== 'STAFF';
       if (item.key === 'ai') return currentUser?.role !== 'STAFF' || hasPrefix('CHAT:');

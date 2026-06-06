@@ -10,6 +10,7 @@ import {
   EnvironmentOutlined,
   LogoutOutlined,
   StarOutlined,
+  SafetyCertificateOutlined,
 } from '@ant-design/icons';
 import { useAuth } from '@/hooks/useAuth';
 import UserInformation from './Tabs/UserInformation';
@@ -20,6 +21,7 @@ import VendorRegistration from './Tabs/VendorRegistration';
 import NotificationTab from './Tabs/Notification';
 import Chat from './Tabs/Chat';
 import Address from './Tabs/Address';
+import MyWarranty from './Tabs/MyWarranty';
 
 const { Content, Sider } = Layout;
 const { Title, Text } = Typography;
@@ -88,6 +90,7 @@ const AccountManagementPage: React.FC = () => {
   const menuItems = [
     { key: 'personal-info', icon: <SolutionOutlined />, label: 'Thông tin cá nhân' },
     { key: 'orders', icon: <UserOutlined />, label: 'Đơn hàng của tôi' },
+    { key: 'warranty', icon: <SafetyCertificateOutlined />, label: 'Quản lý bảo hành' },
     { key: 'reviews', icon: <StarOutlined />, label: 'Đánh giá của tôi' },
     { key: 'seller-channel', icon: <ShopOutlined />, label: 'Kênh Người bán' },
     { key: 'notifications', icon: <NotificationOutlined />, label: 'Trung tâm thông báo' },
@@ -104,6 +107,9 @@ const AccountManagementPage: React.FC = () => {
 
       case 'orders':
         return <MyOrder />;
+
+      case 'warranty':
+        return <MyWarranty />;
 
       case 'reviews':
         return <MyReviews />;
@@ -184,7 +190,7 @@ const AccountManagementPage: React.FC = () => {
           </div>
         </Sider>
 
-        <Content className="overflow-y-hidden !bg-slate-50">
+        <Content className="!bg-slate-50">
           <div className="min-h-full rounded-lg bg-white shadow-2xl ring-1 ring-black/5">
             <div id={activeKey}>
               {renderContent()}

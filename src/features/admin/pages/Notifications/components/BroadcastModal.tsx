@@ -19,7 +19,11 @@ const TYPE_LABELS: Record<NotificationType, string> = {
   PROMOTION: 'Chương trình khuyến mãi',
   PRODUCT_RESTOCK: 'Hàng đã về',
   REVIEW_REQUEST: 'Yêu cầu đánh giá',
+  REVIEW: 'Đánh giá',
   CUSTOM: 'Tùy chỉnh (Khác)',
+  CHAT_MESSAGE: 'Tin nhắn',
+  WARRANTY_CREATED: 'Yêu cầu bảo hành',
+  WARRANTY_UPDATED: 'Cập nhật bảo hành',
 };
 
 const NotificationTypeOptions = Object.entries(TYPE_LABELS).map(([value, label]) => ({

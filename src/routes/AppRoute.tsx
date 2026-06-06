@@ -67,6 +67,7 @@ import InventoryCheckPage from '@/features/admin/pages/Inventory/InventoryCheckP
 import StaffRolesPage from '@/features/vendors/pages/Staff/StaffRolesPage';
 import StaffMembersPage from '@/features/vendors/pages/Staff/StaffMembersPage';
 import StaffInvitationsPage from '@/features/vendors/pages/Staff/StaffInvitationsPage';
+import WarrantyManagementPage from '@/features/vendors/pages/Warranty/WarrantyManagementPage';
 import InvitationsPage from '@/pages/InvitationsPage';
 
 const router = createBrowserRouter([
@@ -165,6 +166,7 @@ const router = createBrowserRouter([
           { path: 'staff/roles', element: <StaffRolesPage /> },
           { path: 'staff/members', element: <StaffMembersPage /> },
           { path: 'staff/invitations', element: <StaffInvitationsPage /> },
+          { path: 'warranty', element: <WarrantyManagementPage /> },
         ],
       },
     ],
