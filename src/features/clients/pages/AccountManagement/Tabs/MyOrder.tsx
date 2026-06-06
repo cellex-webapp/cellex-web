@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button, Drawer, Input, Modal, Space, Table, Tag, Typography, message, Select, Avatar, Divider, Card, Tooltip } from 'antd';
-import { EyeOutlined, SearchOutlined, FilterOutlined, StarOutlined, CheckCircleOutlined, FormOutlined } from '@ant-design/icons';
+import { EyeOutlined, SearchOutlined, FilterOutlined, StarOutlined, CheckCircleOutlined, FormOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
 import { useOrder } from '@/hooks/useOrder';
 import { formatDateVN } from '@/utils/date';
 import { useAppSelector } from '@/hooks/redux';
@@ -8,6 +8,8 @@ import { selectMyOrderPageMeta } from '@/stores/selectors/order.selector';
 import { reviewService } from '@/services/review.service';
 import { orderService } from '@/services/order.service';
 import { ReviewForm } from '@/features/clients/components/Review';
+import { WarrantyForm } from '@/features/clients/components/Warranty/WarrantyForm';
+import { warrantyService } from '@/services/warranty.service';
 
 const { Title, Text } = Typography;
 
@@ -61,6 +63,17 @@ const MyOrder: React.FC = () => {
   const [selectedOrderForReview, setSelectedOrderForReview] = useState<IOrder | null>(null);
   const [orderReviews, setOrderReviews] = useState<Map<string, Set<string>>>(new Map()); // orderId -> Set of reviewedProductIds
   const [loadingReviews, setLoadingReviews] = useState<Set<string>>(new Set());
+  // Warranty states
+  const [warrantyModalOpen, setWarrantyModalOpen] = useState(false);
+  const [selectedItemForWarranty, setSelectedItemForWarranty] = useState<IOrderItem | null>(null);
+
+  const handleOpenWarrantyModal = (item: IOrderItem) => {
+    // Lưu ý: Đảm bảo 백end của bạn trả về `item.id` (UUID của OrderItem). 
+    // Theo type hiện tại, `IOrderItem` của bạn chưa có `id`. Nếu backend có trả `id`, bạn cần thêm vào type.
+    // Tạm thời ở đây mình giả định bạn dùng `item.product_id` làm key, nhưng API cần UUID của OrderItem.
+    setSelectedItemForWarranty(item);
+    setWarrantyModalOpen(true);
+  };
 
   useEffect(() => { if (error) message.error(error); }, [error]);
 
@@ -71,15 +84,15 @@ const MyOrder: React.FC = () => {
   useEffect(() => { load(); }, [load]);
 
   const rawData = useMemo(() => Array.isArray(myOrders?.content) ? myOrders!.content : [], [myOrders]);
-  
+
   const data = useMemo(() => {
     return rawData.filter(o => {
       const matchStatus = statusFilter === 'ALL' || o.status === statusFilter;
       const kw = search.trim().toLowerCase();
-      const matchSearch = !kw || 
+      const matchSearch = !kw ||
         o.order_code?.toLowerCase().includes(kw) ||
-        o.id.toLowerCase().includes(kw) || 
-        o.shop?.shop_name?.toLowerCase().includes(kw) || 
+        o.id.toLowerCase().includes(kw) ||
+        o.shop?.shop_name?.toLowerCase().includes(kw) ||
         (o.items || []).some(it => it.product_name.toLowerCase().includes(kw));
       return matchStatus && matchSearch;
     });
@@ -90,7 +103,7 @@ const MyOrder: React.FC = () => {
   // Fetch reviews for delivered orders to check which products have been reviewed
   const fetchOrderReviews = useCallback(async (orderId: string) => {
     if (loadingReviews.has(orderId) || orderReviews.has(orderId)) return;
-    
+
     setLoadingReviews(prev => new Set(prev).add(orderId));
     try {
       const response = await reviewService.getOrderReviews(orderId);
@@ -143,7 +156,7 @@ const MyOrder: React.FC = () => {
     setSelectedProductForReview(null);
     setSelectedOrderForReview(null);
     message.success('Đánh giá của bạn đã được gửi thành công!');
-    
+
     // Update the orderReviews to mark this product as reviewed
     if (selectedOrderForReview && selectedProductForReview) {
       setOrderReviews(prev => {
@@ -160,7 +173,7 @@ const MyOrder: React.FC = () => {
   const handleQuickReview = async (order: IOrder) => {
     // Find the first unreviewed product
     const unreviewedItem = order.items?.find(item => !isProductReviewed(order.id, item.product_id));
-    
+
     if (unreviewedItem) {
       setSelectedOrderForReview(order);
       setSelectedProductForReview(unreviewedItem);
@@ -194,10 +207,10 @@ const MyOrder: React.FC = () => {
       width: 280,
       render: (_: any, r: IOrder) => (
         <Space align="start" size={12}>
-          <Avatar 
-            shape="square" 
-            size={48} 
-            src={r.items?.[0]?.product_image} 
+          <Avatar
+            shape="square"
+            size={48}
+            src={r.items?.[0]?.product_image}
             className="bg-gray-100 border border-gray-200"
           />
           <Space direction="vertical" size={0}>
@@ -262,22 +275,40 @@ const MyOrder: React.FC = () => {
           {/* Review button for DELIVERED orders with unreviewed products */}
           {r.status === 'DELIVERED' && hasUnreviewedProducts(r) && (
             <Tooltip title="Đánh giá sản phẩm">
-              <Button 
-                type="text" 
-                icon={<FormOutlined className="text-orange-500" />} 
+              <Button
+                type="text"
+                icon={<FormOutlined className="text-orange-500" />}
                 onClick={() => handleQuickReview(r)}
                 className="hover:!text-orange-600 hover:!bg-orange-50"
               />
             </Tooltip>
           )}
           <Tooltip title="Xem chi tiết">
-            <Button 
-              type="text" 
-              icon={<EyeOutlined className="text-gray-500" />} 
+            <Button
+              type="text"
+              icon={<EyeOutlined className="text-gray-500" />}
               onClick={() => { fetchOrderById(r.id); setOpen(true); }}
               className="hover:!text-blue-600 hover:!bg-blue-50"
             />
           </Tooltip>
+          {r.status === 'DELIVERED' && (
+            <Tooltip title="Yêu cầu bảo hành">
+              <Button
+                type="text"
+                icon={<SafetyCertificateOutlined className="text-blue-500" />}
+                onClick={() => {
+                  const firstUnreviewedItem = r.items?.find(item => !isProductReviewed(r.id, item.product_id));
+                  if (firstUnreviewedItem) {
+                    handleOpenWarrantyModal(firstUnreviewedItem);
+                  } else {
+                    message.info('Không tìm thấy sản phẩm nào để yêu cầu bảo hành');
+                  }
+                }}
+                className="hover:!text-blue-600 hover:!bg-blue-50"
+              />
+            </Tooltip>
+          )}
+
         </Space>
       ),
     },
@@ -292,13 +323,13 @@ const MyOrder: React.FC = () => {
             <Text type="secondary">Quản lý và theo dõi trạng thái đơn hàng</Text>
           </div>
           <Space>
-             {/* Thêm các button global actions nếu cần */}
+            {/* Thêm các button global actions nếu cần */}
           </Space>
         </div>
 
-        <Card 
-          bordered={false} 
-          className="shadow-sm rounded-lg overflow-hidden" 
+        <Card
+          bordered={false}
+          className="shadow-sm rounded-lg overflow-hidden"
           bodyStyle={{ padding: '0' }} // Reset padding card để table full width đẹp hơn
         >
           {/* Filter Section */}
@@ -329,13 +360,13 @@ const MyOrder: React.FC = () => {
             columns={columns as any}
             size="middle" // Dùng middle để cân đối, không quá to như default
             scroll={{ x: 1000 }}
-            rowClassName={(record: IOrder) => 
+            rowClassName={(record: IOrder) =>
               hasUnreviewedProducts(record) ? 'bg-orange-50 hover:!bg-orange-100' : ''
             }
-            pagination={{ 
-              current: page, 
-              pageSize, 
-              total: myMeta.totalElements, 
+            pagination={{
+              current: page,
+              pageSize,
+              total: myMeta.totalElements,
               showSizeChanger: true,
               showTotal: (total) => `Tổng ${total} đơn hàng`,
               className: "p-4 !m-0 flex justify-end" // Padding cho pagination
@@ -346,11 +377,11 @@ const MyOrder: React.FC = () => {
       </Space>
 
       {/* Drawer Chi tiết */}
-      <Drawer 
-        title={<span className="font-bold text-lg">Chi tiết đơn hàng</span>} 
-        placement="right" 
-        width={600} 
-        onClose={() => setOpen(false)} 
+      <Drawer
+        title={<span className="font-bold text-lg">Chi tiết đơn hàng</span>}
+        placement="right"
+        width={600}
+        onClose={() => setOpen(false)}
         open={open}
         extra={<Tag color={statusColor[selectedOrder?.status || '']}>{statusLabel[selectedOrder?.status || ''] || selectedOrder?.status}</Tag>}
       >
@@ -370,7 +401,7 @@ const MyOrder: React.FC = () => {
                 <Text type="secondary" className="text-xs uppercase block mb-1">Cửa hàng</Text>
                 <Text className="text-blue-600">{selectedOrder.shop_name}</Text>
               </div>
-               <div>
+              <div>
                 <Text type="secondary" className="text-xs uppercase block mb-1">Thanh toán</Text>
                 <Text>{selectedOrder.payment_method}</Text>
               </div>
@@ -392,19 +423,34 @@ const MyOrder: React.FC = () => {
                           <div className="flex items-center gap-2">
                             <Text strong>{currency(i.subtotal)}</Text>
                             {selectedOrder.status === 'DELIVERED' && (
-                              reviewed ? (
-                                <Tag color="green" icon={<CheckCircleOutlined />} className="!m-0">Đã đánh giá</Tag>
-                              ) : (
-                                <Button 
-                                  type="link" 
-                                  size="small" 
-                                  icon={<StarOutlined />}
-                                  className="!p-0 text-orange-500 hover:!text-orange-600"
-                                  onClick={() => handleOpenReviewModal(selectedOrder, i)}
+                              <>
+                                {/* Nút Đánh giá (Giữ nguyên) */}
+                                {reviewed ? (
+                                  <Tag color="green" icon={<CheckCircleOutlined />} className="!m-0">Đã đánh giá</Tag>
+                                ) : (
+                                  <Button
+                                    type="link"
+                                    size="small"
+                                    icon={<StarOutlined />}
+                                    className="!p-0 text-orange-500 hover:!text-orange-600"
+                                    onClick={() => handleOpenReviewModal(selectedOrder, i)}
+                                  >
+                                    Đánh giá
+                                  </Button>
+                                )}
+
+                                {/* THÊM NÚT BẢO HÀNH */}
+                                <span className="text-gray-300 mx-2">|</span>
+                                <Button
+                                  type="link"
+                                  size="small"
+                                  icon={<SafetyCertificateOutlined />}
+                                  className="!p-0 text-blue-500 hover:!text-blue-600"
+                                  onClick={() => handleOpenWarrantyModal(i)}
                                 >
-                                  Đánh giá
+                                  Bảo hành
                                 </Button>
-                              )
+                              </>
                             )}
                           </div>
                         </div>
@@ -476,14 +522,54 @@ const MyOrder: React.FC = () => {
         centered
       >
         <div className="py-4">
-           <Input 
-             size="large" 
-             placeholder="Nhập mã voucher (VD: SUMMER2024)" 
-             value={couponCode} 
-             onChange={(e) => setCouponCode(e.target.value.toUpperCase())} 
-             prefix={<Tag color="blue">VOUCHER</Tag>}
-           />
+          <Input
+            size="large"
+            placeholder="Nhập mã voucher (VD: SUMMER2024)"
+            value={couponCode}
+            onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+            prefix={<Tag color="blue">VOUCHER</Tag>}
+          />
         </div>
+      </Modal>
+
+      {/* Warranty Modal */}
+      <Modal
+        title={
+          <div className="flex items-center gap-2">
+            <SafetyCertificateOutlined className="text-blue-500" />
+            <span>Yêu cầu bảo hành</span>
+          </div>
+        }
+        open={warrantyModalOpen}
+        onCancel={() => {
+          setWarrantyModalOpen(false);
+          setSelectedItemForWarranty(null);
+        }}
+        footer={null}
+        width={500}
+        centered
+        destroyOnClose
+      >
+        {selectedItemForWarranty && (
+          <WarrantyForm
+            orderItemId={selectedItemForWarranty.id || ''}
+            productName={selectedItemForWarranty.product_name}
+            onSubmit={async (data) => {
+              try {
+                if (!data.orderItemId) {
+                  message.error('Không lấy được ID vật phẩm đơn hàng từ dữ liệu đơn hàng');
+                  return;
+                }
+                await warrantyService.createClaim(data);
+                message.success('Đã gửi yêu cầu bảo hành thành công!');
+                setWarrantyModalOpen(false);
+              } catch (err: any) {
+                message.error(err?.response?.data?.message || 'Không thể gửi yêu cầu');
+              }
+            }}
+            onCancel={() => setWarrantyModalOpen(false)}
+          />
+        )}
       </Modal>
 
       {/* Review Modal */}

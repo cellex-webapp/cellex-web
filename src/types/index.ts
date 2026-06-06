@@ -13,7 +13,7 @@ declare global {
     type DayOfWeek = 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
     type OrderStatus = 'PENDING' | 'CONFIRMED' | 'SHIPPING' | 'DELIVERED' | 'CANCELLED';
     type PaymentMethod = 'COD' | 'VNPAY';
-    type NotificationType = 'SYSTEM' | 'ORDER_CREATED' | 'ORDER_CONFIRMED' | 'ORDER_SHIPPING' | 'ORDER_DELIVERED' | 'ORDER_CANCELLED' | 'PAYMENT_SUCCESS' | 'PAYMENT_FAILED' | 'COUPON_AVAILABLE' | 'PROMOTION' | 'PRODUCT_RESTOCK' | 'REVIEW_REQUEST' | 'CUSTOM';
+    type NotificationType = 'SYSTEM' | 'ORDER_CREATED' | 'ORDER_CONFIRMED' | 'ORDER_SHIPPING' | 'ORDER_DELIVERED' | 'ORDER_CANCELLED' | 'PAYMENT_SUCCESS' | 'PAYMENT_FAILED' | 'COUPON_AVAILABLE' | 'PROMOTION' | 'PRODUCT_RESTOCK' | 'REVIEW_REQUEST' | 'REVIEW' | 'CUSTOM' | 'CHAT_MESSAGE' | 'WARRANTY_CREATED' | 'WARRANTY_UPDATED';
     type TrendType = 'UP' | 'DOWN' | 'STABLE';
     type MetricType = 'NUMBER' | 'CURRENCY';
     type ChartType = 'LINE' | 'AREA' | 'BAR' | 'PIE';
@@ -23,6 +23,8 @@ declare global {
     type AIMessageType = 'USER' | 'AI' | 'SYSTEM';
     type AIResponseType = 'TEXT' | 'PRODUCT_LIST' | 'CHART' | 'TABLE' | 'COUPON' | 'MIXED';
     type LivestreamStatus = 'PENDING' | 'LIVE' | 'ENDED';
+    type WarrantyStatus = 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'REJECTED';
+    type WarrantyType = 'REPAIR' | 'REPLACEMENT' | 'REFUND';
 
     interface IPaginatedResult<T> {
         content: T[];
@@ -775,6 +777,7 @@ declare global {
 
     // Orders
     interface IOrderItem {
+        id?: string;
         price: number;
         quantity: number;
         subtotal: number;
@@ -1794,6 +1797,60 @@ declare global {
         sessionProducts: ILivestreamProduct[];
         isLoading: boolean;
         error: string | null;
+    }
+
+    interface IWarrantyPolicy {
+        id: string;
+        productId: string;
+        durationMonths: number;
+        type: WarrantyType;
+        terms: string;
+        createdAt: string;
+        updatedAt: string;
+    }
+
+    interface IWarrantyClaim {
+        id: string;
+        orderItemId: string;
+        userId: string;
+        shopId: string;
+        status: WarrantyStatus;
+        issueDescription: string;
+        images: string; // JSON string chứa mảng URL ảnh
+        shopResponse?: string;
+        createdAt: string;
+        updatedAt: string;
+    }
+
+    interface ICreateWarrantyClaimRequest {
+        orderItemId: string;
+        issueDescription: string;
+        images?: string[]; // Mảng URL ảnh
+    }
+
+    // Chi tiết phiếu bảo hành (dành cho vendor/admin)
+    interface IWarrantyClaimDetail {
+        id: string;
+        orderItemId: string;
+        userId: string;
+        shopId: string;
+        status: WarrantyStatus;
+        issueDescription: string;
+        images: string[]; // Mảng URL ảnh đã parse từ jsonb
+        shopResponse?: string;
+        createdAt: string;
+        updatedAt: string;
+        // Thông tin liên kết
+        userName?: string;
+        userEmail?: string;
+        productName?: string;
+        productImage?: string;
+        orderCode?: string;
+    }
+
+    interface IRespondWarrantyClaimRequest {
+        status: WarrantyStatus;
+        shopResponse?: string;
     }
 }
 

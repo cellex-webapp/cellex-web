@@ -9,6 +9,8 @@ const TYPE_COLOR: Record<string, string> = {
   GENERAL: 'blue',
   SYSTEM: 'purple',
   PROMOTION: 'green',
+  WARRANTY_CREATED: 'volcano',
+  WARRANTY_UPDATED: 'cyan',
 };
 
 const VendorNotificationsPage: React.FC = () => {

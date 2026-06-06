@@ -6,19 +6,23 @@ import BroadcastModal from './components/BroadcastModal';
 const { Title, Text } = Typography;
 
 const TYPE_COLOR: Record<NotificationType, string> = {
-  SYSTEM: 'purple',           
-  ORDER_CREATED: 'blue',      
-  ORDER_CONFIRMED: 'cyan',    
-  ORDER_SHIPPING: 'geekblue', 
-  ORDER_DELIVERED: 'green',   
-  ORDER_CANCELLED: 'red',     
-  PAYMENT_SUCCESS: 'success', 
-  PAYMENT_FAILED: 'error',    
-  COUPON_AVAILABLE: 'gold',   
-  PROMOTION: 'orange',        
-  PRODUCT_RESTOCK: 'magenta', 
-  REVIEW_REQUEST: 'lime',     
-  CUSTOM: 'default',          
+  SYSTEM: 'purple',
+  ORDER_CREATED: 'blue',
+  ORDER_CONFIRMED: 'cyan',
+  ORDER_SHIPPING: 'geekblue',
+  ORDER_DELIVERED: 'green',
+  ORDER_CANCELLED: 'red',
+  PAYMENT_SUCCESS: 'success',
+  PAYMENT_FAILED: 'error',
+  COUPON_AVAILABLE: 'gold',
+  PROMOTION: 'orange',
+  PRODUCT_RESTOCK: 'magenta',
+  REVIEW_REQUEST: 'lime',
+  REVIEW: 'green',
+  CUSTOM: 'default',
+  CHAT_MESSAGE: 'blue',
+  WARRANTY_CREATED: 'volcano',
+  WARRANTY_UPDATED: 'cyan',
 };
 
 const NotificationsPage: React.FC = () => {
