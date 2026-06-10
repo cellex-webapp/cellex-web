@@ -1,5 +1,5 @@
-import React, { useRef, useState } from "react";
-import { Camera, X, Loader2, ImageOff } from "lucide-react";
+import React, { useRef, useState, useEffect } from "react";
+import { Camera, X, Loader2, ImageOff, UploadCloud } from "lucide-react";
 
 import { searchProductsByImage } from "../../../../services/productService";
 
@@ -26,7 +26,19 @@ const ImageSearch: React.FC<ImageSearchProps> = ({ onResults, onLoading }) => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const popupRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (popupRef.current && !popupRef.current.contains(event.target as Node)) {
+        setIsPopupOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleFileSelect = async (file: File) => {
     if (!file.type.startsWith("image/")) {
@@ -41,6 +53,7 @@ const ImageSearch: React.FC<ImageSearchProps> = ({ onResults, onLoading }) => {
     setError(null);
     const objectUrl = URL.createObjectURL(file);
     setPreviewUrl(objectUrl);
+    setIsPopupOpen(true);
     await performSearch(file);
   };
 
@@ -49,11 +62,11 @@ const ImageSearch: React.FC<ImageSearchProps> = ({ onResults, onLoading }) => {
     onLoading(true);
 
     try {
-      // Giảm topK xuống 10 để tránh trả về quá nhiều kết quả không liên quan (chỉ lấy top kết quả giống nhất)
       const data = await searchProductsByImage(file, 10);
 
       if (data.success) {
         onResults(data.products ?? []);
+        setIsPopupOpen(false);
       } else {
         setError(data.message ?? "Không tìm thấy sản phẩm tương tự.");
         onResults([]);
@@ -69,7 +82,7 @@ const ImageSearch: React.FC<ImageSearchProps> = ({ onResults, onLoading }) => {
   };
 
   const handleCameraClick = () => {
-    fileInputRef.current?.click();
+    setIsPopupOpen(!isPopupOpen);
   };
 
   const handleClear = () => {
@@ -88,7 +101,7 @@ const ImageSearch: React.FC<ImageSearchProps> = ({ onResults, onLoading }) => {
   };
 
   return (
-    <div className="relative flex items-center">
+    <div className="relative flex items-center" ref={popupRef}>
       {/* Camera button */}
       <button
         type="button"
@@ -101,7 +114,7 @@ const ImageSearch: React.FC<ImageSearchProps> = ({ onResults, onLoading }) => {
             ? "bg-blue-100 cursor-not-allowed"
             : "bg-gray-100 hover:bg-blue-100 hover:text-blue-600 cursor-pointer"
           }
-          ${previewUrl ? "text-blue-600" : "text-gray-500"}
+          ${isPopupOpen || previewUrl ? "text-blue-600" : "text-gray-500"}
         `}
         disabled={isSearching}
       >
@@ -124,42 +137,85 @@ const ImageSearch: React.FC<ImageSearchProps> = ({ onResults, onLoading }) => {
         }}
       />
 
-      {/* Preview popup */}
-      {previewUrl && (
+      {/* Preview and Upload popup */}
+      {(isPopupOpen || previewUrl) && (
         <div
-          className="absolute top-12 right-0 z-50 bg-white rounded-2xl shadow-2xl border border-gray-100 p-3 w-48"
+          className="absolute top-12 right-0 z-50 bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 w-72"
           onDrop={handleDrop}
           onDragOver={(e) => e.preventDefault()}
         >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium text-gray-600">
-              {isSearching ? "Đang tìm kiếm..." : "Ảnh tìm kiếm"}
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-sm font-semibold text-gray-700">
+              {isSearching ? "Đang tìm kiếm..." : "Tìm kiếm bằng hình ảnh"}
             </span>
             <button
-              onClick={handleClear}
-              className="text-gray-400 hover:text-red-500 transition-colors"
+              onClick={() => {
+                setIsPopupOpen(false);
+                if (previewUrl && !isSearching) handleClear();
+              }}
+              className="text-gray-400 hover:text-red-500 transition-colors p-1 rounded-full hover:bg-red-50"
             >
-              <X className="w-3.5 h-3.5" />
+              <X className="w-4 h-4" />
             </button>
           </div>
 
-          <div className="relative rounded-lg overflow-hidden bg-gray-50 aspect-square">
-            <img
-              src={previewUrl}
-              alt="Ảnh tìm kiếm"
-              className="w-full h-full object-cover"
-            />
-            {isSearching && (
-              <div className="absolute inset-0 bg-white/60 flex items-center justify-center">
-                <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
-              </div>
-            )}
-          </div>
+          {!previewUrl ? (
+            <div 
+              className="border-2 border-dashed border-gray-300 rounded-xl p-6 flex flex-col items-center justify-center text-center hover:border-blue-500 hover:bg-blue-50 transition-colors cursor-pointer" 
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <UploadCloud className="w-8 h-8 text-gray-400 mb-2" />
+              <p className="text-sm text-gray-600 font-medium mb-1">
+                Kéo thả ảnh vào đây
+              </p>
+              <p className="text-xs text-gray-400 mb-3">
+                hoặc
+              </p>
+              <button 
+                type="button"
+                className="bg-blue-50 text-blue-600 border border-blue-200 px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  fileInputRef.current?.click();
+                }}
+              >
+                Chọn ảnh
+              </button>
+            </div>
+          ) : (
+            <div className="relative rounded-xl overflow-hidden bg-gray-50 aspect-square group">
+              <img
+                src={previewUrl}
+                alt="Ảnh tìm kiếm"
+                className="w-full h-full object-cover"
+              />
+              {isSearching && (
+                <div className="absolute inset-0 bg-white/70 flex flex-col items-center justify-center backdrop-blur-sm">
+                  <Loader2 className="w-8 h-8 animate-spin text-blue-600 mb-2" />
+                  <span className="text-sm font-medium text-blue-800">Đang phân tích...</span>
+                </div>
+              )}
+              {!isSearching && (
+                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                    <button 
+                      type="button"
+                      className="bg-white text-gray-800 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleClear();
+                      }}
+                    >
+                      Chọn ảnh khác
+                    </button>
+                 </div>
+              )}
+            </div>
+          )}
 
           {error && (
-            <div className="mt-2 flex items-center gap-1 text-red-500">
-              <ImageOff className="w-3 h-3 flex-shrink-0" />
-              <p className="text-xs">{error}</p>
+            <div className="mt-3 flex items-start gap-2 text-red-500 bg-red-50 p-2 rounded-lg">
+              <ImageOff className="w-4 h-4 flex-shrink-0 mt-0.5" />
+              <p className="text-xs font-medium leading-relaxed">{error}</p>
             </div>
           )}
         </div>

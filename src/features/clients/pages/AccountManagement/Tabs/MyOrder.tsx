@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Button, Drawer, Input, Modal, Space, Table, Tag, Typography, message, Select, Avatar, Divider, Card, Tooltip } from 'antd';
-import { EyeOutlined, SearchOutlined, FilterOutlined, StarOutlined, CheckCircleOutlined, FormOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
+import { Button, Drawer, Input, Modal, Space, Table, Tag, Typography, message, Select, Avatar, Divider, Card, Tooltip, Timeline } from 'antd';
+import { EyeOutlined, SearchOutlined, FilterOutlined, StarOutlined, CheckCircleOutlined, FormOutlined, SafetyCertificateOutlined, CodeSandboxOutlined } from '@ant-design/icons';
 import { useOrder } from '@/hooks/useOrder';
 import { formatDateVN } from '@/utils/date';
 import { useAppSelector } from '@/hooks/redux';
@@ -16,17 +16,25 @@ const { Title, Text } = Typography;
 const statusColor: Record<string, string> = {
   PENDING: 'gold',
   CONFIRMED: 'blue',
+  READY_TO_SHIP: 'cyan',
   SHIPPING: 'geekblue',
   DELIVERED: 'green',
   CANCELLED: 'red',
+  DELIVERY_FAILED: 'volcano',
+  RETURNING: 'orange',
+  RETURNED: 'magenta',
 };
 
 const statusLabel: Record<string, string> = {
   PENDING: 'Chờ xử lý',
   CONFIRMED: 'Đã xác nhận',
+  READY_TO_SHIP: 'Chờ lấy hàng',
   SHIPPING: 'Đang giao',
   DELIVERED: 'Đã giao',
   CANCELLED: 'Đã hủy',
+  DELIVERY_FAILED: 'Giao thất bại',
+  RETURNING: 'Đang hoàn trả',
+  RETURNED: 'Đã hoàn trả',
 };
 
 const currency = (n?: number) =>
@@ -56,6 +64,28 @@ const MyOrder: React.FC = () => {
   const [couponCode, setCouponCode] = useState('');
   const [statusFilter, setStatusFilter] = useState<OrderStatus | 'ALL'>('ALL');
   const [search, setSearch] = useState('');
+
+  // Tracking
+  const [trackingEvents, setTrackingEvents] = useState<any[]>([]);
+  const [isFetchingTracking, setIsFetchingTracking] = useState(false);
+
+  useEffect(() => {
+    if (open && selectedOrder && ['READY_TO_SHIP', 'SHIPPING', 'DELIVERED', 'DELIVERY_FAILED', 'RETURNING', 'RETURNED'].includes(selectedOrder.status)) {
+      fetchTracking(selectedOrder.id);
+    }
+  }, [open, selectedOrder]);
+
+  const fetchTracking = async (orderId: string) => {
+    setIsFetchingTracking(true);
+    try {
+      const resp = await orderService.getTracking(orderId);
+      setTrackingEvents(resp.data || []);
+    } catch (err: any) {
+      console.error('Failed to fetch tracking', err);
+    } finally {
+      setIsFetchingTracking(false);
+    }
+  };
 
   // Review states
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
@@ -472,6 +502,36 @@ const MyOrder: React.FC = () => {
                 <Text strong className="text-xl text-blue-600">{currency(selectedOrder.total_amount)}</Text>
               </div>
             </div>
+
+            {/* Tracking Section */}
+            {['READY_TO_SHIP', 'SHIPPING', 'DELIVERED', 'DELIVERY_FAILED', 'RETURNING', 'RETURNED'].includes(selectedOrder.status) && (
+              <div className="mt-4 pt-4 border-t">
+                <div className="flex justify-between items-center mb-4">
+                  <h4 className="font-bold">Hành trình đơn hàng</h4>
+                  {selectedOrder.ghn_order_code && (
+                    <Tag color="blue">MVD: {selectedOrder.ghn_order_code}</Tag>
+                  )}
+                </div>
+
+                {isFetchingTracking ? (
+                  <div className="text-center text-gray-400 py-4">Đang tải hành trình...</div>
+                ) : trackingEvents.length > 0 ? (
+                  <Timeline 
+                    items={trackingEvents.map((evt: any, idx: number) => ({
+                      color: idx === 0 ? 'green' : 'gray',
+                      children: (
+                        <div>
+                          <div className="font-medium text-sm">{evt.description}</div>
+                          <div className="text-xs text-gray-500">{formatDateVN(evt.timestamp)} {evt.warehouse ? `- ${evt.warehouse}` : ''}</div>
+                        </div>
+                      )
+                    }))}
+                  />
+                ) : (
+                  <div className="text-center text-gray-400 py-4 italic">Chưa có thông tin hành trình</div>
+                )}
+              </div>
+            )}
 
             {/* Actions */}
             <div className="pt-4 grid grid-cols-2 gap-3">

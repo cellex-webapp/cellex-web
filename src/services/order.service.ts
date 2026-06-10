@@ -63,6 +63,14 @@ export const orderService = {
     const resp = await axiosInstance.post<IApiResponse<IOrder>>(`/orders/${orderId}/ship`);
     return resp.data;
   },
+  prepareShipment: async (orderId: string, body: any): Promise<IApiResponse<any>> => {
+    const resp = await axiosInstance.put<IApiResponse<any>>(`/orders/${orderId}/prepare-shipment`, body);
+    return resp.data;
+  },
+  getTracking: async (orderId: string): Promise<IApiResponse<any>> => {
+    const resp = await axiosInstance.get<IApiResponse<any>>(`/orders/${orderId}/tracking`);
+    return resp.data;
+  },
 
   // ADMIN
   getAllOrdersForAdmin: async (params?: {

@@ -28,7 +28,7 @@ const InvitationsPage: React.FC = () => {
                 Hết hạn: {i.expiresAt ? new Date(i.expiresAt).toLocaleString('vi-VN') : '-'}
               </div>
               <div className="flex gap-2">
-                <Button onClick={async () => { await staffService.acceptInvitation(i.id); load(); }} type="primary">Chấp nhận</Button>
+                <Button onClick={async () => { await staffService.acceptInvitation(i.id); window.location.href = '/vendor'; }} type="primary">Chấp nhận</Button>
                 <Button onClick={async () => { await staffService.declineInvitation(i.id); load(); }}>Từ chối</Button>
               </div>
             </div>

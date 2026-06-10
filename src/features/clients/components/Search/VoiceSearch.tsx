@@ -100,7 +100,7 @@ const VoiceSearch: React.FC<VoiceSearchProps> = ({
 	return (
 		<div className={`w-full max-w-3xl mx-auto ${className}`}>
 			<form onSubmit={handleSubmit} className="relative">
-				<div className="flex items-center bg-white rounded-full shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-shadow duration-300">
+				<div className="flex items-center bg-white rounded-full shadow-lg border border-gray-200 hover:shadow-xl transition-shadow duration-300">
 					{/* Search Icon */}
 					<div className="pl-6 pr-3">
 						<svg
@@ -178,7 +178,7 @@ const VoiceSearch: React.FC<VoiceSearchProps> = ({
 					<button
 						type="submit"
 						disabled={!searchQuery.trim()}
-						className="px-6 py-4 bg-blue-600 text-white font-medium hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors duration-300"
+						className="px-6 py-4 bg-blue-600 text-white font-medium hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors duration-300 rounded-r-full"
 					>
 						Tìm kiếm
 					</button>

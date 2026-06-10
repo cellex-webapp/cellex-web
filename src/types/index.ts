@@ -823,6 +823,8 @@ declare global {
         shipping_at: string | null;
         delivered_at: string | null;
         payment_expires_at: string | null;
+        ghn_order_code?: string | null;
+        tracking_url?: string | null;
         created_at: string;
         updated_at: string;
     }
