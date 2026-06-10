@@ -114,7 +114,14 @@ const StaffRolesPage: React.FC = () => {
           }
         ]}
       />
-      <Modal open={open} onCancel={() => setOpen(false)} onOk={() => form.submit()} title={editing ? 'Cập nhật vai trò' : 'Tạo vai trò'}>
+      <Modal 
+        open={open} 
+        onCancel={() => setOpen(false)} 
+        onOk={() => form.submit()} 
+        title={editing ? 'Cập nhật vai trò' : 'Tạo vai trò'}
+        width={1000}
+        style={{ top: 20 }}
+      >
         <Form form={form} layout="vertical" onFinish={async (values) => {
           const payload = { ...values, permissions: selectedPermissions };
           if (editing) await staffService.updateRole(editing.id, payload);
@@ -122,35 +129,43 @@ const StaffRolesPage: React.FC = () => {
           setOpen(false);
           load();
         }}>
-          <Form.Item name="name" label="Tên vai trò" rules={[{ required: true, message: 'Vui lòng nhập tên vai trò' }]}><Input /></Form.Item>
-          <Form.Item name="description" label="Mô tả"><Input.TextArea rows={3} /></Form.Item>
-          <Form.Item label="Chức năng" required>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <Form.Item name="name" label="Tên vai trò" rules={[{ required: true, message: 'Vui lòng nhập tên vai trò' }]}><Input /></Form.Item>
+            <Form.Item name="description" label="Mô tả"><Input /></Form.Item>
+          </div>
+          
+          <Form.Item label="Chức năng" required style={{ marginTop: '20px' }}>
             <Form.Item name="permissions" rules={[{ required: true, message: 'Vui lòng chọn ít nhất một chức năng' }]} noStyle>
               <Input type="hidden" />
             </Form.Item>
-            <Table
-              rowKey="key"
-              dataSource={permissionRows}
-              pagination={false}
-              size="small"
-              rowSelection={{
-                selectedRowKeys: selectedPermissions,
-                onChange: handlePermissionChange,
-              }}
-              columns={[
-                { title: 'Chức năng', dataIndex: 'name' },
-                { title: 'Nhóm', dataIndex: 'group', width: 140 },
-                { title: 'Hành động', dataIndex: 'action', width: 140 },
-              ]}
-            />
-            <div className="mt-2">
+            
+            <div style={{ marginBottom: '12px' }}>
               <Checkbox
                 checked={selectedPermissions.length === permissionKeys.length && permissionKeys.length > 0}
                 indeterminate={selectedPermissions.length > 0 && selectedPermissions.length < permissionKeys.length}
                 onChange={(e) => handlePermissionChange(e.target.checked ? permissionKeys : [])}
               >
-                Chọn tất cả
+                <strong>Chọn tất cả</strong>
               </Checkbox>
+            </div>
+
+            <div style={{ border: '1px solid #f0f0f0', borderRadius: '4px', overflow: 'hidden' }}>
+              <Table
+                rowKey="key"
+                dataSource={permissionRows}
+                pagination={{ pageSize: 10 }}
+                size="small"
+                scroll={{ x: 600 }}
+                rowSelection={{
+                  selectedRowKeys: selectedPermissions,
+                  onChange: handlePermissionChange,
+                }}
+                columns={[
+                  { title: 'Chức năng', dataIndex: 'name', width: 250 },
+                  { title: 'Nhóm', dataIndex: 'group', width: 120 },
+                  { title: 'Hành động', dataIndex: 'action', width: 120 },
+                ]}
+              />
             </div>
           </Form.Item>
         </Form>
